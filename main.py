@@ -78,18 +78,16 @@ with tab2:
     st.markdown("<h4 style='text-align: center; color: white;'>Distribuição de Auditoria</h4>", unsafe_allow_html=True)
     df_p = pd.DataFrame({'Status': [f'Liberado {p_ok}%', f'Pendente {p_risco}%'], 'Perc': [p_ok, p_risco]})
     
-    # --- 🛡️ GRÁFICO RECALIBRADO (NÃO CORTA NO CELULAR) ---
+    # --- 🛡️ CORREÇÃO DEFINITIVA DO GRÁFICO ---
     st.vega_lite_chart(df_p, {
         'width': 'container',
         'height': 300,
-        'padding': 30,
-        'autosize': {'type': 'fit', 'contains': 'padding'},
+        'padding': 20,
         'mark': {
             'type': 'arc', 
             'innerRadius': 50, 
-            'outerRadius': 85,  # Tamanho seguro para telas pequenas
-            'cornerRadius': 10, 
-            'padAngle': 2
+            'outerRadius': 90,  # Raio reduzido para caber no celular
+            'cornerRadius': 10
         },
         'encoding': {
             'theta': {'field': 'Perc', 'type': 'quantitative'},
@@ -97,11 +95,7 @@ with tab2:
                 'field': 'Status', 
                 'type': 'nominal', 
                 'scale': {'range': ['#00d4ff', '#ff4b4b']},
-                'legend': {
-                    'orient': 'bottom', 
-                    'labelColor': 'white',
-                    'columns': 1  # Legendas empilhadas evitam esmagar o gráfico
-                }
+                'legend': {'orient': 'bottom', 'labelColor': 'white'}
             }
         }
     }, use_container_width=True)
@@ -112,24 +106,5 @@ with tab3:
             "==========================================",
             "   DOSSIÊ DE AUDITORIA - IA-SENTINELA PRO ",
             "==========================================",
-            f"CRIADOR DO SISTEMA : SIDNEY PEREIRA DE ALMEIDA",
-            f"MÉDICO/UNIDADE     : {medico_sel}",
-            f"DATA EMISSÃO       : 12/01/2026",
-            "------------------------------------------",
-            f"Faturamento Total  : R$ {info['valor']:,.2f}",
-            f"Percentual Correto : {p_ok}% (R$ {v_liberado:,.2f})",
-            f"Percentual Risco   : {p_risco}% (R$ {v_pendente:,.2f})",
-            "------------------------------------------",
-            f"MOTIVO PRINCIPAL   : {info['motivo']}",
-            "=========================================="
-        ]
-        texto_final = "\n".join(relatorio)
-        st.markdown(f'<div class="report-preview">{texto_final}</div>', unsafe_allow_html=True)
-        
-        st.download_button(
-            label="⬇️ BAIXAR RELATÓRIO OFICIAL (.TXT)",
-            data=texto_final.encode('utf-8-sig'),
-            file_name=f"Dossie_{medico_sel.replace(' ', '_')}.txt",
-            mime="text/plain"
-    )
-        
+            f"CRIADOR DO SISTEMA : SIDNEY PEREIRA DE ALMEIDA
+            
