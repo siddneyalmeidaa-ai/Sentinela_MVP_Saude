@@ -13,6 +13,7 @@ st.markdown("""
         border-bottom: 2px solid #00d4ff; margin-bottom: 15px;
     }
     .pro-tag { background: #00d4ff; color: #12171d; padding: 2px 8px; border-radius: 5px; font-weight: 900; font-size: 0.7rem; }
+    .dev-tag { color: #00d4ff; font-size: 0.85rem; font-weight: bold; margin-top: 5px; }
     
     .stTabs [data-baseweb="tab-list"] { background-color: #1c2e4a; border-radius: 10px; padding: 5px; }
     .stTabs [data-baseweb="tab"] { color: #8899A6; font-weight: bold; border: none !important; }
@@ -31,7 +32,10 @@ st.markdown("""
     </style>
     
     <div class="header-box">
-        <span style="color: white; font-size: 1.1rem;">🏛️ CONTROLE: <b>IA-SENTINELA</b></span> 
+        <div>
+            <span style="color: white; font-size: 1.1rem;">🏛️ SISTEMA: <b>IA-SENTINELA PRO</b></span>
+            <div class="dev-tag">CRIADOR E DESENVOLVEDOR: SIDNEY PEREIRA DE ALMEIDA</div>
+        </div>
         <span class="pro-tag">PRO</span>
     </div>
     """, unsafe_allow_html=True)
@@ -66,18 +70,17 @@ tab1, tab2, tab3 = st.tabs(["🏢 CLÍNICA", "📊 GRÁFICO", "📄 RELATÓRIO"]
 with tab1:
     st.markdown(f"**Análise de Dados: {medico_sel}**")
     col_a, col_b = st.columns(2)
-    # SUBSTITUIÇÃO REALIZADA: Títulos agora são os percentuais
     col_a.metric(f"{p_ok}%", f"R$ {v_liberado:,.2f}")
     col_b.metric(f"{p_risco}%", f"R$ {v_pendente:,.2f}", delta=f"-{p_risco}%", delta_color="inverse")
     st.dataframe(pd.DataFrame(info["detalhes"], columns=["Paciente", "Motivo"]), use_container_width=True)
 
 with tab2:
     st.markdown("<h4 style='text-align: center; color: white;'>Distribuição de Auditoria</h4>", unsafe_allow_html=True)
-    # SUBSTITUIÇÃO REALIZADA: Legenda do gráfico por percentual
-    df_p = pd.DataFrame({'Status': [f'{p_ok}%', f'{p_risco}%'], 'Perc': [p_ok, p_risco]})
+    df_p = pd.DataFrame({'Status': [f'Liberado {p_ok}%', f'Pendente {p_risco}%'], 'Perc': [p_ok, p_risco]})
     st.vega_lite_chart(df_p, {
         'width': 'container', 'height': 300,
-        'mark': {'type': 'arc', 'innerRadius': 80, 'outerRadius': 120, 'cornerRadius': 10},
+        'config': {'view': {'stroke': None}},
+        'mark': {'type': 'arc', 'innerRadius': 60, 'outerRadius': 100, 'cornerRadius': 10, 'padAngle': 2},
         'encoding': {
             'theta': {'field': 'Perc', 'type': 'quantitative'},
             'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#00d4ff', '#ff4b4b']}, 'legend': {'orient': 'bottom', 'labelColor': 'white'}}
@@ -90,8 +93,9 @@ with tab3:
             "==========================================",
             "   DOSSIÊ DE AUDITORIA - IA-SENTINELA PRO ",
             "==========================================",
-            f"MÉDICO/UNIDADE : {medico_sel}",
-            f"DATA EMISSÃO   : 11/01/2026",
+            f"CRIADOR DO SISTEMA : SIDNEY PEREIRA DE ALMEIDA",
+            f"MÉDICO/UNIDADE     : {medico_sel}",
+            f"DATA EMISSÃO       : 12/01/2026",
             "------------------------------------------",
             f"Faturamento Total  : R$ {info['valor']:,.2f}",
             f"Percentual Correto : {p_ok}% (R$ {v_liberado:,.2f})",
