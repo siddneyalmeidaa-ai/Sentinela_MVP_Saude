@@ -1,36 +1,43 @@
 import streamlit as st
 import pandas as pd
-import random
 
-# --- 🏛️ CONFIGURAÇÃO MOBILE MASTER ---
+# --- 🏛️ CONFIGURAÇÃO VISUAL PREMIUM ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; }
-    .header-box { display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; color: #00d4ff; font-weight: bold; font-size: 0.9rem; border-bottom: 1px solid #1c2e4a; }
-    .pro-tag { background-color: #00d4ff; color: #0e1117; font-size: 0.6rem; padding: 2px 5px; border-radius: 4px; font-weight: 900; }
-    
-    /* Menu de Navegação Horizontal */
-    .stTabs [data-baseweb="tab-list"] { gap: 5px; }
-    .stTabs [data-baseweb="tab"] { 
-        height: 35px; background-color: #1c2e4a; border-radius: 5px; color: white; font-size: 0.7rem;
+    .main { background-color: #12171d; }
+    /* Cabeçalho Neon */
+    .header-box { 
+        display: flex; justify-content: space-between; align-items: center; 
+        padding: 10px; background: #1c232d; border-radius: 10px;
+        border-bottom: 2px solid #00d4ff; margin-bottom: 15px;
     }
-    .stTabs [aria-selected="true"] { background-color: #00d4ff !important; color: #0e1117 !important; }
+    .pro-tag { background: #00d4ff; color: #12171d; padding: 2px 8px; border-radius: 5px; font-weight: 900; font-size: 0.7rem; }
+    
+    /* Abas Customizadas Estilo App */
+    .stTabs [data-baseweb="tab-list"] { background-color: #1c232d; border-radius: 10px; padding: 5px; gap: 5px; }
+    .stTabs [data-baseweb="tab"] { 
+        height: 45px; color: #8899A6; font-weight: bold; border: none !important;
+    }
+    .stTabs [aria-selected="true"] { background-color: #2c3645 !important; color: #00d4ff !important; border-bottom: 3px solid #00d4ff !important; }
 
-    .block-container { padding: 0.5rem 0.5rem !important; }
-    header {visibility: hidden;}
+    /* Botão PDF Magnético */
+    .stButton>button {
+        width: 100%; background: linear-gradient(90deg, #00d4ff, #008fb3);
+        color: #12171d; font-weight: 900; border: none; height: 55px;
+        border-radius: 12px; font-size: 1rem; text-transform: uppercase;
+        box-shadow: 0px 4px 15px rgba(0, 212, 255, 0.3);
+    }
     
-    .status-box { padding: 12px; border-radius: 5px; margin-top: 8px; font-weight: bold; font-size: 0.85rem; text-align: center; }
-    .status-ok { background-color: #15572422; color: #28a745; border: 1px solid #28a745; }
-    .status-error { background-color: #721c2422; color: #ff4b4b; border: 1px solid #ff4b4b; }
-    
-    /* Botão de Gerar Relatório Online */
-    .stButton>button { width: 100%; background-color: #00d4ff; color: #0e1117; font-weight: 900; border-radius: 8px; height: 50px; border: none; }
+    /* Cartão de Dados */
+    .data-card { background: #1c232d; padding: 15px; border-radius: 12px; border-left: 5px solid #00d4ff; margin-bottom: 10px; }
+    .val-liberado { color: #28a745; font-size: 1.2rem; font-weight: bold; }
+    .val-pendente { color: #ff4b4b; font-size: 1.2rem; font-weight: bold; }
     </style>
     
     <div class="header-box">
-        <span>🏛️ CONTROLE: IA-SENTINELA</span> 
+        <span style="color: white; font-size: 1.1rem;">🏛️ CONTROLE: <b>IA-SENTINELA</b></span> 
         <span class="pro-tag">PRO</span>
     </div>
     """, unsafe_allow_html=True)
@@ -42,49 +49,54 @@ dados_medicos = {
     "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "pacientes": 320, "motivo": "Erro Cadastral", "risco": 15}
 }
 
-# --- 🔍 SELETOR PRINCIPAL ---
-medico_sel = st.selectbox("Auditar Médico:", list(dados_medicos.keys()))
+medico_sel = st.selectbox("Selecione a Unidade:", list(dados_medicos.keys()))
 info = dados_medicos[medico_sel]
 
 # --- 📈 CÁLCULOS ---
 p_risco = info["risco"]
 p_ok = 100 - p_risco
-v_faturamento = info["valor"]
-v_pendente = v_faturamento * (p_risco / 100)
-v_liberado = v_faturamento * (p_ok / 100)
+v_liberado = info["valor"] * (p_ok / 100)
+v_pendente = info["valor"] * (p_risco / 100)
 
-# --- 🕹️ NAVEGAÇÃO POR ETAPAS (TABS) ---
-tab1, tab2, tab3 = st.tabs(["🏢 CLÍNICA", "📊 GRÁFICO", "📋 RELATÓRIO"])
+# --- 🕹️ NAVEGAÇÃO APP ---
+tab1, tab2, tab3 = st.tabs(["🏢 CLÍNICA", "📊 GRÁFICO", "📄 RELATÓRIO"])
 
 with tab1:
-    st.write(f"**Dados da Unidade: {medico_sel}**")
-    st.write(f"Volume: {info['pacientes']} pacientes")
-    st.write(f"Faturamento: R$ {v_faturamento:,.2f}")
-    st.info("Selecione a próxima aba para ver a análise visual.")
+    st.markdown(f"""
+    <div class="data-card">
+        <div style="color: #8899A6; font-size: 0.8rem;">FATURAMENTO BRUTO</div>
+        <div style="color: white; font-size: 1.5rem; font-weight: bold;">R$ {info['valor']:,.2f}</div>
+        <br>
+        <div style="color: #8899A6; font-size: 0.8rem;">PACIENTES ATENDIDOS</div>
+        <div style="color: white; font-size: 1.2rem;">{info['pacientes']} Unidades</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with tab2:
-    st.write("**Análise de Risco Operacional**")
-    df_p = pd.DataFrame({'Status': ['OK', 'RISCO'], 'Perc': [p_ok, p_risco]})
+    st.markdown("<h4 style='text-align: center; color: white;'>Análise de Risco Operacional</h4>", unsafe_allow_html=True)
+    df_p = pd.DataFrame({'Status': ['LIBERADO', 'PENDENTE'], 'Perc': [p_ok, p_risco]})
     st.vega_lite_chart(df_p, {
-        'width': 'container', 'height': 250,
-        'mark': {'type': 'arc', 'innerRadius': 60, 'outerRadius': 100},
+        'width': 'container', 'height': 280,
+        'mark': {'type': 'arc', 'innerRadius': 80, 'outerRadius': 120, 'cornerRadius': 10},
         'encoding': {
             'theta': {'field': 'Perc', 'type': 'quantitative'},
-            'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#00d4ff', '#ff4b4b']}, 'legend': {'orient': 'bottom'}}
+            'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#00d4ff', '#ff4b4b']}, 'legend': {'orient': 'bottom', 'labelColor': 'white'}}
         }
-    }, key=f"pizza_{medico_sel}")
+    })
 
 with tab3:
-    st.subheader("📑 Menu de Relatórios")
-    st.write("Clique abaixo para processar a auditoria final.")
-    
-    if st.button("📊 GERAR RELATÓRIO ONLINE"):
-        st.markdown("---")
-        st.markdown(f"### 📄 DOSSIÊ FINAL: {medico_sel}")
-        st.markdown(f'<div class="status-box status-ok">LIBERADO: R$ {v_liberado:,.2f} ({p_ok}%)</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="status-box status-error">PENDENTE: R$ {v_pendente:,.2f} ({p_risco}%)</div>', unsafe_allow_html=True)
-        st.error(f"MOTIVO DO BLOQUEIO: {info['motivo']}")
-        st.success("✅ Relatório gerado com sucesso para auditoria.")
-    else:
-        st.warning("Aguardando comando de geração...")
+    st.markdown("### 📥 Central de Documentos")
+    if st.button("⬇️ GERAR RELATÓRIO PDF"):
+        st.success(f"O Relatório de {medico_sel} está sendo processado...")
+        st.markdown(f"""
+        <div class="data-card" style="border-left-color: #28a745;">
+            <div style="color: #8899A6;">DOSSIÊ INTERNO: AUDITORIA FINAL</div>
+            <div class="val-liberado">VALOR LIBERADO: R$ {v_liberado:,.2f} ({p_ok}%)</div>
+            <div class="val-pendente">VALOR BLOQUEADO: R$ {v_pendente:,.2f} ({p_risco}%)</div>
+            <hr style="border: 0.5px solid #2c3645;">
+            <div style="color: white;"><b>MOTIVO:</b> {info['motivo']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        # Aqui o usuário simula o download
+        st.download_button("Clique aqui para baixar o PDF", "Dados do Relatório", file_name=f"Relatorio_{medico_sel}.txt")
     
