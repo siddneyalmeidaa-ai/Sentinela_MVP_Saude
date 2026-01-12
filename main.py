@@ -1,72 +1,67 @@
 import streamlit as st
 import pandas as pd
 
-# --- 🏛️ CONFIGURAÇÃO DE ALTO NÍVEL ---
-st.set_page_config(page_title="IA-SENTINELA PRO", page_icon="💎", layout="wide")
+# --- 🏛️ CONFIGURAÇÃO ULTRA-SLIM ---
+st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
-# CSS para interface ULTRA-COMPACTA (Mobile First)
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
-    /* Título em linha única e pequeno */
-    .topo { font-size: 1.2rem; font-weight: bold; color: #00d4ff; margin-bottom: 5px; }
-    /* Métricas Minificadas */
-    [data-testid="stMetricValue"] { font-size: 0.9rem !important; color: #ffffff !important; }
-    [data-testid="stMetricLabel"] { font-size: 0.6rem !important; }
-    [data-testid="stMetric"] { background: #1c2e4a; padding: 5px; border-radius: 10px; }
-    /* Remove espaços inúteis */
+    /* Título Minimalista */
+    .topo-premium { font-size: 1.1rem; font-weight: bold; color: #00d4ff; text-align: center; margin-bottom: 10px; }
+    /* Ajuste de métricas para não ocupar espaço vertical */
+    [data-testid="stMetricValue"] { font-size: 0.85rem !important; }
+    [data-testid="stMetricLabel"] { font-size: 0.55rem !important; }
+    div[data-testid="column"] { background: #1c2e4a; border-radius: 8px; padding: 2px !important; text-align: center; }
+    /* Zerar paddings que empurram o gráfico para baixo */
     .block-container { padding-top: 0.5rem !important; padding-bottom: 0px !important; }
+    /* Tabela compacta para mobile */
+    .stTable { font-size: 0.65rem !important; }
     </style>
-    <div class="topo">🏛️ IA-SENTINELA PRO</div>
+    <div class="topo-premium">🏛️ IA-SENTINELA: AUDITORIA PRO</div>
     """, unsafe_allow_html=True)
 
-# --- 🧠 INTELIGÊNCIA DE DADOS ---
+# --- 🧠 BASE DE DADOS ALPHA ---
 dados_medicos = {
     "ANIMA COSTA": {"valor": 16000.0, "pacientes": 85, "pendentes": ["Carlos Silva", "Maria Oliveira"], "motivo": "Erro XML"},
     "DMMIGINIO GUERRA": {"valor": 22500.0, "pacientes": 110, "pendentes": ["João Souza", "Ana Costa"], "motivo": "Assinatura"},
     "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "pacientes": 320, "pendentes": ["Pedro Santos", "Luana Vaz"], "motivo": "Cadastro"}
 }
 
-# Seleção rápida na barra lateral
 with st.sidebar:
     medico_sel = st.selectbox("Médico:", list(dados_medicos.keys()))
     info = dados_medicos[medico_sel]
-    faturamento_real = st.number_input("Valor:", value=info["valor"])
+    faturamento = st.number_input("R$", value=info["valor"])
 
-# --- 📈 CÁLCULOS ---
-v_pendente = faturamento_real * 0.32
-v_liberado = faturamento_real * 0.68
-tkt_medio = faturamento_real / info["pacientes"]
+# --- 📈 CÁLCULOS DINÂMICOS ---
+v_pendente = faturamento * 0.32
+v_liberado = faturamento * 0.68
+tkt_medio = faturamento / info["pacientes"]
 
-# --- 📊 MÉTRICAS EM LINHA ÚNICA ---
+# --- 📊 MÉTRICAS EM LINHA ÚNICA (SLIM) ---
 c1, c2, c3 = st.columns(3)
-c1.metric("PACIENTES", f"{info['pacientes']}")
-c2.metric("TKT MÉDIO", f"R${tkt_medio:,.0f}")
-c3.metric("RETIDO", f"R${v_pendente:,.0f}", "-32%")
+c1.metric("VOL", f"{info['pacientes']}")
+c2.metric("TKT", f"R${tkt_medio:,.0f}")
+c3.metric("RISCO", f"R${v_pendente:,.0f}")
 
-# --- 🍕 PIZZA COMPACTA (POSICIONAMENTO CENTRAL) ---
-df_pizza = pd.DataFrame({"Status": ["RISCO (32%)", "LIBERADO (68%)"], "Valor": [32, 68]})
+# --- 🍕 PIZZA DONUT (CENTRALIZADA E SEM CORTES) ---
+df_p = pd.DataFrame({"Status": ["RISCO (32%)", "OK (68%)"], "V": [32, 68]})
 
-st.vega_lite_chart(df_pizza, {
-    'width': 'container', 'height': 150,
-    'mark': {'type': 'arc', 'innerRadius': 35, 'outerRadius': 60, 'cornerRadius': 4},
+st.vega_lite_chart(df_p, {
+    'width': 'container', 'height': 140,
+    'mark': {'type': 'arc', 'innerRadius': 35, 'outerRadius': 55, 'cornerRadius': 3},
     'encoding': {
-        'theta': {'field': 'Valor', 'type': 'quantitative'},
+        'theta': {'field': 'V', 'type': 'quantitative'},
         'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#ff0055', '#00d4ff']}}
     },
-    'config': {'legend': {'orient': 'right', 'labelFontSize': 9}}
+    'config': {'legend': {'orient': 'bottom', 'labelFontSize': 8, 'symbolSize': 30}}
 })
 
-# --- 🚨 LISTA DE PACIENTES (AÇÃO RÁPIDA) ---
-st.markdown(f"**📋 Pendentes: {medico_sel}**")
-df_p = pd.DataFrame({
-    "Paciente": info["pendentes"],
-    "Motivo": [info["motivo"]] * len(info["pendentes"])
-})
-st.table(df_p)
+# --- 🚨 FOCO EM AÇÃO: LISTA DE PENDÊNCIAS ---
+st.markdown(f"**📋 Pendências: {medico_sel}**")
+st.table(pd.DataFrame({"Paciente": info["pendentes"], "Motivo": [info["motivo"]] * 2}))
 
-# --- 🚀 BOTÃO ---
+# --- 🚀 RELATÓRIO EXPRESSO ---
 if st.button("📊 GERAR DOSSIÊ"):
-    st.info(f"Fatia Garantida: R$ {v_liberado:,.2f}")
-    st.error(f"Bloqueio Técnico: {info['motivo']}")
-    
+    st.success(f"Liberado: R$ {v_liberado:,.2f}")
+    st.error(f"Bloqueio: {info['motivo']}")
