@@ -1,32 +1,25 @@
 import streamlit as st
 import pandas as pd
 
-# --- 🏛️ CONFIGURAÇÃO MOBILE DEFINITIVA ---
+# --- 🏛️ CONFIGURAÇÃO MOBILE MASTER ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
-    /* Cabeçalho Justificado Horizontal */
+    /* Cabeçalho de Controle Justificado */
     .header-box { 
         display: flex; 
         justify-content: space-between; 
         align-items: center; 
-        padding: 5px 5px; 
+        padding: 5px 10px; 
         color: #00d4ff; 
         font-weight: bold; 
         font-size: 1.0rem;
     }
-    .vip-tag { 
-        background-color: #00d4ff; 
-        color: #0e1117; 
-        font-size: 0.7rem; 
-        padding: 2px 6px; 
-        border-radius: 4px; 
-        font-weight: 900;
-    }
+    .vip-tag { background-color: #00d4ff; color: #0e1117; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; }
     
-    /* Faixa de Métricas Horizontal Justificada */
+    /* Faixa de Métricas Horizontal */
     .metric-row { 
         display: flex; 
         justify-content: space-between; 
@@ -37,30 +30,30 @@ st.markdown("""
     }
     .metric-item { text-align: center; flex: 1; border-right: 1px solid #2c3e50; }
     .metric-item:last-child { border-right: none; }
-    .m-label { font-size: 0.55rem; color: #8899A6; text-transform: uppercase; }
-    .m-value { font-size: 0.85rem; font-weight: bold; color: white; }
+    .m-label { font-size: 0.5rem; color: #8899A6; text-transform: uppercase; }
+    .m-value { font-size: 0.8rem; font-weight: bold; color: white; }
     .m-risk { color: #ff4b4b !important; }
 
-    /* Ajuste de Margens para eliminar cortes */
     .block-container { padding: 0.5rem 0.5rem !important; }
     header {visibility: hidden;}
     
-    /* Tabela Justificada */
-    .stTable { width: 100% !important; margin-top: 10px; }
-    thead tr th { font-size: 0.7rem !important; color: #00d4ff !important; }
-    tbody tr td { font-size: 0.75rem !important; }
+    /* Tabelas e Caixas de Status */
+    .stTable { width: 100% !important; margin-top: 5px; }
+    .status-box { padding: 10px; border-radius: 5px; margin-top: 5px; font-weight: bold; font-size: 0.9rem; text-align: center; }
+    .status-ok { background-color: #15572422; color: #28a745; border: 1px solid #28a745; }
+    .status-error { background-color: #721c2422; color: #f8d7da; border: 1px solid #f8d7da; }
     </style>
     
     <div class="header-box">
-        <span>🏛️ IA-SENTINELA PRO</span> 
-        <span class="vip-tag">VIP</span>
+        <span>🏛️ CONTROLE: IA-SENTINELA</span> 
+        <span class="vip-tag">PRO</span>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 🧠 BASE DE DADOS ---
+# --- 🧠 BASE DE DADOS ALPHA ---
 dados_medicos = {
     "ANIMA COSTA": {"valor": 16000.0, "pacientes": 85, "pendentes": ["Carlos Silva", "Maria Oliveira"], "motivo": "Divergência de XML"},
-    "DMMIGINIO GUERRA": {"valor": 22500.0, "pacientes": 110, "pendentes": ["João Souza", "Ana Costa"], "motivo": "Assinatura"},
+    "DMMIGINIO GUERRA": {"valor": 22500.0, "pacientes": 110, "pendentes": ["João Souza", "Ana Costa"], "motivo": "Assinatura Digital"},
     "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "pacientes": 320, "pendentes": ["Pedro Santos", "Luana Vaz"], "motivo": "Erro Cadastral"}
 }
 
@@ -74,33 +67,43 @@ v_pendente = faturamento * 0.32
 v_liberado = faturamento * 0.68
 tkt_medio = faturamento / info["pacientes"]
 
-# --- 📊 MÉTRICAS NA HORIZONTAL (JUSTIFICADAS) ---
+# --- 📊 MÉTRICAS NA HORIZONTAL ---
 st.markdown(f"""
     <div class="metric-row">
-        <div class="metric-item"><div class="m-label">Vol</div><div class="m-value">{info['pacientes']}</div></div>
-        <div class="metric-item"><div class="m-label">Ticket</div><div class="m-value">R${tkt_medio:,.0f}</div></div>
-        <div class="metric-item"><div class="m-label">Risco</div><div class="m-value m-risk">R${v_pendente:,.0f}</div></div>
+        <div class="metric-item"><div class="m-label">VOL. PACIENTES</div><div class="m-value">{info['pacientes']}</div></div>
+        <div class="metric-item"><div class="m-label">TICKET</div><div class="m-value">R${tkt_medio:,.0f}</div></div>
+        <div class="metric-item"><div class="m-label">PENDENTE</div><div class="m-value m-risk">R${v_pendente:,.0f}</div></div>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 🍕 GRÁFICO DE PIZZA (CENTRALIZAÇÃO TOTAL) ---
-df_p = pd.DataFrame({"Status": ["RISCO", "OK"], "Valor": [32, 68]})
+# --- 🍕 GRÁFICO COM % DENTRO DAS FATIAS ---
+df_p = pd.DataFrame({"Status": ["PENDENTE", "OK"], "Valor": [32, 68]})
+
 st.vega_lite_chart(df_p, {
-    'width': 'container', 'height': 170,
-    'mark': {'type': 'arc', 'innerRadius': 40, 'outerRadius': 70, 'cornerRadius': 4},
-    'encoding': {
-        'theta': {'field': 'Valor', 'type': 'quantitative'},
-        'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#ff4b4b', '#00d4ff']}}
-    },
-    'config': {'legend': {'orient': 'right', 'labelFontSize': 10}}
+    'width': 'container',
+    'height': 200,
+    'layer': [
+        {
+            'mark': {'type': 'arc', 'innerRadius': 40, 'outerRadius': 85, 'cornerRadius': 4},
+            'encoding': {
+                'theta': {'field': 'Valor', 'type': 'quantitative'},
+                'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#ff4b4b', '#00d4ff']}, 'legend': None}
+            }
+        },
+        {
+            'mark': {'type': 'text', 'radius': 60, 'fill': 'white', 'fontWeight': 'bold', 'fontSize': 12},
+            'encoding': {
+                'theta': {'field': 'Valor', 'type': 'quantitative', 'stack': True},
+                'text': {'field': 'Valor', 'type': 'quantitative', 'format': '.0f', 'formatType': 'number', 'suffix': '%'}
+            }
+        }
+    ]
 })
 
-# --- 🚨 LISTA DE PENDÊNCIAS ---
-st.markdown(f"**📋 Pendências: {medico_sel}**")
+# --- 🚨 PENDÊNCIAS ---
+st.markdown(f"**📋 Lista de Pendências: {medico_sel}**")
 st.table(pd.DataFrame({"Paciente": info["pendentes"], "Motivo": [info["motivo"]] * 2}))
 
-# --- 🚀 BOTÃO DE AÇÃO ---
-if st.button("📊 GERAR DOSSIÊ ALPHA"):
-    st.success(f"Liberado: R$ {v_liberado:,.2f}")
-    st.error(f"Bloqueio: {info['motivo']}")
-    
+# --- 🚀 STATUS DIRETO ---
+st.markdown(f'<div class="status-box status-ok">LIBERADO: R$ {v_liberado:,.2f}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="status-box status-error">{info["motivo"]}</div>', unsafe_allow_html=True)
