@@ -7,23 +7,30 @@ st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
+    /* Cabeçalho Fixo */
     .header-box { display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; color: #00d4ff; font-weight: bold; font-size: 0.9rem; border-bottom: 1px solid #1c2e4a; }
     .pro-tag { background-color: #00d4ff; color: #0e1117; font-size: 0.6rem; padding: 2px 5px; border-radius: 4px; font-weight: 900; }
     
-    .metric-row { display: flex; justify-content: space-between; background: #1c2e4a; border-radius: 8px; padding: 5px; margin: 8px 0px; }
-    .metric-item { text-align: center; flex: 1; border-right: 1px solid #2c3e50; }
-    .metric-item:last-child { border-right: none; }
-    .m-label { font-size: 0.45rem; color: #8899A6; text-transform: uppercase; }
-    .m-value { font-size: 0.75rem; font-weight: bold; color: white; }
-    .m-risk { color: #ff4b4b !important; }
-
-    .block-container { padding: 0.3rem 0.5rem !important; }
+    /* Ajuste de Container */
+    .block-container { padding: 0.5rem 0.5rem !important; }
     header {visibility: hidden;}
     
-    .status-box { padding: 10px; border-radius: 5px; margin-top: 5px; font-weight: bold; font-size: 0.8rem; text-align: center; }
+    /* Estilização das Abas (Tabs) */
+    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
+    .stTabs [data-baseweb="tab"] { 
+        height: 40px; 
+        background-color: #1c2e4a; 
+        border-radius: 5px; 
+        color: white; 
+        font-weight: bold;
+        padding: 0px 20px;
+    }
+    .stTabs [aria-selected="true"] { background-color: #00d4ff !important; color: #0e1117 !important; }
+
+    /* Caixas de Status do Relatório */
+    .status-box { padding: 12px; border-radius: 5px; margin-top: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; }
     .status-ok { background-color: #15572422; color: #28a745; border: 1px solid #28a745; }
     .status-error { background-color: #721c2422; color: #ff4b4b; border: 1px solid #ff4b4b; }
-    .status-info { background-color: #0c546022; color: #00d4ff; border: 1px solid #00d4ff; }
     </style>
     
     <div class="header-box">
@@ -32,56 +39,59 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# --- 🧠 BASE DE DADOS SINCRONIZADA ---
+# --- 🧠 BASE DE DADOS ---
 dados_medicos = {
     "ANIMA COSTA": {"valor": 16000.0, "pacientes": 85, "motivo": "Divergência de XML", "risco": 32},
-    "DMMIGINIO GUERRA": {"valor": 22500.0, "pacientes": 110, "motivo": "Assinatura Digital", "risco": 45},
-    "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "pacientes": 320, "motivo": "Erro Cadastral", "risco": 18}
+    "DMMIGINIO GUERRA": {"valor": 22500.0, "pacientes": 110, "motivo": "Assinatura Digital", "risco": 68},
+    "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "pacientes": 320, "motivo": "Erro Cadastral", "risco": 15}
 }
 
-# --- 🔍 SELETOR ---
+# --- 🔍 SELETOR PRINCIPAL ---
 medico_sel = st.selectbox("Selecione o Médico:", list(dados_medicos.keys()))
 info = dados_medicos[medico_sel]
 
-# --- 📈 CÁLCULOS TÉCNICOS ---
-perc_risco = info["risco"]
-perc_ok = 100 - perc_risco
-v_pendente = info["valor"] * (perc_risco / 100)
-v_liberado = info["valor"] * (perc_ok / 100)
-tkt_medio = info["valor"] / info["pacientes"]
+# --- 📈 CÁLCULOS ---
+p_risco = info["risco"]
+p_ok = 100 - p_risco
+v_faturamento = info["valor"]
+v_pendente = v_faturamento * (p_risco / 100)
+v_liberado = v_faturamento * (p_ok / 100)
 
-# --- 📊 MÉTRICAS ---
-st.markdown(f"""
-    <div class="metric-row">
-        <div class="metric-item"><div class="m-label">VOL. PACIENTES</div><div class="m-value">{info['pacientes']}</div></div>
-        <div class="metric-item"><div class="m-label">TICKET</div><div class="m-value">R${tkt_medio:,.0f}</div></div>
-        <div class="metric-item"><div class="m-label">PENDENTE</div><div class="m-value m-risk">R${v_pendente:,.0f}</div></div>
-    </div>
-    """, unsafe_allow_html=True)
+# --- 🕹️ NAVEGAÇÃO POR ABAS (AQUI OCORRE A MÁGICA) ---
+aba_grafico, aba_relatorio = st.tabs(["📊 GRÁFICO", "📄 RELATÓRIO"])
 
-# --- 🍕 PIZZA DINÂMICA (COMPACTA) ---
-df_p = pd.DataFrame({
-    "Status": [f"LIBERADO ({perc_ok}%)", f"PENDENTE ({perc_risco}%)"], 
-    "Valor": [perc_ok, perc_risco]
-})
-
-st.vega_lite_chart(df_p, {
-    'width': 'container',
-    'height': 180,
-    'mark': {'type': 'arc', 'innerRadius': 40, 'outerRadius': 75},
-    'encoding': {
-        'theta': {'field': 'Valor', 'type': 'quantitative'},
-        'color': {
-            'field': 'Status', 
-            'type': 'nominal', 
-            'scale': {'range': ['#00d4ff', '#ff4b4b']},
-            'legend': {'orient': 'bottom', 'labelColor': 'white', 'labelFontSize': 11}
+with aba_grafico:
+    st.write(f"**Análise Visual: {medico_sel}**")
+    chart_data = pd.DataFrame({
+        'Status': ['LIBERADO', 'PENDENTE'],
+        'Percentual': [p_ok, p_risco]
+    })
+    
+    st.vega_lite_chart(chart_data, {
+        'width': 'container', 'height': 250,
+        'mark': {'type': 'arc', 'innerRadius': 60, 'outerRadius': 100},
+        'encoding': {
+            'theta': {'field': 'Percentual', 'type': 'quantitative'},
+            'color': {
+                'field': 'Status', 
+                'type': 'nominal', 
+                'scale': {'range': ['#00d4ff', '#ff4b4b']},
+                'legend': {'orient': 'bottom', 'labelColor': 'white'}
+            }
         }
-    }
-}, use_container_width=True)
+    })
+    st.info(f"O gráfico acima representa {p_ok}% de conformidade.")
 
-# --- 🚀 RELATÓRIO FINAL ---
-st.markdown(f"**📋 Auditoria: {medico_sel}**")
-st.markdown(f'<div class="status-box status-ok">LIBERADO: R$ {v_liberado:,.2f} ({perc_ok}%)</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="status-box status-error">PENDENTE: R$ {v_pendente:,.2f} ({perc_risco}%)</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="status-box status-info">MOTIVO: {info["motivo"]}</div>', unsafe_allow_html=True)
+with aba_relatorio:
+    st.write(f"**Dossiê de Auditoria: {medico_sel}**")
+    
+    # Caixas de Valor
+    st.markdown(f'<div class="status-box status-ok">VALOR LIBERADO: R$ {v_liberado:,.2f} ({p_ok}%)</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="status-box status-error">VALOR PENDENTE: R$ {v_pendente:,.2f} ({p_risco}%)</div>', unsafe_allow_html=True)
+    
+    # Detalhes Técnicos
+    st.write("---")
+    st.write(f"**Motivo do Bloqueio:** {info['motivo']}")
+    st.write(f"**Volume de Pacientes:** {info['pacientes']}")
+    st.write(f"**Faturamento Bruto:** R$ {v_faturamento:,.2f}")
+    
