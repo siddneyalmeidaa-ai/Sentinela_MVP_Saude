@@ -1,27 +1,29 @@
 import streamlit as st
 import pandas as pd
 
-# --- 🏛️ CONFIGURAÇÃO ULTRA-SLIM ---
+# --- 🏛️ CONFIGURAÇÃO MOBILE MASTER ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
-    /* Título Minimalista */
-    .topo-premium { font-size: 1.1rem; font-weight: bold; color: #00d4ff; text-align: center; margin-bottom: 10px; }
-    /* Ajuste de métricas para não ocupar espaço vertical */
-    [data-testid="stMetricValue"] { font-size: 0.85rem !important; }
-    [data-testid="stMetricLabel"] { font-size: 0.55rem !important; }
-    div[data-testid="column"] { background: #1c2e4a; border-radius: 8px; padding: 2px !important; text-align: center; }
-    /* Zerar paddings que empurram o gráfico para baixo */
-    .block-container { padding-top: 0.5rem !important; padding-bottom: 0px !important; }
-    /* Tabela compacta para mobile */
-    .stTable { font-size: 0.65rem !important; }
+    /* Título Justificado e Compacto */
+    .header-box { display: flex; justify-content: space-between; align-items: center; padding: 0px 10px; color: #00d4ff; font-weight: bold; font-size: 1rem; }
+    /* Métricas na Horizontal em uma única linha */
+    .metric-row { display: flex; justify-content: space-around; background: #1c2e4a; border-radius: 8px; padding: 5px; margin: 5px 0px; }
+    .metric-item { text-align: center; color: white; flex: 1; border-right: 1px solid #2c3e50; }
+    .metric-item:last-child { border-right: none; }
+    .m-label { font-size: 0.55rem; color: #8899A6; text-transform: uppercase; }
+    .m-value { font-size: 0.85rem; font-weight: bold; }
+    /* Ajuste do container */
+    .block-container { padding-top: 0.2rem !important; padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+    /* Esconder elementos padrão do Streamlit para ganhar espaço */
+    header {visibility: hidden;}
     </style>
-    <div class="topo-premium">🏛️ IA-SENTINELA: AUDITORIA PRO</div>
+    <div class="header-box"><span>🏛️ IA-SENTINELA PRO</span> <span>VIP</span></div>
     """, unsafe_allow_html=True)
 
-# --- 🧠 BASE DE DADOS ALPHA ---
+# --- 🧠 BASE DE DADOS ---
 dados_medicos = {
     "ANIMA COSTA": {"valor": 16000.0, "pacientes": 85, "pendentes": ["Carlos Silva", "Maria Oliveira"], "motivo": "Erro XML"},
     "DMMIGINIO GUERRA": {"valor": 22500.0, "pacientes": 110, "pendentes": ["João Souza", "Ana Costa"], "motivo": "Assinatura"},
@@ -33,35 +35,38 @@ with st.sidebar:
     info = dados_medicos[medico_sel]
     faturamento = st.number_input("R$", value=info["valor"])
 
-# --- 📈 CÁLCULOS DINÂMICOS ---
+# --- 📈 CÁLCULOS ---
 v_pendente = faturamento * 0.32
 v_liberado = faturamento * 0.68
 tkt_medio = faturamento / info["pacientes"]
 
-# --- 📊 MÉTRICAS EM LINHA ÚNICA (SLIM) ---
-c1, c2, c3 = st.columns(3)
-c1.metric("VOL", f"{info['pacientes']}")
-c2.metric("TKT", f"R${tkt_medio:,.0f}")
-c3.metric("RISCO", f"R${v_pendente:,.0f}")
+# --- 📊 MÉTRICAS NA HORIZONTAL (HTML PURO PARA JUSTIFICAR) ---
+st.markdown(f"""
+    <div class="metric-row">
+        <div class="metric-item"><div class="m-label">Vol</div><div class="m-value">{info['pacientes']}</div></div>
+        <div class="metric-item"><div class="m-label">Ticket</div><div class="m-value">R${tkt_medio:,.0f}</div></div>
+        <div class="metric-item" style="color:#ff0055;"><div class="m-label">Risco</div><div class="m-value">R${v_pendente:,.0f}</div></div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# --- 🍕 PIZZA DONUT (CENTRALIZADA E SEM CORTES) ---
-df_p = pd.DataFrame({"Status": ["RISCO (32%)", "OK (68%)"], "V": [32, 68]})
-
+# --- 🍕 PIZZA DONUT ---
+df_p = pd.DataFrame({"S": ["RISCO", "OK"], "V": [32, 68]})
 st.vega_lite_chart(df_p, {
-    'width': 'container', 'height': 140,
-    'mark': {'type': 'arc', 'innerRadius': 35, 'outerRadius': 55, 'cornerRadius': 3},
+    'width': 'container', 'height': 150,
+    'mark': {'type': 'arc', 'innerRadius': 35, 'outerRadius': 60, 'cornerRadius': 4},
     'encoding': {
         'theta': {'field': 'V', 'type': 'quantitative'},
-        'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#ff0055', '#00d4ff']}}
+        'color': {'field': 'S', 'type': 'nominal', 'scale': {'range': ['#ff0055', '#00d4ff']}}
     },
-    'config': {'legend': {'orient': 'bottom', 'labelFontSize': 8, 'symbolSize': 30}}
+    'config': {'legend': {'orient': 'right', 'labelFontSize': 10}}
 })
 
-# --- 🚨 FOCO EM AÇÃO: LISTA DE PENDÊNCIAS ---
-st.markdown(f"**📋 Pendências: {medico_sel}**")
-st.table(pd.DataFrame({"Paciente": info["pendentes"], "Motivo": [info["motivo"]] * 2}))
+# --- 🚨 PENDÊNCIAS JUSTIFICADAS ---
+st.markdown(f"**📋 Pendentes: {medico_sel}**")
+df_p_table = pd.DataFrame({"Paciente": info["pendentes"], "Motivo": [info["motivo"]] * 2})
+st.table(df_p_table)
 
-# --- 🚀 RELATÓRIO EXPRESSO ---
+# --- 🚀 BOTÃO ---
 if st.button("📊 GERAR DOSSIÊ"):
     st.success(f"Liberado: R$ {v_liberado:,.2f}")
     st.error(f"Bloqueio: {info['motivo']}")
