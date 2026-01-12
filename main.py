@@ -6,6 +6,12 @@ st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown("""
     <style>
+    /* 🛡️ OCULTAR ELEMENTOS NATIVOS DO STREAMLIT */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
+    
     .main { background-color: #0e1117; }
     .header-box { 
         display: flex; justify-content: space-between; align-items: center; 
@@ -78,7 +84,6 @@ with tab2:
     st.markdown("<h4 style='text-align: center; color: white;'>Distribuição de Auditoria</h4>", unsafe_allow_html=True)
     df_p = pd.DataFrame({'Status': [f'Lib {p_ok}%', f'Pend {p_risco}%'], 'Perc': [p_ok, p_risco]})
     
-    # --- 🛡️ GRÁFICO AJUSTADO PARA MOBILE (NÃO CORTA) ---
     st.vega_lite_chart(df_p, {
         'width': 'container',
         'height': 300,
@@ -124,5 +129,5 @@ with tab3:
             data=texto_final.encode('utf-8-sig'),
             file_name=f"Dossie_{medico_sel.replace(' ', '_')}.txt",
             mime="text/plain"
-        )
-        
+    )
+    
