@@ -12,44 +12,52 @@ st.markdown("""
         display: flex; 
         justify-content: space-between; 
         align-items: center; 
-        padding: 5px 10px; 
+        padding: 5px 5px; 
         color: #00d4ff; 
         font-weight: bold; 
-        font-size: 1.1rem;
-        border-bottom: 1px solid #1c2e4a;
+        font-size: 1.0rem;
     }
-    .vip-tag { color: #00d4ff; font-size: 0.9rem; border: 1px solid #00d4ff; padding: 2px 8px; border-radius: 5px; }
+    .vip-tag { 
+        background-color: #00d4ff; 
+        color: #0e1117; 
+        font-size: 0.7rem; 
+        padding: 2px 6px; 
+        border-radius: 4px; 
+        font-weight: 900;
+    }
     
     /* Faixa de Métricas Horizontal Justificada */
     .metric-row { 
         display: flex; 
-        justify-content: space-around; 
+        justify-content: space-between; 
         background: #1c2e4a; 
         border-radius: 8px; 
-        padding: 8px 0px; 
-        margin: 10px 0px; 
+        padding: 8px 5px; 
+        margin: 5px 0px; 
     }
     .metric-item { text-align: center; flex: 1; border-right: 1px solid #2c3e50; }
     .metric-item:last-child { border-right: none; }
-    .m-label { font-size: 0.6rem; color: #8899A6; text-transform: uppercase; margin-bottom: 2px; }
-    .m-value { font-size: 0.9rem; font-weight: bold; color: white; }
-    .m-risk { color: #ff0055 !important; }
+    .m-label { font-size: 0.55rem; color: #8899A6; text-transform: uppercase; }
+    .m-value { font-size: 0.85rem; font-weight: bold; color: white; }
+    .m-risk { color: #ff4b4b !important; }
 
-    /* Ajuste Geral de Tela */
-    .block-container { padding: 0.5rem 0.7rem !important; }
+    /* Ajuste de Margens para eliminar cortes */
+    .block-container { padding: 0.5rem 0.5rem !important; }
     header {visibility: hidden;}
-    footer {visibility: hidden;}
     
-    /* Ajuste da Tabela para ocupar largura total */
-    .stTable { width: 100% !important; font-size: 0.75rem !important; }
+    /* Tabela Justificada */
+    .stTable { width: 100% !important; margin-top: 10px; }
+    thead tr th { font-size: 0.7rem !important; color: #00d4ff !important; }
+    tbody tr td { font-size: 0.75rem !important; }
     </style>
+    
     <div class="header-box">
         <span>🏛️ IA-SENTINELA PRO</span> 
         <span class="vip-tag">VIP</span>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 🧠 BASE DE DADOS ALPHA ---
+# --- 🧠 BASE DE DADOS ---
 dados_medicos = {
     "ANIMA COSTA": {"valor": 16000.0, "pacientes": 85, "pendentes": ["Carlos Silva", "Maria Oliveira"], "motivo": "Divergência de XML"},
     "DMMIGINIO GUERRA": {"valor": 22500.0, "pacientes": 110, "pendentes": ["João Souza", "Ana Costa"], "motivo": "Assinatura"},
@@ -57,17 +65,16 @@ dados_medicos = {
 }
 
 with st.sidebar:
-    st.title("SISTEMA")
     medico_sel = st.selectbox("Médico:", list(dados_medicos.keys()))
     info = dados_medicos[medico_sel]
-    faturamento = st.number_input("Valor Bruto:", value=info["valor"])
+    faturamento = st.number_input("R$", value=info["valor"])
 
 # --- 📈 CÁLCULOS ---
 v_pendente = faturamento * 0.32
 v_liberado = faturamento * 0.68
 tkt_medio = faturamento / info["pacientes"]
 
-# --- 📊 MÉTRICAS NA HORIZONTAL ---
+# --- 📊 MÉTRICAS NA HORIZONTAL (JUSTIFICADAS) ---
 st.markdown(f"""
     <div class="metric-row">
         <div class="metric-item"><div class="m-label">Vol</div><div class="m-value">{info['pacientes']}</div></div>
@@ -76,27 +83,23 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# --- 🍕 GRÁFICO DE PIZZA (AJUSTE FINO) ---
+# --- 🍕 GRÁFICO DE PIZZA (CENTRALIZAÇÃO TOTAL) ---
 df_p = pd.DataFrame({"Status": ["RISCO", "OK"], "Valor": [32, 68]})
 st.vega_lite_chart(df_p, {
-    'width': 'container', 'height': 160,
-    'mark': {'type': 'arc', 'innerRadius': 38, 'outerRadius': 65, 'cornerRadius': 4, 'padAngle': 2},
+    'width': 'container', 'height': 170,
+    'mark': {'type': 'arc', 'innerRadius': 40, 'outerRadius': 70, 'cornerRadius': 4},
     'encoding': {
         'theta': {'field': 'Valor', 'type': 'quantitative'},
-        'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#ff0055', '#00d4ff']}}
+        'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#ff4b4b', '#00d4ff']}}
     },
-    'config': {'legend': {'orient': 'right', 'labelFontSize': 10, 'symbolSize': 40}}
+    'config': {'legend': {'orient': 'right', 'labelFontSize': 10}}
 })
 
-# --- 🚨 LISTA DE PENDÊNCIAS JUSTIFICADA ---
+# --- 🚨 LISTA DE PENDÊNCIAS ---
 st.markdown(f"**📋 Pendências: {medico_sel}**")
-df_final = pd.DataFrame({
-    "Paciente": info["pendentes"],
-    "Motivo": [info["motivo"]] * len(info["pendentes"])
-})
-st.table(df_final)
+st.table(pd.DataFrame({"Paciente": info["pendentes"], "Motivo": [info["motivo"]] * 2}))
 
-# --- 🚀 AÇÃO FINAL ---
+# --- 🚀 BOTÃO DE AÇÃO ---
 if st.button("📊 GERAR DOSSIÊ ALPHA"):
     st.success(f"Liberado: R$ {v_liberado:,.2f}")
     st.error(f"Bloqueio: {info['motivo']}")
