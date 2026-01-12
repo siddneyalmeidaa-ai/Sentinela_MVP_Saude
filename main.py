@@ -4,89 +4,64 @@ import pandas as pd
 # --- 🏛️ CONFIGURAÇÃO DE ALTO NÍVEL ---
 st.set_page_config(page_title="IA-SENTINELA PRO", page_icon="💎", layout="wide")
 
-# CSS personalizado para interface sofisticada
+# CSS para interface compacta e profissional
 st.markdown("""
     <style>
+    [data-testid="stMetricValue"] { font-size: 1.1rem !important; color: #00d4ff; }
+    [data-testid="stMetricLabel"] { font-size: 0.7rem !important; }
     .main { background-color: #0e1117; }
-    .stMetric { background-color: #1c2e4a; padding: 15px; border-radius: 15px; border: 1px solid #00d4ff; }
-    .stButton>button { width: 100%; border-radius: 20px; background: linear-gradient(90deg, #00d4ff, #005f73); color: white; font-weight: bold; border: none; }
+    div.block-container { padding-top: 1rem; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🏛️ IA-SENTINELA: AUDITORIA ALPHA PREMIMUM")
+st.title("🏛️ IA-SENTINELA PRO")
 
-# --- 🧠 INTELIGÊNCIA DE DADOS ---
+# --- 🧠 INTELIGÊNCIA DE DADOS (SIMULANDO PACIENTES POR MÉDICO) ---
 dados_medicos = {
-    "ANIMA COSTA": {"valor": 16000.0, "pacientes": 85, "motivo": "Divergência de XML no lote 402."},
-    "DMMIGINIO GUERRA": {"valor": 22500.0, "pacientes": 110, "motivo": "Ausência de assinatura digital."},
-    "DR. ALPHA TESTE": {"valor": 12000.0, "pacientes": 45, "motivo": "CID-10 incompatível com procedimento."},
-    "DRA. ELENA SILVA": {"valor": 18900.0, "pacientes": 92, "motivo": "Duplicidade de cobrança detectada."},
-    "DR. MARCOS PONTES": {"valor": 25000.0, "pacientes": 150, "motivo": "Falta de autorização prévia."},
-    "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "pacientes": 320, "motivo": "Inconsistência cadastral de beneficiários."},
-    "DRA. BEATRIZ LINS": {"valor": 14200.0, "pacientes": 60, "motivo": "Glosa técnica: relatório cirúrgico ausente."},
-    "DR. RICARDO MELO": {"valor": 19800.0, "pacientes": 88, "motivo": "Material especial fora da tabela."},
-    "CENTRO MÉDICO VIP": {"valor": 31000.0, "pacientes": 210, "motivo": "Taxa de sala acima do contrato."},
-    "AUDITORIA GERAL": {"valor": 150000.0, "pacientes": 1200, "motivo": "Múltiplas inconsistências detectadas."}
+    "ANIMA COSTA": {"valor": 16000.0, "pacientes": 85, "pendentes": ["Carlos Silva", "Maria Oliveira"], "motivo": "Divergência de XML"},
+    "DMMIGINIO GUERRA": {"valor": 22500.0, "pacientes": 110, "pendentes": ["João Souza", "Ana Costa"], "motivo": "Assinatura Digital"},
+    "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "pacientes": 320, "pendentes": ["Pedro Santos", "Luana Vaz"], "motivo": "Erro Cadastral"}
 }
 
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/1087/1087080.png", width=80)
-    st.header("SISTEMA SENTINELA")
-    medico_sel = st.selectbox("Escolha o Alvo da Auditoria", list(dados_medicos.keys()))
+    st.header("CONTROLE")
+    medico_sel = st.selectbox("Médico", list(dados_medicos.keys()))
     info = dados_medicos[medico_sel]
-    faturamento_real = st.number_input("Faturamento Bruto (R$)", value=info["valor"])
-    st.divider()
-    st.write("💎 **Nível de Acesso:** Auditor Master")
+    faturamento_real = st.number_input("Valor Bruto", value=info["valor"])
 
-# --- 📊 CÁLCULOS ---
+# --- 📈 CÁLCULOS ---
 v_pendente = faturamento_real * 0.32
 v_liberado = faturamento_real * 0.68
 tkt_medio = faturamento_real / info["pacientes"]
 
-# --- 📈 DASHBOARD FUTURISTA ---
-col1, col2, col3 = st.columns(3)
-with col1: st.metric("VOLUME ATENDIDO", f"{info['pacientes']} Pacientes")
-with col2: st.metric("TICKET MÉDIO", f"R$ {tkt_medio:,.2f}")
-with col3: st.metric("CAPITAL EM RISCO", f"R$ {v_pendente:,.2f}", "-32%", delta_color="inverse")
+# --- 📊 CARDS COMPACTOS ---
+c1, c2, c3 = st.columns(3)
+c1.metric("VOL. TOTAL", f"{info['pacientes']}")
+c2.metric("TKT MÉDIO", f"R${tkt_medio:,.0f}")
+c3.metric("RETIDO", f"R${v_pendente:,.0f}", "-32%")
 
-st.markdown("---")
-
-# Gráfico de Pizza (Donut Futurista com Efeito Neon)
-df_pizza = pd.DataFrame({
-    "Status": ["PENDENTE (EM RISCO)", "LIBERADO (CONFORMIDADE)"],
-    "Percentual": [32, 68]
-})
-
-st.subheader("🔭 Mapa de Calor de Liquidez")
+# --- 🍕 PIZZA AJUSTADA PARA MOBILE ---
+df_pizza = pd.DataFrame({"Status": ["RISCO (32%)", "LIBERADO (68%)"], "Valor": [32, 68]})
 st.vega_lite_chart(df_pizza, {
-    'width': 'container',
-    'height': 300,
-    'mark': {'type': 'arc', 'innerRadius': 80, 'outerRadius': 120, 'cornerRadius': 10, 'padAngle': 5, 'tooltip': True},
-    'encoding': {
-        'theta': {'field': 'Percentual', 'type': 'quantitative'},
-        'color': {
-            'field': 'Status', 
-            'type': 'nominal', 
-            'scale': {'range': ['#ff0055', '#00d4ff']} # Rosa Neon e Azul Neon
-        }
-    },
-    'view': {'stroke': None}
+    'width': 'container', 'height': 180,
+    'mark': {'type': 'arc', 'innerRadius': 40, 'cornerRadius': 5, 'padAngle': 2},
+    'encoding': {'theta': {'field': 'Valor', 'type': 'quantitative'},
+                 'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#ff0055', '#00d4ff']}}}
 })
 
-# --- 🚀 RELATÓRIO ALPHA PREMIUM ---
-if st.button("📊 GERAR DOSSIÊ DETALHADO"):
-    st.balloons()
-    with st.expander("📄 VISUALIZAR RELATÓRIO COMPLETO", expanded=True):
-        c_a, c_b = st.columns(2)
-        with c_a:
-            st.markdown(f"### 💵 Financeiro: {medico_sel}")
-            st.info(f"**Garantido:** R$ {v_liberado:,.2f}")
-            st.error(f"**Retido:** R$ {v_pendente:,.2f}")
-        with c_b:
-            st.markdown("### 🧬 Análise Técnica")
-            st.warning(f"**Diagnóstico:** {info['motivo']}")
-            st.write("---")
-            st.write(f"**Auditoria Concluída em:** 11/01/2026")
+# --- 🚨 LISTA DE PACIENTES PENDENTES (AÇÃO IMEDIATA) ---
+st.markdown(f"### 📋 Pendências: {medico_sel}")
+df_pendentes = pd.DataFrame({
+    "Paciente": info["pendentes"],
+    "Status": ["PENDENTE 🔴"] * len(info["pendentes"]),
+    "Motivo": [info["motivo"]] * len(info["pendentes"])
+})
+st.table(df_pendentes) # Tabela simples e rápida de ler no celular
 
-    st.success("🏁 Relatório gerado com criptografia de auditoria.")
-    
+# --- 🚀 DOSSIÊ DETALHADO ---
+if st.button("📊 GERAR RELATÓRIO"):
+    with st.expander("📄 DETALHAMENTO FINAL", expanded=True):
+        st.write(f"**Garantido:** R$ {v_liberado:,.2f}")
+        st.error(f"**Motivo Principal:** {info['motivo']}")
+        st.success("✅ Auditoria pronta para correção.")
+        
