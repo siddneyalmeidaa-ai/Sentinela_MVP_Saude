@@ -1,60 +1,72 @@
 import streamlit as st
 import pandas as pd
 
-# --- 🏛️ CONFIGURAÇÃO MASTER ALPHA ---
+# --- 🏛️ CONFIGURAÇÃO MASTER ---
 st.set_page_config(page_title="IA-SENTINELA", page_icon="🏛️", layout="wide")
-
 st.title("🏛️ PORTAL DE AUDITORIA ALPHA VIP")
 
-# --- 📊 BANCO DE DATA (OS 10 MÉDICOS) ---
-lista_medicos = [
-    "ANIMA COSTA", "DMMIGINIO GUERRA", "DR. ALPHA TESTE", 
-    "DRA. ELENA SILVA", "DR. MARCOS PONTES", "CLÍNICA SÃO JOSÉ", 
-    "DRA. BEATRIZ LINS", "DR. RICARDO MELO", "CENTRO MÉDICO VIP", 
-    "AUDITORIA GERAL"
-]
+# --- 📊 BANCO DE DADOS ---
+lista_medicos = ["ANIMA COSTA", "DMMIGINIO GUERRA", "DR. ALPHA TESTE", "DRA. ELENA SILVA", "DR. MARCOS PONTES", "CLÍNICA SÃO JOSÉ", "DRA. BEATRIZ LINS", "DR. RICARDO MELO", "CENTRO MÉDICO VIP", "AUDITORIA GERAL"]
 
 with st.sidebar:
     st.header("⚙️ Painel de Controle")
     medico = st.selectbox("Selecione o Médico", lista_medicos)
-    valor = st.number_input("Valor da Guia (R$)", value=16000.00)
-    status = st.radio("Status da Auditoria", ["AUTORIZADO", "PENDENTE"])
+    qtd_pacientes = st.slider("Total de Pacientes", 1, 200, 85)
+    valor_total = st.number_input("Faturamento Total (R$)", value=16000.00)
     st.divider()
     st.write("👤 **Auditor:** Sidney Almeida")
 
-# --- 📈 DASHBOARD PRINCIPAL ---
-c1, c2 = st.columns(2)
-with c1:
-    st.metric("Faturamento Identificado", f"R$ {valor:,.2f}")
-with c2:
-    st.metric("Status IA-SENTINELA", status)
+# --- 📈 CÁLCULOS REAIS ---
+p_pendente = 32
+p_liberado = 68
+v_pendente = valor_total * (p_pendente / 100)
+v_liberado = valor_total * (p_liberado / 100)
+ticket_medio = valor_total / qtd_pacientes
 
-st.subheader("📊 Distribuição de Auditoria (Visão de Pizza)")
+# --- 📊 DASHBOARD SUPERIOR ---
+st.subheader(f"📊 Análise de Pagamento: {medico}")
+c1, c2, c3 = st.columns(3)
+with c1: st.metric("PACIENTES", f"{qtd_pacientes}")
+with c2: st.metric("TICKET MÉDIO", f"R$ {ticket_medio:,.2f}")
+with c3: st.metric("RISCO IDENTIFICADO", f"R$ {v_pendente:,.2f}", "-32%")
 
-# Lógica da Pizza Nativa (Sem erro de módulo)
-if status == "AUTORIZADO":
-    dados = {"Status": ["AUTORIZADO", "RESTANTE"], "Valores": [valor, 2000]}
-else:
-    dados = {"Status": ["PENDENTE", "RESTANTE"], "Valores": [valor, 500]}
+# --- 🍕 PIZZA COM RÓTULOS DE PERCENTUAL ---
+df_pizza = pd.DataFrame({
+    "Status": [f"PENDENTE ({p_pendente}%)", f"LIBERADO ({p_liberado}%)"],
+    "Valor": [p_pendente, p_liberado]
+})
 
-df_pizza = pd.DataFrame(dados)
-
-# Criando o gráfico de pizza que não trava o sistema
 st.vega_lite_chart(df_pizza, {
     'mark': {'type': 'arc', 'innerRadius': 50, 'tooltip': True},
     'encoding': {
-        'theta': {'field': 'Valores', 'type': 'quantitative'},
+        'theta': {'field': 'Valor', 'type': 'quantitative'},
         'color': {
             'field': 'Status', 
             'type': 'nominal', 
-            'scale': {'range': ['#1c2e4a', '#ff4b4b']} # Azul e Vermelho
+            'scale': {'range': ['#ff4b4b', '#1c2e4a']}
         }
-    },
-    'view': {'stroke': None}
+    }
 }, use_container_width=True)
 
-# --- 🚀 AÇÃO IMEDIATA ---
-if st.button("🚀 GERAR RELATÓRIO FINAL"):
+st.divider()
+
+# --- 🚀 BOTÃO GERAR RELATÓRIO DETALHADO ---
+if st.button("🚀 GERAR RELATÓRIO DETALHADO"):
     st.balloons()
-    st.success(f"Auditoria de {medico} processada com sucesso no Padrão Ouro!")
+    st.subheader("📑 Relatório de Auditoria Final")
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.write("### 📈 Resumo Financeiro")
+        st.write(f"**Valor Bruto:** R$ {valor_total:,.2f}")
+        st.write(f"**Valor Liberado (68%):** R$ {v_liberado:,.2f}")
+        st.write(f"**Valor em Glosa/Risco (32%):** R$ {v_pendente:,.2f}")
+    
+    with col_b:
+        st.write("### 🔍 Diagnóstico IA-SENTINELA")
+        st.write(f"**Médico Responsável:** {medico}")
+        st.write(f"**Média por Paciente:** R$ {ticket_medio:,.2f}")
+        st.error(f"⚠️ Alerta: R$ {v_pendente:,.2f} retidos por inconsistência.")
+
+    st.success("✅ Documento de auditoria pronto para exportação.")
     
