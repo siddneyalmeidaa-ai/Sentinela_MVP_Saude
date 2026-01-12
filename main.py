@@ -38,12 +38,21 @@ st.markdown("""
 
 # --- 🧠 BASE DE DADOS ---
 dados_medicos = {
-    "ANIMA COSTA": {"valor": 16000.0, "motivo": "Divergência de XML", "risco": 32},
-    "DMMIGINIO GUERRA": {"valor": 22500.0, "motivo": "Assinatura Digital", "risco": 45},
-    "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "motivo": "Erro Cadastral", "risco": 18}
+    "ANIMA COSTA": {
+        "valor": 16000.0, "motivo": "Divergência de XML", "risco": 32,
+        "detalhes": [["João Silva", "XML Inválido"], ["Maria Oliveira", "Divergência Tuss"]]
+    },
+    "DMMIGINIO GUERRA": {
+        "valor": 22500.0, "motivo": "Assinatura Digital", "risco": 45,
+        "detalhes": [["João Souza", "Falta Assinatura"], ["Ana Costa", "Falta Assinatura"]]
+    },
+    "CLÍNICA SÃO JOSÉ": {
+        "valor": 45000.0, "motivo": "Erro Cadastral", "risco": 18,
+        "detalhes": [["Carlos Luz", "CPF Inválido"], ["Bia Rosa", "Guia Ausente"]]
+    }
 }
 
-medico_sel = st.selectbox("Selecione o Médico:", list(dados_medicos.keys()))
+medico_sel = st.selectbox("Selecione o Médico para Auditoria:", list(dados_medicos.keys()))
 info = dados_medicos[medico_sel]
 
 # --- 📈 CÁLCULOS DINÂMICOS ---
@@ -55,13 +64,16 @@ v_pendente = info["valor"] * (p_risco / 100)
 tab1, tab2, tab3 = st.tabs(["🏢 CLÍNICA", "📊 GRÁFICO", "📄 RELATÓRIO"])
 
 with tab1:
+    st.markdown(f"**Análise de Dados: {medico_sel}**")
     col_a, col_b = st.columns(2)
-    # AJUSTE SOLICITADO: Substituição do texto pelo percentual correto
+    # SUBSTITUIÇÃO REALIZADA: Títulos agora são os percentuais
     col_a.metric(f"{p_ok}%", f"R$ {v_liberado:,.2f}")
-    col_b.metric(f"{p_risco}%", f"R$ {v_pendente:,.2f}")
+    col_b.metric(f"{p_risco}%", f"R$ {v_pendente:,.2f}", delta=f"-{p_risco}%", delta_color="inverse")
+    st.dataframe(pd.DataFrame(info["detalhes"], columns=["Paciente", "Motivo"]), use_container_width=True)
 
 with tab2:
-    # AJUSTE SOLICITADO: Legenda do gráfico com os percentuais
+    st.markdown("<h4 style='text-align: center; color: white;'>Distribuição de Auditoria</h4>", unsafe_allow_html=True)
+    # SUBSTITUIÇÃO REALIZADA: Legenda do gráfico por percentual
     df_p = pd.DataFrame({'Status': [f'{p_ok}%', f'{p_risco}%'], 'Perc': [p_ok, p_risco]})
     st.vega_lite_chart(df_p, {
         'width': 'container', 'height': 300,
@@ -76,14 +88,25 @@ with tab3:
     if st.button("🔄 GERAR DOSSIÊ CONSOLIDADO"):
         relatorio = [
             "==========================================",
+            "   DOSSIÊ DE AUDITORIA - IA-SENTINELA PRO ",
+            "==========================================",
             f"MÉDICO/UNIDADE : {medico_sel}",
+            f"DATA EMISSÃO   : 11/01/2026",
             "------------------------------------------",
-            f"Percentual Correto : {p_ok}%",
-            f"Percentual Pendente: {p_risco}%",
+            f"Faturamento Total  : R$ {info['valor']:,.2f}",
+            f"Percentual Correto : {p_ok}% (R$ {v_liberado:,.2f})",
+            f"Percentual Risco   : {p_risco}% (R$ {v_pendente:,.2f})",
+            "------------------------------------------",
+            f"MOTIVO PRINCIPAL   : {info['motivo']}",
             "=========================================="
         ]
         texto_final = "\n".join(relatorio)
         st.markdown(f'<div class="report-preview">{texto_final}</div>', unsafe_allow_html=True)
-        # Download corrigido para não dar erro de acento no celular
-        st.download_button("⬇️ BAIXAR RELATÓRIO", texto_final.encode('utf-8-sig'), file_name="Dossie.txt")
+        
+        st.download_button(
+            label="⬇️ BAIXAR RELATÓRIO OFICIAL (.TXT)",
+            data=texto_final.encode('utf-8-sig'),
+            file_name=f"Dossie_{medico_sel.replace(' ', '_')}.txt",
+            mime="text/plain"
+        )
         
