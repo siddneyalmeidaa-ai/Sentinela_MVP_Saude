@@ -76,17 +76,18 @@ with tab1:
 
 with tab2:
     st.markdown("<h4 style='text-align: center; color: white;'>Distribuição de Auditoria</h4>", unsafe_allow_html=True)
-    df_p = pd.DataFrame({'Status': [f'{p_ok}%', f'{p_risco}%'], 'Perc': [p_ok, p_risco]})
+    df_p = pd.DataFrame({'Status': [f'Liberado {p_ok}%', f'Pendente {p_risco}%'], 'Perc': [p_ok, p_risco]})
     
-    # --- 🛡️ AJUSTE PARA NÃO COMER AS BORDAS ---
+    # --- 🛡️ GRÁFICO RECALIBRADO (NÃO CORTA NO CELULAR) ---
     st.vega_lite_chart(df_p, {
-        'width': 'container', 'height': 350,
-        'padding': {'top': 20, 'left': 20, 'right': 20, 'bottom': 20}, # Blindagem de borda
-        'config': {'view': {'stroke': None}},
+        'width': 'container',
+        'height': 300,
+        'padding': 30,
+        'autosize': {'type': 'fit', 'contains': 'padding'},
         'mark': {
             'type': 'arc', 
-            'innerRadius': 60, 
-            'outerRadius': 100, # Reduzido levemente para criar respiro
+            'innerRadius': 50, 
+            'outerRadius': 85,  # Tamanho seguro para telas pequenas
             'cornerRadius': 10, 
             'padAngle': 2
         },
@@ -96,10 +97,14 @@ with tab2:
                 'field': 'Status', 
                 'type': 'nominal', 
                 'scale': {'range': ['#00d4ff', '#ff4b4b']},
-                'legend': {'orient': 'bottom', 'labelColor': 'white'}
+                'legend': {
+                    'orient': 'bottom', 
+                    'labelColor': 'white',
+                    'columns': 1  # Legendas empilhadas evitam esmagar o gráfico
+                }
             }
         }
-    })
+    }, use_container_width=True)
 
 with tab3:
     if st.button("🔄 GERAR DOSSIÊ CONSOLIDADO"):
@@ -127,4 +132,4 @@ with tab3:
             file_name=f"Dossie_{medico_sel.replace(' ', '_')}.txt",
             mime="text/plain"
     )
-    
+        
