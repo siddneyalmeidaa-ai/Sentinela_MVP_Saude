@@ -76,14 +76,28 @@ with tab1:
 
 with tab2:
     st.markdown("<h4 style='text-align: center; color: white;'>Distribuição de Auditoria</h4>", unsafe_allow_html=True)
-    df_p = pd.DataFrame({'Status': [f'Liberado {p_ok}%', f'Pendente {p_risco}%'], 'Perc': [p_ok, p_risco]})
+    df_p = pd.DataFrame({'Status': [f'{p_ok}%', f'{p_risco}%'], 'Perc': [p_ok, p_risco]})
+    
+    # --- 🛡️ AJUSTE PARA NÃO COMER AS BORDAS ---
     st.vega_lite_chart(df_p, {
-        'width': 'container', 'height': 300,
+        'width': 'container', 'height': 350,
+        'padding': {'top': 20, 'left': 20, 'right': 20, 'bottom': 20}, # Blindagem de borda
         'config': {'view': {'stroke': None}},
-        'mark': {'type': 'arc', 'innerRadius': 60, 'outerRadius': 100, 'cornerRadius': 10, 'padAngle': 2},
+        'mark': {
+            'type': 'arc', 
+            'innerRadius': 60, 
+            'outerRadius': 100, # Reduzido levemente para criar respiro
+            'cornerRadius': 10, 
+            'padAngle': 2
+        },
         'encoding': {
             'theta': {'field': 'Perc', 'type': 'quantitative'},
-            'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#00d4ff', '#ff4b4b']}, 'legend': {'orient': 'bottom', 'labelColor': 'white'}}
+            'color': {
+                'field': 'Status', 
+                'type': 'nominal', 
+                'scale': {'range': ['#00d4ff', '#ff4b4b']},
+                'legend': {'orient': 'bottom', 'labelColor': 'white'}
+            }
         }
     })
 
@@ -112,5 +126,5 @@ with tab3:
             data=texto_final.encode('utf-8-sig'),
             file_name=f"Dossie_{medico_sel.replace(' ', '_')}.txt",
             mime="text/plain"
-        )
-        
+    )
+    
