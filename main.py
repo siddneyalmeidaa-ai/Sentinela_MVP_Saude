@@ -17,7 +17,7 @@ st.markdown("""
         font-weight: bold; 
         font-size: 1.0rem;
     }
-    .vip-tag { background-color: #00d4ff; color: #0e1117; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; }
+    .pro-tag { background-color: #00d4ff; color: #0e1117; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; }
     
     /* Faixa de Métricas Horizontal */
     .metric-row { 
@@ -41,12 +41,12 @@ st.markdown("""
     .stTable { width: 100% !important; margin-top: 5px; }
     .status-box { padding: 10px; border-radius: 5px; margin-top: 5px; font-weight: bold; font-size: 0.9rem; text-align: center; }
     .status-ok { background-color: #15572422; color: #28a745; border: 1px solid #28a745; }
-    .status-error { background-color: #721c2422; color: #f8d7da; border: 1px solid #f8d7da; }
+    .status-error { background-color: #721c2422; color: #ff4b4b; border: 1px solid #ff4b4b; }
     </style>
     
     <div class="header-box">
         <span>🏛️ CONTROLE: IA-SENTINELA</span> 
-        <span class="vip-tag">PRO</span>
+        <span class="pro-tag">PRO</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -76,34 +76,38 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# --- 🍕 GRÁFICO COM % DENTRO DAS FATIAS ---
-df_p = pd.DataFrame({"Status": ["PENDENTE", "OK"], "Valor": [32, 68]})
+# --- 🍕 GRÁFICO COM PORCENTAGEM NO LUGAR CORRETO ---
+df_p = pd.DataFrame({
+    "Status": ["PENDENTE", "LIBERADO"], 
+    "Valor": [32, 68]
+})
 
 st.vega_lite_chart(df_p, {
     'width': 'container',
-    'height': 200,
+    'height': 190,
     'layer': [
         {
-            'mark': {'type': 'arc', 'innerRadius': 40, 'outerRadius': 85, 'cornerRadius': 4},
+            'mark': {'type': 'arc', 'innerRadius': 45, 'outerRadius': 85, 'cornerRadius': 4},
             'encoding': {
                 'theta': {'field': 'Valor', 'type': 'quantitative'},
                 'color': {'field': 'Status', 'type': 'nominal', 'scale': {'range': ['#ff4b4b', '#00d4ff']}, 'legend': None}
             }
         },
         {
-            'mark': {'type': 'text', 'radius': 60, 'fill': 'white', 'fontWeight': 'bold', 'fontSize': 12},
+            'mark': {'type': 'text', 'radius': 65, 'fill': 'white', 'fontWeight': 'bold', 'fontSize': 13},
             'encoding': {
                 'theta': {'field': 'Valor', 'type': 'quantitative', 'stack': True},
-                'text': {'field': 'Valor', 'type': 'quantitative', 'format': '.0f', 'formatType': 'number', 'suffix': '%'}
+                'text': {'field': 'Valor', 'type': 'quantitative', 'format': '.0f', 'suffix': '%'}
             }
         }
     ]
 })
 
-# --- 🚨 PENDÊNCIAS ---
+# --- 🚨 LISTA DE PENDÊNCIAS ---
 st.markdown(f"**📋 Lista de Pendências: {medico_sel}**")
 st.table(pd.DataFrame({"Paciente": info["pendentes"], "Motivo": [info["motivo"]] * 2}))
 
-# --- 🚀 STATUS DIRETO ---
-st.markdown(f'<div class="status-box status-ok">LIBERADO: R$ {v_liberado:,.2f}</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="status-box status-error">{info["motivo"]}</div>', unsafe_allow_html=True)
+# --- 🚀 RELATÓRIO FINAL DE AUDITORIA ---
+st.markdown(f'<div class="status-box status-ok">LIBERADO: R$ {v_liberado:,.2f} (68%)</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="status-box status-error">PENDENTE: R$ {v_pendente:,.2f} (32%)</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="status-box" style="border: 1px solid #00d4ff; color: #00d4ff;">MOTIVO: {info["motivo"]}</div>', unsafe_allow_html=True)
