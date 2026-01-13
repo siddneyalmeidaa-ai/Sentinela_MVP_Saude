@@ -11,7 +11,7 @@ def processar_auditoria(valor, status):
     else:
         return "ENTRA", "🟢 FLUXO SEGURO - LIBERADO", "#39d353"
 
-# --- 2. INTERFACE EXECUTIVA ---
+# --- 2. INTERFACE ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown("""
@@ -35,22 +35,27 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🛡️ IA-SENTINELA PRO")
-st.caption("Status API: 🟢 Sincronizado | Padrão Q2-2026")
-
+# BARRA LATERAL - ORGANIZADA PARA NÃO TRAVAR
 with st.sidebar:
     st.header("⚙️ Configuração")
+    
+    # Campo de número agora é o primeiro e SEMPRE editável
+    numero_zap = st.text_input(
+        "WhatsApp (55 + DDD + Número)", 
+        value="55", 
+        key="zap_input" # Chave única para evitar que o campo fique estático
+    )
+    
+    st.divider()
     medico = st.selectbox("Unidade", ["ANIMA COSTA", "DR. SILVA", "INTERFILE - BI"])
     valor_rodada = st.number_input("Valor da Rodada", value=2500.0)
     status_rodada = st.radio("Status", ["LIBERADO", "PENDENTE"])
-    st.divider()
-    # CAMPO CRÍTICO: Digite 55 + DDD + Numero (Total 13 dígitos)
-    numero_zap = st.text_input("WhatsApp Destino", value="55", help="Ex: 5511988887777")
 
 # Processamento
+st.title("🛡️ IA-SENTINELA PRO")
 acao, motivo, cor = processar_auditoria(valor_rodada, status_rodada)
 
-# KPIs (Mantendo a visão de 68% vs 32%)
+# KPIs (68% vs 32%)
 c1, c2 = st.columns(2)
 with c1:
     st.metric(label="ASSETS LIBERADOS (68%)", value="R$ 10.880,00")
@@ -65,33 +70,30 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# --- 3. LÓGICA DE ENVIO SEGURA ---
+# --- 3. WHATSAPP ---
 msg_texto = f"""🛡️ *IA-SENTINELA - AUDITORIA*
 -----------------------------------------
 🏥 *Unidade:* {medico}
 💰 *Valor:* R$ {valor_rodada:,.2f}
 ⚖️ *Decisão:* *{acao}*
 📝 *Motivo:* {motivo}
-
-✅ _Auditoria Sincronizada via Dashboard_"""
+✅ _Sincronizado Q2-2026_"""
 
 link_zap = f"https://wa.me/{numero_zap}?text={urllib.parse.quote(msg_texto)}"
 
 st.write("### 📲 Ação Imediata")
-# Só mostra o botão se o número tiver o tamanho correto para evitar erro 55
-if len(numero_zap) >= 12:
+# Só libera se o usuário digitou algo além do "55"
+if len(numero_zap) > 10:
     st.link_button("🚀 ENVIAR RELATÓRIO PARA WHATSAPP", link_zap)
 else:
-    st.warning("⚠️ Digite o número completo com DDD (ex: 5511912345678) para liberar o envio.")
+    st.warning("👈 Por favor, complete o número do WhatsApp na barra lateral.")
 
 st.divider()
-
 # Tabela da Favelinha
 st.subheader("📊 Critical Audit Log")
 df = pd.DataFrame({
-    "Paciente": ["João Silva", "Maria Oliveira", "Monitoramento Atual"],
-    "Insight Ativo (Q2)": ["Erro XML", "Divergência TUSS", f"Ação: {acao}"]
+    "Paciente": ["João Silva", "Maria Oliveira", "Analise Atual"],
+    "Insight Ativo": ["Erro XML", "Divergência TUSS", f"Ação: {acao}"]
 })
 st.table(df)
-
-st.caption(f"Operador: Sidney Pereira de Almeida | Q2-2026")
+st.caption("Auditor: Sidney Pereira de Almeida")
