@@ -1,92 +1,84 @@
 import streamlit as st
 import pandas as pd
 
-# 1. CONFIGURAÇÃO DE TEMA (PADRÃO OURO - DARK MODE)
-st.set_page_config(page_title="IA-SENTINELA PRO | DASHBOARD", layout="wide")
+# 1. CONFIGURAÇÃO DE TEMA (MODERNO E COMPACTO PARA CELULAR)
+st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
-# Estilização CSS para cartões sofisticados (idêntico ao seu print 15:24)
 st.markdown("""
     <style>
     .main { background-color: #0E1117; }
-    .stMetric {
+    /* Estilização dos Cards para ficarem idênticos ao print */
+    div[data-testid="stMetric"] {
         background-color: #161B22;
         border: 1px solid #30363D;
-        padding: 20px;
-        border-radius: 12px;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: -10px;
     }
-    div[data-testid="stMetricValue"] { color: #58A6FF; font-family: 'Courier New', monospace; }
-    .status-card {
+    /* Ajuste da cor dos títulos e valores */
+    div[data-testid="stMetricLabel"] { color: #8B949E !important; }
+    div[data-testid="stMetricValue"] { color: #58A6FF !important; font-weight: bold; }
+    
+    /* Personalização do Bloco de Decisão */
+    .decisao-box {
+        background-color: #1a2a1d;
+        border: 1px solid #2ea043;
         padding: 20px;
-        border-radius: 12px;
-        background-color: #161B22;
-        border-left: 5px solid #00FFCC;
-        margin-bottom: 10px;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 10px;
     }
+    .decisao-texto { color: #39d353; font-size: 24px; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. TÍTULO E IDENTIDADE
+# 2. IDENTIDADE DO SISTEMA
 st.title("🛡️ IA-SENTINELA PRO")
-st.subheader("Dashboard Executivo | Monitoramento em Tempo Real")
+st.caption("Dashboard Executivo | Monitoramento em Tempo Real")
 
-# Sidebar - Sincronização de Dados
+# Sidebar compacta
 with st.sidebar:
-    st.header("⚙️ Controle Operacional")
-    medico = st.selectbox("Selecione a Clínica", ["ANIMA COSTA", "DR. SILVA", "INTERFILE"])
-    valor_atual = st.number_input("Valor da Rodada", value=2500.0)
-    status_auditoria = st.radio("Status Atual", ["LIBERADO", "PENDENTE"])
-    st.divider()
-    st.info("Sistema Sincronizado com Q2-2026")
+    st.header("⚙️ Configuração")
+    medico = st.selectbox("Clínica", ["ANIMA COSTA", "DR. SILVA", "INTERFILE"])
+    valor_input = st.number_input("Valor Rodada", value=2500.0)
+    status_input = st.radio("Status", ["LIBERADO", "PENDENTE"])
 
-# 3. BLOCO DE MÉTRICAS (VISUAL DO PRINT 15:24)
-v_liberado = 10880.0
-v_pendente = 5120.0
-total = v_liberado + v_pendente
-p_lib = int((v_liberado / total) * 100)
-p_pen = int((v_pendente / total) * 100)
+# 3. MÉTRICAS SINCRONIZADAS (68% vs 32%)
+# Valores baseados no seu print real
+v_lib = 10880.0
+v_pen = 5120.0
 
-col1, col2, col3 = st.columns(3)
+st.metric(label="ASSETS LIBERADOS (68%)", value=f"R$ {v_lib:,.2f}")
+st.markdown("🟢 <span style='color:#8B949E; font-size:14px;'>Faturamento Ativo</span>", unsafe_allow_html=True)
 
-with col1:
-    st.metric(label=f"ASSETS LIBERADOS ({p_lib}%)", value=f"R$ {v_liberado:,.2f}")
-    st.caption("🟢 Faturamento Ativo")
+st.metric(label="PENDÊNCIA OPERACIONAL (32%)", value=f"R$ {v_pen:,.2f}", delta="-32%", delta_color="inverse")
+st.markdown("🔴 <span style='color:#8B949E; font-size:14px;'>Risco de Glosa</span>", unsafe_allow_html=True)
 
-with col2:
-    st.metric(label=f"PENDÊNCIA OPERACIONAL ({p_pen}%)", value=f"R$ {v_pendente:,.2f}", delta=f"-{p_pen}%", delta_color="inverse")
-    st.caption("🔴 Risco de Glosa")
-
-with col3:
-    # Lógica de Decisão (Entra/Pula)
-    if valor_atual <= 1.0:
-        st.error("### DECISÃO: PULA")
-        st.caption("⚠️ Zona de Vácuo Detectada (1.00x)")
-    else:
-        st.success("### DECISÃO: ENTRA")
-        st.caption("✅ Fluxo Seguro para Auditoria")
+# 4. BLOCO DE DECISÃO REFINADO (Q2-2026)
+if valor_input <= 1.0:
+    st.error("### 🚫 DECISÃO: PULA")
+    st.write("⚠️ Vácuo Operacional detectado (1.00x)")
+else:
+    st.markdown(f"""
+        <div class="decisao-box">
+            <div class="decisao-texto">DECISÃO: {'ENTRA' if status_input == 'LIBERADO' else 'AGUARDAR'}</div>
+            <span style='color:#8B949E;'>✅ Fluxo Seguro para Auditoria</span>
+        </div>
+    """, unsafe_allow_html=True)
 
 st.divider()
 
-# 4. TABELA DA FAVELINHA (CRITICAL AUDIT LOG)
-st.markdown("### 📊 Critical Audit Log (Tabela da Favelinha)")
+# 5. TABELA DA FAVELINHA (CRITICAL AUDIT LOG)
+st.subheader("📊 Critical Audit Log (Tabela da Favelinha)")
 
-data = {
-    "ID": ["#901", "#902", "#903"],
-    "PACIENTE": ["JOÃO SILVA", "MARIA OLIVEIRA", "ANÁLISE ATUAL"],
-    "STATUS": ["PENDENTE", "PENDENTE", status_auditoria],
-    "INSIGHT ATIVO (Q2)": ["Erro XML - Corrigir Tag", "Divergência Tuss - Mapear", "Ação Sincronizada"]
-}
-df_favelinha = pd.DataFrame(data)
+df = pd.DataFrame({
+    "Paciente": ["João Silva", "Maria Oliveira", "Analise Atual"],
+    "Status": ["PENDENTE", "PENDENTE", status_input],
+    "Insight Ativo (Q2)": ["Erro XML - Corrigir", "Divergência TUSS", "Auditoria Sincronizada"]
+})
 
-st.dataframe(df_favelinha, use_container_width=True)
+st.dataframe(df, use_container_width=True)
 
-# 5. EXPORTAÇÃO E RODAPÉ
+# 6. RODAPÉ EXECUTIVO
 st.write("---")
-csv = df_favelinha.to_csv(index=False).encode('utf-8')
-st.download_button(
-    label="📦 Exportar Relatório de Auditoria",
-    data=csv,
-    file_name='ia_sentinela_executivo.csv',
-    mime='text/csv',
-)
-
-st.caption(f"Unidade: {medico} | IA-SENTINELA Operacional")
+st.caption(f"Operação: {medico} | Criador: Sidney Pereira de Almeida")
