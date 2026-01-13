@@ -2,82 +2,71 @@ import streamlit as st
 import pandas as pd
 import urllib.parse
 
-# --- 1. SETUP DE GOVERNANÇA ---
+# --- 1. CONFIGURAÇÃO DE ALTO NÍVEL ---
 st.set_page_config(page_title="Governança Executiva | IA-SENTINELA", layout="wide")
 st.markdown("""<style>
     .main { background-color: #0E1117; }
     div[data-testid="stMetric"] { background-color: #161B22; border-radius: 12px; border: 1px solid #30363D; padding: 12px; }
 </style>""", unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS DO SERVIDOR (TERMINOLOGIA ATUALIZADA) ---
-def buscar_ativos_servidor():
-    # A base agora já nasce com a terminologia de conformidade
+# --- 2. BASE DE DADOS PURA (TERMINOLOGIA EXECUTIVA) ---
+def get_assets():
     return [
-        {"unidade": "ANIMA COSTA", "valor": 12500.0, "status_origem": "CONFORMIDADE OK"},
-        {"unidade": "DR. SILVA", "valor": 1.0, "status_origem": "RESTRIÇÃO TÉCNICA"},
-        {"unidade": "INTERFILE - BI", "valor": 5400.0, "status_origem": "EM ANÁLISE"},
-        {"unidade": "DR. MARCOS", "valor": 8900.0, "status_origem": "CONFORMIDADE OK"},
-        {"unidade": "LAB CLINIC", "valor": 0.80, "status_origem": "RESTRIÇÃO TÉCNICA"}
+        {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK"},
+        {"unidade": "DR. SILVA", "valor": 1.0, "status": "RESTRIÇÃO TÉCNICA"},
+        {"unidade": "INTERFILE - BI", "valor": 5400.0, "status": "EM ANÁLISE"},
+        {"unidade": "DR. MARCOS", "valor": 8900.0, "status": "CONFORMIDADE OK"},
+        {"unidade": "LAB CLINIC", "valor": 0.80, "status": "RESTRIÇÃO TÉCNICA"}
     ]
 
-# --- 3. MOTOR DE AUDITORIA DIPLOMÁTICA ---
-def analisar_compliance(valor, status):
-    if valor <= 1.0 or status == "RESTRIÇÃO TÉCNICA":
-        return "RESTRIÇÃO", "⚠️ INCONSISTÊNCIA DE ATIVOS - VALOR ABAIXO DA MARGEM", "#ff4b4b"
-    elif status == "EM ANÁLISE":
-        return "AGUARDAR", "🟡 AGUARDANDO REGULARIZAÇÃO DE DOCUMENTAÇÃO", "#f1e05a"
-    else:
-        return "CONFORMIDADE OK", "🟢 VALIDAÇÃO TÉCNICA CONCLUÍDA", "#00c853"
-
-# --- 4. PROCESSAMENTO E CONSOLIDAÇÃO ---
-dados_base = buscar_ativos_servidor()
-relatorio_final = []
+# --- 3. MOTOR DE AUDITORIA ---
+processados = []
 total_consolidado = 0
-
-for item in dados_base:
-    status_final, parecer, cor = analisar_compliance(item['valor'], item['status_origem'])
+for item in get_assets():
     total_consolidado += item['valor']
-    relatorio_final.append({
+    if item['valor'] <= 1.0 or item['status'] == "RESTRIÇÃO TÉCNICA":
+        veredito, parecer = "RESTRIÇÃO", "⚠️ INCONSISTÊNCIA DE ATIVOS"
+    elif item['status'] == "EM ANÁLISE":
+        veredito, parecer = "EM ANÁLISE", "🟡 AGUARDANDO REGULARIZAÇÃO"
+    else:
+        veredito, parecer = "CONFORMIDADE OK", "🟢 VALIDAÇÃO TÉCNICA CONCLUÍDA"
+    
+    processados.append({
         "Unidade de Negócio": item['unidade'],
         "Exposição Financeira": item['valor'],
-        "Status de Auditoria": status_final,
+        "Status de Auditoria": veredito,
         "Parecer Técnico": parecer
     })
 
-df = pd.DataFrame(relatorio_final)
+df = pd.DataFrame(processados)
 
-# --- 5. DASHBOARD EXECUTIVO ---
+# --- 4. DASHBOARD EXECUTIVO ---
 st.title("🛡️ SENTINELA | Governança de Receita")
-st.caption("Relatório Estratégico de Auditoria | Q2-2026")
-
-# Valor Consolidado
 st.metric(label="📊 VALOR TOTAL CONSOLIDADO EM AUDITORIA", value=f"R$ {total_consolidado:,.2f}")
 
 st.divider()
 
-# --- 6. GRÁFICO DE CONFORMIDADE (DUAS BARRAS) ---
+# --- 5. GRÁFICO DE BARRAS LATERAL (INTELIGENTE) ---
 st.subheader("📈 Mapa de Exposição e Conformidade")
+df_chart = df.copy()
+df_chart['Conformidade'] = df_chart.apply(lambda x: x['Exposição Financeira'] if x['Status de Auditoria'] == 'CONFORMIDADE OK' else 0, axis=1)
+df_chart['Restrição/Análise'] = df_chart.apply(lambda x: x['Exposição Financeira'] if x['Status de Auditoria'] != 'CONFORMIDADE OK' else 0, axis=1)
 
-# Criando colunas para o gráfico de barras lateral solicitado
-df['Em Conformidade'] = df.apply(lambda x: x['Exposição Financeira'] if x['Status de Auditoria'] == 'CONFORMIDADE OK' else 0, axis=1)
-df['Em Restrição/Análise'] = df.apply(lambda x: x['Exposição Financeira'] if x['Status de Auditoria'] != 'CONFORMIDADE OK' else 0, axis=1)
+st.bar_chart(df_chart.set_index("Unidade de Negócio")[['Conformidade', 'Restrição/Análise']], color=["#00c853", "#ff4b4b"])
 
-chart_data = df.set_index("Unidade de Negócio")[['Em Conformidade', 'Em Restrição/Análise']]
-st.bar_chart(chart_data, color=["#00c853", "#ff4b4b"])
-
-# --- 7. RELATÓRIO ANALÍTICO DE ATIVOS ---
+# --- 6. TABELA DA FAVELINHA (DIPLOMÁTICA) ---
 st.divider()
 st.subheader("📋 Relatório Analítico de Ativos")
 st.table(df[["Unidade de Negócio", "Exposição Financeira", "Status de Auditoria", "Parecer Técnico"]])
 
-# --- 8. DISPARO ÚNICO DE COMPLIANCE (CORRIGIDO) ---
-st.subheader("📲 Canal de Comunicação Institucional")
+# --- 7. DISPARO ÚNICO (SOLUÇÃO DE DUPLICIDADE) ---
+st.subheader("📲 Comunicado Institucional")
 unidade_alerta = st.selectbox("Selecione a Unidade para Reporte", df["Unidade de Negócio"].tolist())
-numero_zap = "5511942971753" #
+numero_zap = "5511942971753"
 
 row = df[df["Unidade de Negócio"] == unidade_alerta].iloc[0]
 
-# Construção do Relatório Diplomático
+# Formatação Executiva da Mensagem
 mensagem = (
     f"🛡️ *RELATÓRIO DE GOVERNANÇA - IA-SENTINELA*\n"
     f"------------------------------------------\n"
@@ -88,11 +77,16 @@ mensagem = (
     f"✅ _Documento Auditado Q2-2026_"
 )
 
-link_final = f"https://wa.me/{numero_zap}?text={urllib.parse.quote(mensagem)}"
+# LINK ÚNICO - Evita o disparo duplo por recarregamento
+link_zap = f"https://wa.me/{numero_zap}?text={urllib.parse.quote(mensagem)}"
 
-# Botão de disparo único
-if st.link_button(f"🚀 Emitir Comunicado Oficial: {unidade_alerta}", link_final):
-    st.toast("Relatório preparado para envio único.")
+# Usando markdown para um link limpo que não dispara duas vezes
+st.markdown(f"""
+    <a href="{link_zap}" target="_blank" style="text-decoration: none;">
+        <div style="background-color: #25D366; color: white; padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; font-size: 18px;">
+            🚀 EMITIR COMUNICADO OFICIAL: {unidade_alerta}
+        </div>
+    </a>
+""", unsafe_allow_html=True)
 
-st.caption("Sidney Pereira de Almeida | Diretor de Auditoria e Compliance")
-    
+st.caption("Sidney Pereira de Almeida | Diretor de Compliance")
