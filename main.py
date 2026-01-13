@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import urllib.parse
 
-# --- 1. MOTOR DE INTELIGÊNCIA Q2-2026 ---
+# --- 1. MOTOR DE INTELIGÊNCIA ---
 def processar_auditoria(valor, status):
     if valor <= 1.0:
         return "PULA", "🔴 VÁCUO OPERACIONAL (1.00x)", "#ff7b72"
@@ -11,7 +11,7 @@ def processar_auditoria(valor, status):
     else:
         return "ENTRA", "🟢 FLUXO SEGURO - LIBERADO", "#39d353"
 
-# --- 2. CONFIGURAÇÃO DA INTERFACE ---
+# --- 2. INTERFACE EXECUTIVA ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown("""
@@ -25,31 +25,33 @@ st.markdown("""
         padding: 20px; border-radius: 12px;
         text-align: center; margin: 15px 0; border: 2px solid;
     }
-    .stButton>button {
-        width: 100%; border-radius: 10px; height: 3.5em;
-        background-color: #25D366; color: white; font-weight: bold;
-        border: none; font-size: 18px;
+    /* Estilo do Botão WhatsApp */
+    .stLinkButton>a {
+        width: 100% !important; background-color: #25D366 !important;
+        color: white !important; font-weight: bold !important;
+        border: none !important; border-radius: 12px !important;
+        height: 3.5em !important; display: flex !important;
+        align-items: center !important; justify-content: center !important;
+        text-decoration: none !important; font-size: 18px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("🛡️ IA-SENTINELA PRO")
-st.caption("Dashboard Executivo | Sincronização WhatsApp Ativa")
+st.caption("Dashboard de Auditoria | Sincronização WhatsApp")
 
-# Barra Lateral (Corrigida para evitar o erro de Syntax)
 with st.sidebar:
     st.header("⚙️ Configuração")
     medico = st.selectbox("Unidade", ["ANIMA COSTA", "DR. SILVA", "INTERFILE - BI"])
     valor_rodada = st.number_input("Valor da Rodada", value=2500.0)
     status_rodada = st.radio("Status", ["LIBERADO", "PENDENTE"])
     st.divider()
-    # Coloque seu número com 55 + DDD + Numero (ex: 5511999999999)
-    numero_padrao = st.text_input("Enviar para (WhatsApp)", value="5511999999999")
+    numero_zap = st.text_input("WhatsApp Destino (Ex: 5511999999999)", value="")
 
-# Cálculos
+# Processamento
 acao, motivo, cor = processar_auditoria(valor_rodada, status_rodada)
 
-# Dashboard (68% vs 32%)
+# KPIs (68% vs 32%)
 c1, c2 = st.columns(2)
 with c1:
     st.metric(label="ASSETS LIBERADOS (68%)", value="R$ 10.880,00")
@@ -60,35 +62,34 @@ with c2:
 st.markdown(f"""
     <div class="decisao-box" style="background-color: {cor}22; border-color: {cor};">
         <h1 style="color: {cor}; margin:0;">DECISÃO: {acao}</h1>
-        <p style="color: #8B949E; font-size: 18px;">Insight: {motivo}</p>
+        <p style="color: #8B949E; font-size: 18px;">Insight Ativo: {motivo}</p>
     </div>
 """, unsafe_allow_html=True)
 
-# --- 3. BOTÃO WHATSAPP ---
-msg_formatada = f"""🛡️ *IA-SENTINELA - AUDITORIA*
+# --- 3. AÇÃO WHATSAPP CORRIGIDA ---
+msg_zap = f"""🛡️ *IA-SENTINELA - AUDITORIA*
 -----------------------------------------
 🏥 *Unidade:* {medico}
 💰 *Valor:* R$ {valor_rodada:,.2f}
 ⚖️ *Decisão:* *{acao}*
 📝 *Motivo:* {motivo}
 
-✅ _Gerado via Dashboard IA-SENTINELA_"""
+✅ _Auditoria Sincronizada Q2-2026_"""
 
-link_final = f"https://wa.me/{numero_padrao}?text={urllib.parse.quote(msg_formatada)}"
+link_final = f"https://wa.me/{numero_zap}?text={urllib.parse.quote(msg_zap)}"
 
 st.write("### 📲 Ação Imediata")
-if st.button("🚀 ENVIAR RELATÓRIO PARA WHATSAPP"):
-    st.markdown(f'<meta http-equiv="refresh" content="0;URL={link_final}">', unsafe_allow_html=True)
-    st.success("Encaminhando para o WhatsApp...")
+# Usando st.link_button para evitar erro de "conexão recusada"
+st.link_button("🚀 ENVIAR RELATÓRIO PARA WHATSAPP", link_final)
 
 st.divider()
 
 # Tabela da Favelinha
 st.subheader("📊 Critical Audit Log")
 df = pd.DataFrame({
-    "Paciente": ["João Silva", "Maria Oliveira", "Analise"],
+    "Paciente": ["João Silva", "Maria Oliveira", "Analise Atual"],
     "Insight Ativo (Q2)": ["Erro XML", "Divergência TUSS", f"Ação: {acao}"]
 })
 st.table(df)
 
-st.caption(f"Operação: {medico} | Auditor: Sidney Pereira de Almeida")
+st.caption(f"Auditor: Sidney Pereira de Almeida | Operação: {medico}")
