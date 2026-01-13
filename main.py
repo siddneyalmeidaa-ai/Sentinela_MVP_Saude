@@ -1,56 +1,13 @@
-import streamlit as st
-import pandas as pd
-import urllib.parse
+# MENSAGEM DO MÉDICO PARA TESTE (COPIE E COLE NO SISTEMA)
+"""
+Sidney, acabei de sair do plantão e vi que o repasse das minhas cirurgias ainda não caiu. Isso é um descaso com o meu tempo! Já enviei os prontuários e as guias assinadas. Preciso que libere esse valor de R$ 5.400,00 agora, senão não terei como manter minha agenda da próxima semana com vocês.
+"""
 
-# --- 1. SETUP ---
-st.set_page_config(page_title="IA-SENTINELA | Interação", layout="wide")
+# RESPOSTA HUMANA SUGERIDA (IA-SENTINELA)
+"""
+Olá, Doutor. Entendo perfeitamente a sua frustração; após um plantão, a última coisa que você precisa é lidar com burocracia financeira. Valorizamos muito o seu tempo e a sua parceria.
 
-# --- 2. BASE DE DADOS ---
-db = [
-    {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK"},
-    {"unidade": "INTERFILE - BI", "valor": 5400.0, "status": "RESTRIÇÃO"}
-]
-df = pd.DataFrame(db)
+Verifiquei aqui que o valor de R$ 5.400,00 está retido apenas por um detalhe técnico de validação no sistema. Para que eu consiga destravar isso agora e garantir a sua agenda da semana que vem sem preocupações, consegue me ajudar confirmando apenas o reenvio dos arquivos XML? 
 
-# --- 3. INTERFACE ---
-st.title("🛡️ Sistema de Governança & Resposta IA")
-st.divider()
-
-col1, col2 = st.columns([1, 1])
-
-with col1:
-    st.subheader("📋 Status de Auditoria")
-    st.table(df)
-
-with col2:
-    st.subheader("🤖 IA de Resposta Diplomática")
-    msg_cliente = st.text_area("Cole aqui a mensagem recebida do cliente:")
-    
-    if msg_cliente:
-        st.info("🔄 IA Processando tom diplomático...")
-        # Simulação de Resposta Inteligente baseada no seu Padrão Ouro
-        resposta_sugerida = (
-            "Prezado, analisamos sua solicitação. No momento, a unidade encontra-se em "
-            "status de RESTRIÇÃO técnica devido à inconsistência de ativos. "
-            "Para evoluirmos para CONFORMIDADE OK, solicitamos o envio do XML pendente."
-        )
-        st.success("**Sugestão Executiva:**")
-        st.write(resposta_sugerida)
-        
-        if st.button("Copiar para WhatsApp"):
-            st.session_state.copy_text = resposta_sugerida
-            st.toast("Resposta pronta para envio!")
-
-# --- 4. DISPARO DE COMPLIANCE ---
-st.divider()
-st.subheader("📲 Canal Oficial de Comunicação")
-unidade = st.selectbox("Unidade Destino:", df["unidade"].tolist())
-link_zap = f"https://wa.me/5511942971753?text={urllib.parse.quote('🛡️ Relatório de Governança atualizado.')}"
-
-st.markdown(f"""
-    <a href="{link_zap}" target="_blank" style="text-decoration: none;">
-        <div style="background-color: #25D366; color: white; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold;">
-            🚀 ENVIAR RESPOSTA VIA WHATSAPP
-        </div>
-    </a>
-""", unsafe_allow_html=True)
+Estou pessoalmente acompanhando para que, assim que você enviar, o sistema mude para CONFORMIDADE OK e o pagamento siga o fluxo prioritário.
+"""
