@@ -1,55 +1,53 @@
 import streamlit as st
 import pandas as pd
 import urllib.parse
+from datetime import datetime
 
-# --- 1. CONFIGURAÇÃO DE ALTO NÍVEL ---
-st.set_page_config(page_title="IA-SENTINELA | Gestão Humanizada", layout="wide")
+# --- 1. SETUP E MEMÓRIA QUÂNTICA (SESSION STATE) ---
+st.set_page_config(page_title="IA-SENTINELA | Memória de Gestão", layout="wide")
 
-st.markdown("""
-    <style>
-    .main { background-color: #0E1117; }
-    div[data-testid="stMetric"] { background-color: #161B22; border-radius: 12px; border: 1px solid #30363D; padding: 15px; }
-    .stTextArea textarea { background-color: #161B22; color: white; border: 1px solid #30363D; font-size: 16px; }
-    </style>
-    """, unsafe_allow_html=True)
+# Inicializa o histórico se não existir (A Memória do Sistema)
+if 'historico_interacoes' not in st.session_state:
+    st.session_state.historico_interacoes = []
 
-# --- 2. BASE DE DADOS (SERVIDOR ESTRATÉGICO) ---
+# --- 2. BASE DE DATA (SERVIDOR PADRÃO OURO) ---
 db = [
-    {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK"},
-    {"unidade": "INTERFILE - BI", "valor": 5400.0, "status": "RESTRIÇÃO"},
     {"unidade": "DR. MARCOS", "valor": 8900.0, "status": "CONFORMIDADE OK"},
+    {"unidade": "INTERFILE - BI", "valor": 5400.0, "status": "RESTRIÇÃO"},
     {"unidade": "DR. SILVA", "valor": 1.0, "status": "RESTRIÇÃO"}
 ]
 df = pd.DataFrame(db)
-total_consolidado = df["valor"].sum()
 
-# --- 3. DASHBOARD DE GOVERNANÇA ---
-st.title("🛡️ SENTINELA | Inteligência Humanizada")
-st.metric(label="📊 VALOR TOTAL CONSOLIDADO EM AUDITORIA", value=f"R$ {total_consolidado:,.2f}")
+# --- 3. INTERFACE E DASHBOARD ---
+st.title("🛡️ Sentinela: Governança com Memória de Histórico")
+st.metric(label="📊 TOTAL EM AUDITORIA", value=f"R$ {df['valor'].sum():,.2f}")
 
 st.divider()
 
-# --- 4. GRÁFICO DE PERFORMANCE (ESCALA CORRIGIDA) ---
-st.subheader("📈 Performance e Conformidade por Unidade")
-df_chart = df.copy()
-df_chart['Conformidade'] = df_chart.apply(lambda x: x['valor'] if x['status'] == 'CONFORMIDADE OK' else 0, axis=1)
-df_chart['Restrição/Análise'] = df_chart.apply(lambda x: x['valor'] if x['status'] != 'CONFORMIDADE OK' else 0, axis=1)
-
-chart_data = df_chart.set_index("unidade")[['Conformidade', 'Restrição/Análise']]
-st.bar_chart(chart_data, color=["#00c853", "#ff4b4b"])
-
-# --- 5. MÓDULO DE INTERAÇÃO INTELIGENTE (MÉDICO) ---
-st.divider()
+# --- 4. MÓDULO DE MEDIAÇÃO COM REGISTRO DE MEMÓRIA ---
 col_a, col_b = st.columns([1, 1.2])
 
 with col_a:
-    st.subheader("📋 Relatório Analítico")
-    st.table(df[["unidade", "valor", "status"]].rename(columns={"unidade": "Unidade", "valor": "R$", "status": "Veredito"}))
+    st.subheader("📋 Status Atual das Unidades")
+    st.table(df)
+    
+    # Exibição da Memória de Conversas
+    st.subheader("🧠 Memória de Conversas (Histórico)")
+    if st.session_state.historico_interacoes:
+        for idx, item in enumerate(reversed(st.session_state.historico_interacoes)):
+            with st.expander(f"📌 {item['data']} - {item['unidade']}"):
+                st.write(f"**Médico enviou:** {item['entrada']}")
+                st.write(f"**IA Respondeu:** {item['resposta']}")
+    else:
+        st.info("Nenhuma interação registrada nesta sessão.")
 
 with col_b:
     st.subheader("🤖 IA de Mediação Humanizada")
     
-    # RECLAMAÇÃO DO MÉDICO PARA TESTE
+    # Seleção de quem está falando para a Memória Quântica
+    unidade_selecionada = st.selectbox("Selecione a Unidade/Médico:", df['unidade'].tolist())
+    
+    # Reclamação Simulada do Médico
     reclamacao_medico = (
         "Sidney, acabei de sair do plantão e vi que o repasse das minhas cirurgias "
         "ainda não caiu. Isso é um descaso com o meu tempo! Já enviei os prontuários "
@@ -57,23 +55,29 @@ with col_b:
         "senão não terei como manter minha agenda da próxima semana com vocês."
     )
     
-    entrada = st.text_area("Mensagem do Médico:", value=reclamacao_medico, height=180)
+    entrada = st.text_area("Mensagem Recebida:", value=reclamacao_medico, height=150)
     
-    if st.button("✨ Gerar Resposta Humanizada"):
-        # LÓGICA DE EMPATIA + SOLUÇÃO
+    if st.button("✨ Gerar e Salvar na Memória"):
+        # Resposta Humanizada de Alta Gestão
         resposta_final = (
-            "Olá, Doutor. Entendo perfeitamente a sua frustração; após um plantão, a última coisa que você precisa é lidar com burocracia financeira. "
-            "Valorizamos muito o seu tempo e a sua parceria. Verifiquei aqui que o valor de R$ 5.400,00 está retido apenas por um detalhe técnico de validação no sistema. "
-            "Para que eu consiga destravar isso agora e garantir a sua agenda da semana que vem sem preocupações, consegue me ajudar confirmando apenas o reenvio dos arquivos XML? "
-            "Estou pessoalmente acompanhando para que, assim que você enviar, o sistema mude para CONFORMIDADE OK e o pagamento siga o fluxo prioritário."
+            f"Olá, {unidade_selecionada}. Entendo perfeitamente a sua frustração; após um plantão, "
+            "a última coisa que você precisa é lidar com burocracia financeira. Valorizamos muito o seu tempo. "
+            "Para destravar o valor e garantir sua agenda, consegue me ajudar apenas com o reenvio dos XMLs? "
+            "Estou acompanhando pessoalmente para mover para CONFORMIDADE OK imediatamente."
         )
         
-        st.success("**Resposta Estratégica Sugerida:**")
+        # Salvando na "Memória Quântica" da Sessão
+        st.session_state.historico_interacoes.append({
+            "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            "unidade": unidade_selecionada,
+            "entrada": entrada,
+            "resposta": resposta_final
+        })
+        
+        st.success("**Resposta Humanizada Gerada:**")
         st.write(resposta_final)
         
         link_zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(resposta_final)}"
-        st.link_button("🚀 Enviar para o WhatsApp", link_zap)
+        st.link_button("🚀 Enviar e Registrar", link_zap)
 
-# --- 6. RODAPÉ ---
-st.divider()
-st.caption("Sidney Pereira de Almeida | Diretor de Compliance")
+st.caption("Sidney Pereira de Almeida | Gestão de Histórico e Compliance")
