@@ -4,10 +4,11 @@ import urllib.parse
 from datetime import datetime
 import pytz
 
-# --- 1. CONFIGURAÇÃO DE FUSO E MEMÓRIA ---
-st.set_page_config(page_title="IA-SENTINELA | Governança 2.0", layout="wide")
+# --- 1. CONFIGURAÇÃO DE FUSO E MEMÓRIA SEGURA ---
+st.set_page_config(page_title="IA-SENTINELA | Padrão Ouro", layout="wide")
 fuso_br = pytz.timezone('America/Sao_Paulo')
 
+# Inicializa memória se estiver vazia
 if 'memoria_unidades' not in st.session_state:
     st.session_state.memoria_unidades = {}
 
@@ -19,7 +20,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS SINCRONIZADA ---
+# --- 2. BASE DE DADOS (SERVIDOR EXECUTIVO) ---
 db = [
     {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK"},
     {"unidade": "DR. MARCOS", "valor": 8900.0, "status": "CONFORMIDADE OK"},
@@ -35,7 +36,7 @@ st.metric(label="📊 TOTAL CONSOLIDADO EM AUDITORIA", value=f"R$ {df['valor'].s
 
 st.divider()
 
-# --- 4. ÁREA DE INTERAÇÃO COM MÉDICO ---
+# --- 4. ÁREA DE INTERAÇÃO COM MÉDICO SINCRONIZADA ---
 col_dados, col_ia = st.columns([1, 1.2])
 
 with col_dados:
@@ -45,34 +46,36 @@ with col_dados:
     st.subheader("🧠 Histórico Sincronizado")
     unidade_atual = st.selectbox("Selecione o Médico/Unidade:", df['unidade'].tolist())
     
-    # Exibição do Histórico com o NOVO campo "MOTIVO"
+    # TRATAMENTO DE ERRO (FIX KEYERROR): Verifica se a chave existe antes de acessar
     if unidade_atual in st.session_state.memoria_unidades:
         hist = st.session_state.memoria_unidades[unidade_atual]
-        st.warning(f"📌 **Motivo:** {hist['motivo']}")
-        st.info(f"🕒 **Horário:** {hist['data']}")
+        # Só exibe o motivo se ele tiver sido capturado
+        motivo = hist.get('motivo', 'Motivo não registrado') 
+        st.warning(f"📌 **Motivo:** {motivo}")
+        st.info(f"🕒 **Horário:** {hist.get('data', '--:--')}")
     else:
-        st.write("Sem registros para esta unidade hoje.")
+        st.write("Sem registros recentes para esta unidade.")
 
 with col_ia:
     st.subheader("😊 IA de Mediação Humanizada")
     
-    # Campo 1: Recebimento do Questionamento
+    # Campo 1: Recebimento (Sincronizado)
     questionamento = st.text_area(
         f"Mensagem recebida de {unidade_atual}:", 
         placeholder="Cole aqui o que o médico enviou...",
         height=150,
         key=f"input_area_{unidade_atual}" 
     )
-    
-    # Campo 2: Processamento com Identificação de Motivo
+
+    # Campo 2: Processamento e Classificação
     if st.button("✨ Gerar Resposta e Identificar Motivo"):
         if questionamento:
             agora_br = datetime.now(fuso_br).strftime("%H:%M:%S")
             
-            # Lógica para identificar o Motivo automaticamente
-            if "repasse" in questionamento.lower() or "pagamento" in questionamento.lower():
+            # Lógica de Classificação de Motivo
+            if any(word in questionamento.lower() for word in ["repasse", "pagamento", "caiu", "dinheiro"]):
                 motivo_identificado = "Reclamação de Repasse / Financeiro"
-            elif "agenda" in questionamento.lower() or "cirurgia" in questionamento.lower():
+            elif any(word in questionamento.lower() for word in ["agenda", "cirurgia", "plantão"]):
                 motivo_identificado = "Urgência de Agenda Médica"
             else:
                 motivo_identificado = "Dúvida Técnica / Documentação"
@@ -84,7 +87,7 @@ with col_ia:
                 "Estou acompanhando para mover para CONFORMIDADE OK imediatamente."
             )
             
-            # Salva na memória com o Motivo
+            # SALVAMENTO SEGURO
             st.session_state.memoria_unidades[unidade_atual] = {
                 "data": agora_br,
                 "motivo": motivo_identificado,
@@ -93,10 +96,11 @@ with col_ia:
             }
             st.rerun()
 
-    # Campo 3: Envio e Visualização
+    # Campo 3: Visualização do Parecer e WhatsApp
     if unidade_atual in st.session_state.memoria_unidades:
         res = st.session_state.memoria_unidades[unidade_atual]['resposta']
-        st.success(f"**Parecer Sugerido ({st.session_state.memoria_unidades[unidade_atual]['motivo']}):**")
+        motivo_badge = st.session_state.memoria_unidades[unidade_atual].get('motivo', 'Geral')
+        st.success(f"**Parecer Sugerido ({motivo_badge}):**")
         st.write(res)
         
         link_zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(res)}"
@@ -109,5 +113,5 @@ with col_ia:
         """, unsafe_allow_html=True)
 
 st.divider()
-st.caption(f"Sidney Pereira de Almeida | {datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M')}")
-        
+st.caption(f"Sidney Pereira de Almeida | Diretor de Compliance | {datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M')}")
+    
