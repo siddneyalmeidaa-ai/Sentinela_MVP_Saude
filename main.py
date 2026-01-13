@@ -1,109 +1,88 @@
 import streamlit as st
 import pandas as pd
+from flask import Flask, request, jsonify
+import threading
 
-# 1. CONFIGURAÇÃO DE TEMA (MODERNO, DARK E EXECUTIVO)
-st.set_page_config(page_title="IA-SENTINELA PRO | Q2-2026", layout="wide")
+# --- PARTE 1: O CÉREBRO DA IA (LÓGICA DE AUDITORIA) ---
+def processar_auditoria(valor, status):
+    if valor <= 1.0:
+        return "PULA", "🔴 Vácuo Operacional (1.00x)"
+    elif status == "PENDENTE":
+        return "AGUARDAR", "🟡 Pendência de XML/TUSS"
+    else:
+        return "ENTRA", "🟢 Fluxo Liberado"
+
+# --- PARTE 2: SINCRONIZAÇÃO WHATSAPP (SERVIDOR API) ---
+app = Flask(__name__)
+
+@app.route('/whatsapp', methods=['POST'])
+def webhook():
+    # O robô do WhatsApp envia os dados para cá
+    dados = request.json
+    msg_recebida = dados.get('message', '')
+    
+    # Simulação de resposta automática baseada no valor enviado por msg
+    try:
+        valor = float(msg_recebida.replace('R$', '').strip())
+        acao, detalhe = processar_auditoria(valor, "LIBERADO")
+        resposta = f"🛡️ *IA-SENTINELA INFORMA:*\n\nDecisão: *{acao}*\nMotivo: {detalhe}"
+    except:
+        resposta = "Olá Sidney! Envie o valor da rodada para auditoria."
+
+    return jsonify({"status": "sucesso", "reply": resposta})
+
+# Rodar o servidor em segundo plano para não travar o Dashboard
+def run_api():
+    app.run(port=5000)
+
+# Inicia a "escuta" do WhatsApp
+threading.Thread(target=run_api, daemon=True).start()
+
+# --- PARTE 3: INTERFACE STREAMLIT (VISUAL EXECUTIVO) ---
+st.set_page_config(page_title="IA-SENTINELA PRO | SYNC", layout="wide")
 
 st.markdown("""
     <style>
     .main { background-color: #0E1117; }
-    /* Estilização dos Cards de Métricas */
-    div[data-testid="stMetric"] {
-        background-color: #161B22;
-        border: 1px solid #30363D;
-        padding: 15px;
-        border-radius: 12px;
-        margin-bottom: 5px;
-    }
-    div[data-testid="stMetricLabel"] { color: #8B949E !important; font-size: 14px !important; }
-    div[data-testid="stMetricValue"] { color: #58A6FF !important; font-weight: bold; font-size: 28px !important; }
-    
-    /* Caixa de Decisão Centralizada */
-    .decisao-container {
-        background-color: #1a2a1d;
-        border: 1px solid #2ea043;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        margin: 15px 0;
-    }
-    .decisao-texto { color: #39d353; font-size: 26px; font-weight: bold; letter-spacing: 1px; }
-    .vácuo-texto { color: #ff7b72; font-size: 26px; font-weight: bold; }
+    div[data-testid="stMetric"] { background-color: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 15px; }
+    .decisao-card { background-color: #1a2a1d; border: 1px solid #2ea043; padding: 20px; border-radius: 12px; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. IDENTIDADE E CONTROLE
-st.title("🛡️ IA-SENTINELA PRO")
-st.caption("Monitoramento e Observabilidade | Criador: Sidney Pereira de Almeida")
+st.title("🛡️ IA-SENTINELA PRO | WHATSAPP SYNC")
+st.caption("Status da API: 🟢 Conectado e Ouvindo")
 
+# Sidebar
 with st.sidebar:
-    st.header("⚙️ Painel de Auditoria")
-    medico = st.selectbox("Unidade Atual", ["ANIMA COSTA", "DR. SILVA", "INTERFILE - BI"])
-    valor_rodada = st.number_input("Valor da Rodada Atual", value=2500.0)
-    status_rodada = st.radio("Status do Faturamento", ["LIBERADO", "PENDENTE"])
-    st.divider()
-    st.info("Sincronizado: Q2-2026")
+    st.header("⚙️ Configuração")
+    medico = st.selectbox("Unidade", ["ANIMA COSTA", "DR. SILVA", "INTERFILE"])
+    valor_input = st.number_input("Valor da Rodada", value=2500.0)
+    status_input = st.radio("Status", ["LIBERADO", "PENDENTE"])
 
-# 3. MOTOR DE INSIGHTS ATIVOS (LOGICA Q2)
-def motor_decisao(valor, status):
-    if valor <= 1.0:
-        return "PULA", "vácuo-texto", "🔴 Risco de Vácuo Operacional (1.00x)"
-    elif status == "PENDENTE":
-        return "AGUARDAR", "decisao-texto", "🟡 Aguardando Correção de Lote"
-    else:
-        return "ENTRA", "decisao-texto", "🟢 Fluxo Autorizado para Faturamento"
+# Cálculos Sincronizados
+acao_final, motivo_final = processar_auditoria(valor_input, status_input)
 
-acao, classe_estilo, sub_texto = motor_decisao(valor_rodada, status_rodada)
+# Dashboard
+c1, c2 = st.columns(2)
+with c1:
+    st.metric(label="68% LIBERADO", value="R$ 10.880,00")
+with c2:
+    st.metric(label="32% PENDENTE", value="R$ 5.120,00", delta="-32%", delta_color="inverse")
 
-# 4. DASHBOARD DE KPIs (68% vs 32%)
-v_lib = 10880.0
-v_pen = 5120.0
-total = v_lib + v_pen
-p_lib = int((v_lib / total) * 100)
-p_pen = int((v_pen / total) * 100)
-
-col1, col2 = st.columns(2)
-with col1:
-    st.metric(label=f"ASSETS LIBERADOS ({p_lib}%)", value=f"R$ {v_lib:,.2f}")
-    st.markdown("🟢 <span style='color:#8B949E;'>Faturamento Ativo</span>", unsafe_allow_html=True)
-with col2:
-    st.metric(label=f"PENDÊNCIA OPERACIONAL ({p_pen}%)", value=f"R$ {v_pen:,.2f}", delta=f"-{p_pen}%", delta_color="inverse")
-    st.markdown("🔴 <span style='color:#8B949E;'>Risco de Glosa</span>", unsafe_allow_html=True)
-
-# Bloco de Ação Imediata
 st.markdown(f"""
-    <div class="decisao-container" style="background-color: {'#2a1a1a' if acao == 'PULA' else '#1a2a1d'}; border-color: {'#ff7b72' if acao == 'PULA' else '#2ea043'};">
-        <div class="{classe_estilo}">DECISÃO: {acao}</div>
-        <span style='color:#8B949E;'>{sub_texto}</span>
+    <div class="decisao-card">
+        <h2 style="color: #39d353; margin:0;">DECISÃO: {acao_final}</h2>
+        <p style="color: #8B949E;">{motivo_final}</p>
     </div>
 """, unsafe_allow_html=True)
 
-st.divider()
-
-# 5. TABELA DA FAVELINHA COM INSIGHTS DE AUDITORIA
-st.subheader("📊 Critical Audit Log (Tabela da Favelinha)")
-
-tabela_dados = {
-    "ID": ["#901", "#902", "ATUAL"],
-    "PACIENTE": ["JOÃO SILVA", "MARIA OLIVEIRA", "RODADA ANALISADA"],
-    "ERRO": ["XML INVÁLIDO", "DIVERGÊNCIA TUSS", "-"],
-    "INSIGHT ATIVO (Q2)": [
-        "Reestruturar tag do lote e reenviar.",
-        "Validar código TUSS na tabela 2026.",
-        f"Ação: {acao}"
-    ]
-}
-
-df = pd.DataFrame(tabela_dados)
+# Tabela da Favelinha (Insights Ativos Q2)
+st.subheader("📊 Tabela da Favelinha")
+df = pd.DataFrame({
+    "Paciente": ["João Silva", "Maria Oliveira", "Analise Atual"],
+    "Status": ["PENDENTE", "PENDENTE", status_input],
+    "Insight Ativo (Q2)": ["Erro XML", "Divergência TUSS", f"Ação: {acao_final}"]
+})
 st.table(df)
 
-# 6. EXPORTAÇÃO EXECUTIVA (SEM ACENTO NO ARQUIVO)
-csv = df.to_csv(index=False).encode('utf-8')
-st.download_button(
-    label="📥 Exportar Relatório de Auditoria",
-    data=csv,
-    file_name='auditoria_sentinela_q2.csv',
-    mime='text/csv',
-)
-
-st.caption(f"Operação: {medico} | Sistema IA-SENTINELA Blindado")
+st.success(f"Sistema sincronizado com o WhatsApp. Médico: {medico}")
