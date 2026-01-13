@@ -3,10 +3,10 @@ import pandas as pd
 import urllib.parse
 from datetime import datetime
 
-# --- 1. CONFIGURAÇÃO E MEMÓRIA DINÂMICA ---
-st.set_page_config(page_title="IA-SENTINELA | Sincronizado", layout="wide")
+# --- 1. MEMÓRIA QUÂNTICA DINÂMICA (INDIVIDUALIZADA POR UNIDADE) ---
+st.set_page_config(page_title="IA-SENTINELA | Padrão Ouro", layout="wide")
 
-# Inicializa o banco de memória se não existir
+# Inicializa o banco de memória por médico para evitar conflito de dados
 if 'memoria_unidades' not in st.session_state:
     st.session_state.memoria_unidades = {}
 
@@ -18,7 +18,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS (SERVIDOR ATUALIZADO) ---
+# --- 2. BASE DE DADOS (SERVIDOR SINCRONIZADO) ---
 db = [
     {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK"},
     {"unidade": "DR. MARCOS", "valor": 8900.0, "status": "CONFORMIDADE OK"},
@@ -28,75 +28,84 @@ db = [
 ]
 df = pd.DataFrame(db)
 
-# --- 3. CABEÇALHO ---
-st.title("🛡️ Governança Sincronizada")
-st.metric(label="📊 TOTAL CONSOLIDADO", value=f"R$ {df['valor'].sum():,.2f}")
+# --- 3. DASHBOARD DE GOVERNANÇA ---
+st.title("🛡️ Governança de Receita")
+st.metric(label="📊 VALOR TOTAL CONSOLIDADO EM AUDITORIA", value=f"R$ {df['valor'].sum():,.2f}")
 
 st.divider()
 
-# --- 4. ÁREA DE INTERAÇÃO SINCRONIZADA ---
-col_dados, col_ia = st.columns([1, 1.2])
+# --- 4. PERFORMANCE E RISCO (GRÁFICO CORRIGIDO) ---
+st.subheader("📈 Performance e Risco por Unidade")
+df_chart = df.copy()
+df_chart['Em Conformidade'] = df_chart.apply(lambda x: x['valor'] if x['status'] == 'CONFORMIDADE OK' else 0, axis=1)
+df_chart['Em Restrição'] = df_chart.apply(lambda x: x['valor'] if x['status'] != 'CONFORMIDADE OK' else 0, axis=1)
 
-with col_dados:
+chart_data = df_chart.set_index("unidade")[['Em Conformidade', 'Em Restrição']]
+st.bar_chart(chart_data, color=["#00c853", "#ff4b4b"])
+
+st.divider()
+
+# --- 5. INTERFACE DE INTERAÇÃO SINCRONIZADA ---
+col_rel, col_ia = st.columns([1, 1.2])
+
+with col_rel:
     st.subheader("📋 Relatório de Ativos")
-    st.table(df[["unidade", "valor", "status"]])
+    st.table(df[["unidade", "valor", "status"]].rename(columns={"unidade": "Unidade", "valor": "R$", "status": "Veredito"}))
     
     st.subheader("🧠 Histórico da Unidade")
-    unidade_atual = st.selectbox("Selecione o Médico/Unidade para Auditar:", df['unidade'].tolist())
+    # A Troca do Médico aqui agora sincroniza tudo abaixo
+    unidade_atual = st.selectbox("Selecione o Médico para Auditar:", df['unidade'].tolist())
     
-    # Busca memória específica da unidade para evitar dados estáticos
     if unidade_atual in st.session_state.memoria_unidades:
         hist = st.session_state.memoria_unidades[unidade_atual]
-        st.info(f"Última interação: {hist['data']}")
+        st.info(f"Última interação registrada: {hist['data']}")
     else:
-        st.write("Sem interações prévias para esta unidade.")
+        st.write("Sem interações prévias para este médico.")
 
 with col_ia:
     st.subheader("😊 IA de Mediação Humanizada")
     
-    # Campo 1: Recebimento do Questionamento (Limpa ao trocar unidade se não houver salvo)
-    default_msg = "" if unidade_atual not in st.session_state.memoria_unidades else st.session_state.memoria_unidades[unidade_atual]['entrada']
+    # Busca texto salvo para este médico específico para evitar dados estáticos de outros médicos
+    texto_inicial = st.session_state.memoria_unidades.get(unidade_atual, {}).get('entrada', "")
     
+    # CAMPO 1: Recebimento do questionamento
     questionamento = st.text_area(
         f"Mensagem recebida de {unidade_atual}:", 
-        value=default_msg,
-        placeholder="Cole aqui o que o médico enviou...",
+        value=texto_inicial,
+        placeholder="Cole a mensagem do médico aqui...",
         height=150,
-        key=f"input_{unidade_atual}" # Chave única por unidade garante a sincronia
+        key=f"input_{unidade_atual}" # Chave única evita conflito entre médicos
     )
     
-    # Campo 2: Resposta Inteligente
-    if st.button("✨ Gerar Resposta Estratégica"):
+    if st.button("✨ Gerar e Salvar Resposta"):
         if questionamento:
-            # Lógica de resposta humanizada personalizada por unidade
-            status_unidade = df[df['unidade'] == unidade_atual]['status'].values[0]
-            
+            # CAMPO 2: Geração de Resposta Humanizada de Alta Gestão
             resposta_ia = (
-                f"Olá, {unidade_atual}. Compreendo o seu posicionamento. "
-                f"No momento, o sistema aponta status de {status_unidade}. "
-                "Para que possamos avançar para a CONFORMIDADE OK e liberar o fluxo, "
-                "precisamos apenas validar o XML pendente. Estou acompanhando pessoalmente."
+                f"Olá, {unidade_atual}. Entendo perfeitamente a sua frustração; após um plantão, "
+                "a última coisa que você precisa é lidar com burocracia financeira. Valorizamos muito o seu tempo. "
+                "Para que eu consiga destravar o valor e garantir sua agenda, consegue me ajudar confirmando "
+                "apenas o reenvio dos XMLs? Estou acompanhando pessoalmente para mover para CONFORMIDADE OK."
             )
             
-            # Salva na Memória Quântica da Unidade
+            # Salvação Tripla na Memória Quântica
             st.session_state.memoria_unidades[unidade_atual] = {
-                "data": datetime.now().strftime("%H:%M"),
+                "data": datetime.now().strftime("%H:%M:%S"),
                 "entrada": questionamento,
                 "resposta": resposta_ia
             }
             st.rerun()
 
-    # Campo 3: Envio e Visualização
+    # CAMPO 3: Visualização e Envio para WhatsApp
     if unidade_atual in st.session_state.memoria_unidades:
-        res = st.session_state.memoria_unidades[unidade_atual]['resposta']
-        st.success("**Sugestão de Resposta:**")
-        st.write(res)
+        res_gerada = st.session_state.memoria_unidades[unidade_atual]['resposta']
+        st.success("**Resposta Estratégica Sugerida:**")
+        st.write(res_gerada)
         
-        link_zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(res)}"
+        link_zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(res_gerada)}"
         st.markdown(f"""
             <a href="{link_zap}" target="_blank" style="text-decoration: none;">
                 <div style="background-color: #25D366; color: white; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold;">
-                    🚀 ENVIAR RESPOSTA PARA {unidade_atual}
+                    🚀 ENVIAR PARA WHATSAPP ({unidade_atual})
                 </div>
             </a>
         """, unsafe_allow_html=True)
