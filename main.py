@@ -1,12 +1,15 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import urllib.parse
 
-# --- 1. SETUP EXECUTIVO ---
+# --- 1. SETUP DE SEGURANÇA ---
 st.set_page_config(page_title="Governança Executiva", layout="wide")
+st.markdown("""<style>
+    .main { background-color: #0E1117; }
+    div[data-testid="stMetric"] { background-color: #161B22; border-radius: 12px; border: 1px solid #30363D; padding: 12px; }
+</style>""", unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS (SERVIDOR - PADRÃO OURO) ---
+# --- 2. BASE DE DADOS INTEGRADA (TERMINOLOGIA ÚNICA) ---
 db_servidor = [
     {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK"},
     {"unidade": "DR. SILVA", "valor": 1.0, "status": "RESTRIÇÃO"},
@@ -16,41 +19,26 @@ db_servidor = [
 ]
 
 df = pd.DataFrame(db_servidor)
-
-# --- 3. CABEÇALHO CONSOLIDADO ---
 total_geral = df["valor"].sum()
+
+# --- 3. DASHBOARD ESTRATÉGICO ---
 st.title("🛡️ Governança de Receita")
 st.metric(label="📊 VALOR TOTAL CONSOLIDADO EM AUDITORIA", value=f"R$ {total_geral:,.2f}")
 
 st.divider()
 
-# --- 4. GRÁFICO DE BARRAS EXECUTIVO (CORREÇÃO DE ESCALA) ---
-st.subheader("📈 Mapa de Exposição Financeira por Unidade")
+# --- 4. GRÁFICO DE BARRAS (CORREÇÃO DE ESCALA) ---
+st.subheader("📈 Performance e Risco por Unidade")
 
-# Criando a lógica de cores para o gráfico
-df['Cor'] = df['status'].apply(lambda x: '#00c853' if x == 'CONFORMIDADE OK' else '#ff4b4b')
+# Criando colunas para visualização lado a lado
+df['Em Conformidade'] = df.apply(lambda x: x['valor'] if x['status'] == 'CONFORMIDADE OK' else 0, axis=1)
+df['Em Restrição/Análise'] = df.apply(lambda x: x['valor'] if x['status'] != 'CONFORMIDADE OK' else 0, axis=1)
 
-# Gerando o gráfico com Plotly para garantir que as barras apareçam do zero
-fig = px.bar(
-    df, 
-    x='unidade', 
-    y='valor', 
-    color='status',
-    color_discrete_map={'CONFORMIDADE OK': '#00c853', 'RESTRIÇÃO': '#ff4b4b', 'PENDÊNCIA TÉCNICA': '#f1e05a'},
-    labels={'unidade': 'Unidade de Negócio', 'valor': 'Exposição (R$)'},
-    text_auto='.2s'
-)
+# Prepara os dados para o gráfico nativo (Evita erro de ModuleNotFound)
+chart_data = df.set_index("unidade")[['Em Conformidade', 'Em Restrição/Análise']]
 
-# Ajuste fino da escala para não "sumir" com as barras
-fig.update_layout(
-    yaxis=dict(range=[0, df['valor'].max() * 1.2]), # Força o eixo a começar em 0
-    paper_bgcolor='rgba(0,0,0,0)',
-    plot_bgcolor='rgba(0,0,0,0)',
-    font_color="white",
-    showlegend=True
-)
-
-st.plotly_chart(fig, use_container_width=True)
+# st.bar_chart nativo com cores fixas: Verde para Conformidade e Vermelho para Risco
+st.bar_chart(chart_data, color=["#00c853", "#ff4b4b"]) 
 
 # --- 5. RELATÓRIO ANALÍTICO (TABELA DA FAVELINHA) ---
 st.divider()
