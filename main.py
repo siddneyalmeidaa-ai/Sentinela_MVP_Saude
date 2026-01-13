@@ -2,13 +2,12 @@ import streamlit as st
 import pandas as pd
 import urllib.parse
 from datetime import datetime
-import pytz
+import pytz  # Biblioteca para gerenciar fuso horário
 
-# --- 1. CONFIGURAÇÃO DE FUSO E MEMÓRIA SEGURA ---
-st.set_page_config(page_title="IA-SENTINELA | Padrão Ouro", layout="wide")
-fuso_br = pytz.timezone('America/Sao_Paulo')
+# --- 1. CONFIGURAÇÃO DE TEMPO REAL (BRASÍLIA) E MEMÓRIA ---
+st.set_page_config(page_title="IA-SENTINELA | Sincronia Total", layout="wide")
+fuso_br = pytz.timezone('America/Sao_Paulo') # Trava o horário no Brasil
 
-# Inicializa memória se estiver vazia
 if 'memoria_unidades' not in st.session_state:
     st.session_state.memoria_unidades = {}
 
@@ -20,7 +19,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS (SERVIDOR EXECUTIVO) ---
+# --- 2. BASE DE DADOS (DADOS SINCRONIZADOS) ---
 db = [
     {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK"},
     {"unidade": "DR. MARCOS", "valor": 8900.0, "status": "CONFORMIDADE OK"},
@@ -30,13 +29,13 @@ db = [
 ]
 df = pd.DataFrame(db)
 
-# --- 3. DASHBOARD DE GOVERNANÇA ---
+# --- 3. DASHBOARD EXECUTIVO ---
 st.title("🛡️ Sentinela: Governança & Mediação")
 st.metric(label="📊 TOTAL CONSOLIDADO EM AUDITORIA", value=f"R$ {df['valor'].sum():,.2f}")
 
 st.divider()
 
-# --- 4. ÁREA DE INTERAÇÃO COM MÉDICO SINCRONIZADA ---
+# --- 4. ÁREA DE INTERAÇÃO COM HORÁRIO SINCRONIZADO ---
 col_dados, col_ia = st.columns([1, 1.2])
 
 with col_dados:
@@ -46,36 +45,33 @@ with col_dados:
     st.subheader("🧠 Histórico Sincronizado")
     unidade_atual = st.selectbox("Selecione o Médico/Unidade:", df['unidade'].tolist())
     
-    # TRATAMENTO DE ERRO (FIX KEYERROR): Verifica se a chave existe antes de acessar
+    # Exibição segura do histórico para evitar KeyError
     if unidade_atual in st.session_state.memoria_unidades:
         hist = st.session_state.memoria_unidades[unidade_atual]
-        # Só exibe o motivo se ele tiver sido capturado
-        motivo = hist.get('motivo', 'Motivo não registrado') 
-        st.warning(f"📌 **Motivo:** {motivo}")
-        st.info(f"🕒 **Horário:** {hist.get('data', '--:--')}")
+        st.warning(f"📌 **Motivo:** {hist.get('motivo', 'Motivo não registrado')}")
+        st.info(f"🕒 **Horário (Brasília):** {hist.get('data', '--:--')}")
     else:
         st.write("Sem registros recentes para esta unidade.")
 
 with col_ia:
     st.subheader("😊 IA de Mediação Humanizada")
     
-    # Campo 1: Recebimento (Sincronizado)
     questionamento = st.text_area(
         f"Mensagem recebida de {unidade_atual}:", 
         placeholder="Cole aqui o que o médico enviou...",
         height=150,
         key=f"input_area_{unidade_atual}" 
     )
-
-    # Campo 2: Processamento e Classificação
+    
     if st.button("✨ Gerar Resposta e Identificar Motivo"):
         if questionamento:
+            # Captura o horário exato de Brasília no momento do clique
             agora_br = datetime.now(fuso_br).strftime("%H:%M:%S")
             
             # Lógica de Classificação de Motivo
-            if any(word in questionamento.lower() for word in ["repasse", "pagamento", "caiu", "dinheiro"]):
+            if any(word in questionamento.lower() for word in ["repasse", "pagamento", "caiu"]):
                 motivo_identificado = "Reclamação de Repasse / Financeiro"
-            elif any(word in questionamento.lower() for word in ["agenda", "cirurgia", "plantão"]):
+            elif any(word in questionamento.lower() for word in ["agenda", "cirurgia"]):
                 motivo_identificado = "Urgência de Agenda Médica"
             else:
                 motivo_identificado = "Dúvida Técnica / Documentação"
@@ -87,7 +83,7 @@ with col_ia:
                 "Estou acompanhando para mover para CONFORMIDADE OK imediatamente."
             )
             
-            # SALVAMENTO SEGURO
+            # Salvamento seguro na memória
             st.session_state.memoria_unidades[unidade_atual] = {
                 "data": agora_br,
                 "motivo": motivo_identificado,
@@ -96,11 +92,10 @@ with col_ia:
             }
             st.rerun()
 
-    # Campo 3: Visualização do Parecer e WhatsApp
+    # Campo de Visualização e Envio
     if unidade_atual in st.session_state.memoria_unidades:
         res = st.session_state.memoria_unidades[unidade_atual]['resposta']
-        motivo_badge = st.session_state.memoria_unidades[unidade_atual].get('motivo', 'Geral')
-        st.success(f"**Parecer Sugerido ({motivo_badge}):**")
+        st.success(f"**Parecer Sugerido ({st.session_state.memoria_unidades[unidade_atual].get('motivo')}):**")
         st.write(res)
         
         link_zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(res)}"
@@ -113,5 +108,6 @@ with col_ia:
         """, unsafe_allow_html=True)
 
 st.divider()
-st.caption(f"Sidney Pereira de Almeida | Diretor de Compliance | {datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M')}")
-    
+# Rodapé com a data e hora atualizada de Brasília
+st.caption(f"Sidney Pereira de Almeida | Diretor de Compliance | Brasília: {datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M')}")
+        
