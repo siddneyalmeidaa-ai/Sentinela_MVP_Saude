@@ -3,12 +3,12 @@ import pandas as pd
 try:
     from flask import Flask, request, jsonify
     import threading
-    FLASK_DISPONIVEL = True
+    FLASK_ATIVO = True
 except ImportError:
-    FLASK_DISPONIVEL = False
+    FLASK_ATIVO = False
 
 # --- 1. MOTOR DE INTELIGÊNCIA Q2-2026 ---
-def realizar_auditoria(valor, status):
+def processar_auditoria(valor, status):
     if valor <= 1.0:
         return "PULA", "🔴 VÁCUO OPERACIONAL (1.00x)", "#ff7b72"
     elif status == "PENDENTE":
@@ -17,23 +17,21 @@ def realizar_auditoria(valor, status):
         return "ENTRA", "🟢 FLUXO SEGURO - LIBERADO", "#39d353"
 
 # --- 2. SINCRONIZAÇÃO WHATSAPP (SERVER) ---
-if FLASK_DISPONIVEL:
+if FLASK_ATIVO:
     app = Flask(__name__)
     @app.route('/webhook', methods=['POST'])
     def whatsapp_sync():
-        return jsonify({"status": "IA-SENTINELA ATIVA"})
+        return jsonify({"status": "IA-SENTINELA CONECTADA"})
     
-    def iniciar_servidor():
+    def rodar_api():
         try: app.run(port=5000)
         except: pass
     
-    # Inicia a escuta em segundo plano
-    threading.Thread(target=iniciar_servidor, daemon=True).start()
+    threading.Thread(target=rodar_api, daemon=True).start()
 
-# --- 3. INTERFACE EXECUTIVA (STREAMLIT) ---
+# --- 3. INTERFACE EXECUTIVA (VISUAL 15:38) ---
 st.set_page_config(page_title="IA-SENTINELA PRO | Q2-2026", layout="wide")
 
-# CSS para Visual Sofisticado
 st.markdown("""
     <style>
     .main { background-color: #0E1117; }
@@ -49,19 +47,18 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 st.title("🛡️ IA-SENTINELA PRO")
-st.caption(f"Status API: {'🟢 Conectado' if FLASK_DISPONIVEL else '🟠 Instalando dependências...'}")
+st.caption(f"Status API: {'🟢 Conectado' if FLASK_ATIVO else '🟠 Sincronizando...'}")
 
-# Painel de Controle Lateral
 with st.sidebar:
-    st.header("⚙️ Controle Operacional")
-    medico = st.selectbox("Unidade/Doutor", ["ANIMA COSTA", "DR. SILVA", "INTERFILE - BI"])
-    valor_rodada = st.number_input("Input de Valor", value=2500.0)
-    status_rodada = st.radio("Status do Faturamento", ["LIBERADO", "PENDENTE"])
+    st.header("⚙️ Painel de Controle")
+    medico = st.selectbox("Unidade", ["ANIMA COSTA", "DR. SILVA", "INTERFILE - BI"])
+    valor_rodada = st.number_input("Valor da Rodada", value=2500.0)
+    status_rodada = st.radio("Status", ["LIBERADO", "PENDENTE"])
 
 # Processamento Q2-2026
-acao, motivo, cor = realizar_auditoria(valor_rodada, status_rodada)
+acao, motivo, cor = processar_auditoria(valor_rodada, status_rodada)
 
-# Dashboard de KPIs (Padrão 68% vs 32%)
+# Dashboard de KPIs (Padrão 68% vs 32% conforme imagem)
 c1, c2 = st.columns(2)
 with c1:
     st.metric(label="ASSETS LIBERADOS (68%)", value="R$ 10.880,00")
@@ -70,7 +67,7 @@ with c2:
     st.metric(label="PENDÊNCIA OPERACIONAL (32%)", value="R$ 5.120,00", delta="-32%", delta_color="inverse")
     st.markdown("🔴 <span style='color:#8B949E;'>Risco de Glosa</span>", unsafe_allow_html=True)
 
-# Bloco de Ação Centralizado
+# Bloco de Decisão (Fiel à imagem 15:38)
 st.markdown(f"""
     <div class="decisao-box" style="background-color: {cor}22; border-color: {cor};">
         <h1 style="color: {cor}; margin:0;">DECISÃO: {acao}</h1>
@@ -82,12 +79,12 @@ st.divider()
 
 # Tabela da Favelinha (Insights Ativos Q2)
 st.subheader("📊 Critical Audit Log (Tabela da Favelinha)")
-df_favelinha = pd.DataFrame({
+df = pd.DataFrame({
     "Paciente": ["João Silva", "Maria Oliveira", "Monitoramento Atual"],
     "Status": ["PENDENTE", "PENDENTE", status_rodada],
     "Insight Ativo (Q2)": ["Erro XML - Corrigir Tag", "Divergência TUSS", f"Ação Sugerida: {acao}"]
 })
-st.table(df_favelinha)
+st.table(df)
 
 st.write("---")
 st.caption(f"Operação: {medico} | Auditor: Sidney Pereira de Almeida")
