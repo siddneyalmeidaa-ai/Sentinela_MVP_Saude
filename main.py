@@ -26,7 +26,7 @@ def iniciar_servidor():
     except:
         pass
 
-# Inicia a escuta em segundo plano
+# Inicia a escuta em segundo plano para não travar o visual
 threading.Thread(target=iniciar_servidor, daemon=True).start()
 
 # --- 3. INTERFACE EXECUTIVA (STREAMLIT) ---
