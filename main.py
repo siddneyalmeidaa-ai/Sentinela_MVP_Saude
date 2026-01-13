@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import urllib.parse
-import plotly.express as px
 
 # --- 1. SIMULAÇÃO DE SERVIDOR (BASE DE MÉDICOS) ---
 def buscar_dados_servidor():
@@ -21,12 +20,12 @@ def processar_auditoria(valor, status):
     else:
         return "ENTRA", "🟢 FLUXO SEGURO - LIBERADO", "#39d353"
 
-# --- 2. CONFIGURAÇÃO VISUAL ---
+# --- 2. INTERFACE EXECUTIVA ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 st.markdown("""<style>
     .main { background-color: #0E1117; }
     div[data-testid="stMetric"] { background-color: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 15px; }
-    .stTable { background-color: #161B22; border-radius: 10px; }
+    .decisao-box { padding: 20px; border-radius: 12px; text-align: center; margin: 15px 0; border: 2px solid; }
 </style>""", unsafe_allow_html=True)
 
 st.title("🛡️ IA-SENTINELA PRO")
@@ -35,47 +34,35 @@ st.caption("Automação Ativa | Sincronização com Servidor")
 # --- 3. PROCESSAMENTO EM LOTE ---
 dados = buscar_dados_servidor()
 resultados = []
-contagem = {"ENTRA": 0, "PULA": 0, "AGUARDAR": 0}
 
 for item in dados:
     acao, motivo, cor = processar_auditoria(item['valor'], item['status'])
-    contagem[acao] += 1
     resultados.append({
         "Médico": item['medico'],
-        "Valor (R$)": item['valor'],
+        "Paciente": item['paciente'],
+        "Valor (R$)": f"{item['valor']:,.2f}",
         "Decisão": acao,
         "Insight Ativo": motivo
     })
 
 df = pd.DataFrame(resultados)
 
-# --- 4. DASHBOARD DE PROJEÇÃO (O "X" DA RODADA) ---
-c1, c2 = st.columns([1, 1])
-
+# --- 4. DASHBOARD DE KPIs ---
+c1, c2 = st.columns(2)
 with c1:
-    st.subheader("📈 Projeção de Próximas Rodadas")
-    fig = px.pie(
-        values=[contagem["ENTRA"], contagem["PULA"] + contagem["AGUARDAR"]], 
-        names=["LIBERADO", "PENDENTE/VÁCUO"],
-        color_discrete_sequence=["#39d353", "#ff7b72"],
-        hole=0.5
-    )
-    fig.update_layout(margin=dict(t=0, b=0, l=0, r=0), showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white")
-    st.plotly_chart(fig, use_container_width=True)
-
+    st.metric(label="ASSETS LIBERADOS (68%)", value="R$ 10.880,00") # Valores fixos conforme imagem
 with c2:
-    st.metric(label="TAXA DE SUCESSO (LIBERADO)", value=f"{(contagem['ENTRA']/len(dados))*100:.1f}%")
-    st.metric(label="RISCO DE VÁCUO (PULA)", value=f"{(contagem['PULA']/len(dados))*100:.1f}%", delta="Atenção", delta_color="inverse")
+    st.metric(label="PENDÊNCIA OPERACIONAL (32%)", value="R$ 5.120,00", delta="-32%", delta_color="inverse")
 
 # --- 5. TABELA DA FAVELINHA AUTOMATIZADA ---
 st.divider()
 st.subheader("📊 Tabela da Favelinha (Auditada via Servidor)")
 st.table(df)
 
-# --- 6. ENVIO RÁPIDO ---
-st.subheader("📲 Enviar Insight da Base")
-numero_zap = st.text_input("Seu WhatsApp (55...)", value="55")
-medico_alerta = st.selectbox("Escolha o Médico para reportar", df["Médico"].tolist())
+# --- 6. ENVIO RÁPIDO WHATSAPP (VALIDADO) ---
+st.subheader("📲 Disparar Relatório")
+numero_zap = st.text_input("WhatsApp para Envio (55...)", value="5511942971753") # Seu número da imagem
+medico_alerta = st.selectbox("Escolha o médico para reportar", df["Médico"].tolist())
 
 if len(numero_zap) > 10:
     row = df[df["Médico"] == medico_alerta].iloc[0]
@@ -83,4 +70,4 @@ if len(numero_zap) > 10:
     link = f"https://wa.me/{numero_zap}?text={urllib.parse.quote(msg)}"
     st.link_button(f"🚀 Enviar Report de {medico_alerta}", link)
 
-st.caption("Sistema Sincronizado | Auditor: Sidney Pereira de Almeida")
+st.caption("Auditor: Sidney Pereira de Almeida | Q2-2026")
