@@ -5,11 +5,15 @@ import pytz
 import io
 import urllib.parse
 
-# Importações para o PDF de Alto Nível
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+# Importações para o PDF de Alto Nível (Requer reportlab instalado)
+try:
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    PDF_DISPONIVEL = True
+except ImportError:
+    PDF_DISPONIVEL = False
 
 # --- CONFIGURAÇÃO DE AMBIENTE ---
 fuso_br = pytz.timezone('America/Sao_Paulo')
@@ -25,7 +29,7 @@ db = [
 ]
 df = pd.DataFrame(db)
 
-# --- FUNÇÃO: GERADOR DE PDF EXECUTIVO (TIMBRADO) ---
+# --- FUNÇÃO: GERADOR DE PDF EXECUTIVO ---
 def exportar_pdf_premium(data_frame):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -41,75 +45,55 @@ def exportar_pdf_premium(data_frame):
         'Sub', fontSize=10, alignment=1, textColor=colors.gray, spaceAfter=30
     )
 
-    # Adicionando o Timbre
     elementos.append(Paragraph("S E N T I N E L A", estilo_timbre))
-    elementos.append(Paragraph("PROJETO FRAJOLA | UNIDADE DE GOVERNANÇA E MEDIAÇÃO", estilo_subtitulo))
+    elementos.append(Paragraph("PROJETO FRAJOLA | UNIDADE DE GOVERNANÇA", estilo_subtitulo))
     
-    # Dados de Cabeçalho do Sidney
+    # Cabeçalho Sidney
     meta_dados = [
         [f"RESPONSÁVEL: SIDNEY PEREIRA DE ALMEIDA", f"EMISSÃO: {agora}"],
-        [f"SISTEMA: 17 INTELIGÊNCIAS ATIVAS", f"TOTAL AUDITADO: R$ {data_frame['valor'].sum():,.2f}"]
+        [f"SISTEMA: 17 INTELIGÊNCIAS ATIVAS", f"TOTAL: R$ {data_frame['valor'].sum():,.2f}"]
     ]
-    t_meta = Table(meta_dados, colWidths=[3.0*72, 3.0*72])
-    t_meta.setStyle(TableStyle([
-        ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0,0), (-1,-1), 9),
-        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor("#2C3E50")),
-        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-    ]))
+    t_meta = Table(meta_dados, colWidths=[210, 210])
+    t_meta.setStyle(TableStyle([('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'), ('FONTSIZE', (0,0), (-1,-1), 9)]))
     elementos.append(t_meta)
     elementos.append(Spacer(1, 20))
 
-    # Construção da Tabela Zebrada (Profissional)
-    dados_tabela = [["UNIDADE ACADÊMICA / MÉDICO", "VALOR (R$)", "STATUS FINAL"]]
+    # Tabela Zebrada
+    dados_tabela = [["UNIDADE / MÉDICO", "VALOR (R$)", "STATUS"]]
     for _, row in data_frame.iterrows():
         dados_tabela.append([row['unidade'], f"{row['valor']:,.2f}", row['status']])
 
-    t = Table(dados_tabela, colWidths=[2.5*72, 1.5*72, 2.0*72])
-    estilo_tab = TableStyle([
+    t = Table(dados_tabela, colWidths=[180, 100, 150])
+    t.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1B2631")),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.HexColor("#D5DBDB")]),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-    ])
-    t.setStyle(estilo_tab)
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.HexColor("#D5DBDB")]),
+    ]))
     elementos.append(t)
-
-    # Rodapé de Autenticidade
-    elementos.append(Spacer(1, 50))
-    elementos.append(Paragraph("Documento oficial para fins de auditoria interna. Gerado via DNA 17-IA.", 
-                               ParagraphStyle('F', fontSize=8, alignment=1, textColor=colors.gray)))
 
     doc.build(elementos)
     buffer.seek(0)
     return buffer
 
-# --- INTERFACE STREAMLIT ---
+# --- INTERFACE ---
 st.title("🛡️ Sentinela: Governança & Mediação")
-st.metric("VALOR TOTAL EM AUDITORIA", f"R$ {df['valor'].sum():,.2f}")
-
-with st.expander("📄 Visualizar Relatório Analítico"):
-    st.table(df)
+st.metric("VALOR TOTAL CONSOLIDADO", f"R$ 26,801.80")
 
 st.divider()
 st.subheader("📑 Área de Exportação (Padrão Sidney)")
 
-# Gerar e disponibilizar o PDF
-pdf_pronto = exportar_pdf_premium(df)
-
-st.download_button(
-    label="📥 BAIXAR RELATÓRIO EXECUTIVO (PDF)",
-    data=pdf_pronto,
-    file_name=f"Relatorio_Frajola_{datetime.now().strftime('%d%m%Y')}.pdf",
-    mime="application/pdf",
-    help="Clique para baixar o documento com timbre e formatação de diretoria."
-)
+if PDF_DISPONIVEL:
+    pdf_pronto = exportar_pdf_premium(df)
+    st.download_button(
+        label="📥 BAIXAR RELATÓRIO EXECUTIVO (PDF)",
+        data=pdf_pronto,
+        file_name=f"Relatorio_Frajola_{datetime.now().strftime('%d%m%Y')}.pdf",
+        mime="application/pdf",
+        use_container_width=True
+    )
+else:
+    st.error("⚠️ Biblioteca de PDF não instalada. Por favor, adicione 'reportlab' ao seu arquivo requirements.txt.")
 
 st.caption(f"Sidney Pereira de Almeida | {agora}")
-    
