@@ -6,7 +6,7 @@ import pytz
 import random
 
 # --- 1. CONFIGURAÇÃO E BLINDAGEM VISUAL ---
-st.set_page_config(page_title="IA-SENTINELA | Projeto Embrião", layout="wide")
+st.set_page_config(page_title="IA-SENTINELA | Organismo Vivo", layout="wide")
 fuso_br = pytz.timezone('America/Sao_Paulo')
 
 if 'memoria_unidades' not in st.session_state:
@@ -15,15 +15,14 @@ if 'memoria_unidades' not in st.session_state:
 st.markdown("""
     <style>
     [data-testid="stSidebar"] {display: none;}
-    [data-testid="stSidebarCollapsedControl"] {display: none;}
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
-    .block-container { padding-top: 0rem; }
+    .block-container { padding-top: 0.5rem; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS SINCRONIZADA ---
+# --- 2. BASE DE DADOS (SERVIDOR) ---
 db = [
     {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK"},
     {"unidade": "DR. MARCOS", "valor": 8900.0, "status": "CONFORMIDADE OK"},
@@ -33,41 +32,22 @@ db = [
 ]
 df = pd.DataFrame(db)
 
-# --- 3. MOTOR DE DECISÃO "PROJETO EMBRIÃO" (ORGANISMO VIVO) ---
-def motor_projeto_embriao(unidade, mensagem_medico, status_financeiro):
-    """Lógica viva que alterna o tom e a estratégia com base no contexto."""
-    msg_low = mensagem_medico.lower()
-    
-    # 1. Identificação de Urgência (Vácuo / Zona de Morte)
-    urgencia = "ALTA" if any(w in msg_low for w in ["hoje", "agora", "parar", "agenda"]) else "NORMAL"
-    
-    # 2. Variáveis de Contexto (O 'DNA' da resposta)
-    saudacoes = ["Olá", "Prezado", "Bom dia", "Tudo bem"]
+# --- 3. MOTOR VIVO (PROJETO EMBRIÃO) ---
+def gerar_resposta_viva(unidade, msg_medico, status):
+    saudacoes = ["Olá", "Tudo bem", "Prezado(a)"]
     empatia = [
-        "entendo sua preocupação com o repasse",
-        "valorizamos muito sua parceria conosco",
-        "estou ciente da importância desse fluxo para sua agenda"
+        "compreendo a urgência sobre o repasse",
+        "estou ciente da importância desse fluxo",
+        "valorizamos sua atuação na ponta"
     ]
-    
-    # 3. Decisão Viva (Não padronizada)
-    if status_financeiro == "RESTRIÇÃO":
-        acao = "precisamos apenas validar o XML final para liberar o pagamento no lote extra."
-    else:
-        acao = "o sistema já está processando sua conformidade para o próximo ciclo."
+    acao = "precisamos validar o XML final" if status == "RESTRIÇÃO" else "o lote extra está em processamento"
+    viva = f"{random.choice(saudacoes)}, {unidade}. {random.choice(empatia)}. No momento, {acao}. Estou acompanhando."
+    urgencia = "ALTA" if any(x in msg_medico.lower() for x in ["hoje", "agora", "parar"]) else "NORMAL"
+    return viva, urgencia
 
-    fechamento = [
-        "Estou acompanhando pessoalmente.",
-        "Vou priorizar seu caso na mesa de auditoria.",
-        "Qualquer dúvida, conte comigo diretamente."
-    ]
-
-    # Montagem Dinâmica (Organismo Vivo)
-    corpo = f"{random.choice(saudacoes)}, {unidade}. {random.choice(empatia)}. No momento, {acao} {random.choice(fechamento)}"
-    return corpo, urgencia
-
-# --- 4. INTERFACE OPERACIONAL ---
-with st.expander("📊 Auditoria Geral (Barriguinha)"):
-    st.metric(label="💰 TOTAL EM AUDITORIA", value=f"R$ {df['valor'].sum():,.2f}")
+# --- 4. INTERFACE DE AUDITORIA (BARRIGUINHAS) ---
+with st.expander("📊 Auditoria Geral de Valores"):
+    st.metric("TOTAL EM AUDITORIA", f"R$ {df['valor'].sum():,.2f}")
     st.bar_chart(df.set_index("unidade")["valor"])
 
 st.subheader("📋 Relatório Analítico de Ativos")
@@ -75,51 +55,51 @@ st.table(df[["unidade", "valor", "status"]].rename(columns={"unidade": "Unidade"
 
 st.divider()
 
+# --- 5. CANAL ESTRATÉGICO SINCRONIZADO ---
 col_ia, col_hist = st.columns([1.2, 1])
 
 with col_ia:
     st.subheader("📲 Canal de Comunicação Estratégica")
     unidade_atual = st.selectbox("Selecione o Médico:", df['unidade'].tolist(), key="main_select")
     
-    # Auditoria Individual Individualizada
-    dados_medico = df[df['unidade'] == unidade_atual].iloc[0]
+    # Auditoria Individual (Barriguinha)
+    medico_info = df[df['unidade'] == unidade_atual].iloc[0]
     with st.expander(f"🔍 Auditoria Individual: {unidade_atual}"):
-        st.write(f"Valor em Risco: **R$ {dados_medico['valor']:,.2f}**")
-        st.write(f"Veredito: **{dados_medico['status']}**")
+        st.write(f"Exposição: **R$ {medico_info['valor']:,.2f}**")
+        st.write(f"Veredito: **{medico_info['status']}**")
 
-    # Entrada do questionamento
+    # Input de Texto
     texto_previo = st.session_state.memoria_unidades.get(unidade_atual, {}).get('entrada', "")
     questionamento = st.text_area(f"Mensagem de {unidade_atual}:", value=texto_previo, height=120, key=f"in_{unidade_atual}")
     
     if st.button("🚀 Ativar Projeto Embrião (Gerar Resposta Viva)"):
         if questionamento:
-            # A IA decide aqui o que falar
-            resposta_viva, nivel_urgencia = motor_projeto_embriao(unidade_atual, questionamento, dados_medico['status'])
-            agora_br = datetime.now(fuso_br).strftime("%H:%M:%S")
-            
+            viva, urg = gerar_resposta_viva(unidade_atual, questionamento, medico_info['status'])
             st.session_state.memoria_unidades[unidade_atual] = {
-                "data": agora_br,
-                "urgencia": nivel_urgencia,
+                "data": datetime.now(fuso_br).strftime("%H:%M:%S"),
+                "urgencia": urg,
                 "entrada": questionamento,
-                "resposta": resposta_viva
+                "resposta": viva
             }
             st.rerun()
 
+    # Exibição Protegida (Evita o KeyError)
     if unidade_atual in st.session_state.memoria_unidades:
-        h = st.session_state.memoria_unidades[unidade_atual]
-        st.success(f"**Parecer Sugerido (Urgência: {h['urgencia']}):**\n\n{h['resposta']}")
-        link_zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(h['resposta'])}"
-        st.markdown(f'<a href="{link_zap}" target="_blank" style="text-decoration:none;"><div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR VIA WHATSAPP</div></a>', unsafe_allow_html=True)
+        atendimento = st.session_state.memoria_unidades[unidade_atual]
+        st.success(f"**Parecer Sugerido (Urgência: {atendimento['urgencia']}):**\n\n{atendimento['resposta']}")
+        
+        link_zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(atendimento['resposta'])}"
+        st.markdown(f'<a href="{link_zap}" target="_blank" style="text-decoration:none;"><div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR PARA WHATSAPP</div></a>', unsafe_allow_html=True)
 
 with col_hist:
     st.subheader("🧠 Registro de Auditoria")
     if unidade_atual in st.session_state.memoria_unidades:
-        h = st.session_state.memoria_unidades[unidade_atual]
-        st.warning(f"📌 **Status de Urgência:** {h.get('urgencia')}")
-        st.info(f"🕒 **Última Interação:** {h.get('data')}")
-        st.text_area("Entrada original:", value=h.get('entrada'), height=80, disabled=True)
+        atendimento = st.session_state.memoria_unidades[unidade_atual]
+        st.warning(f"📌 **Status:** {atendimento['urgencia']}")
+        st.info(f"🕒 **Horário:** {atendimento['data']}")
+        st.caption(f"Entrada registrada: {atendimento['entrada'][:100]}...")
     else:
-        st.write("Sem registros.")
+        st.write("Aguardando interação.")
 
 st.divider()
 st.caption(f"Sidney Pereira de Almeida | {datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M')}")
