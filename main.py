@@ -31,11 +31,11 @@ class CoreGF17:
         else:
             return "PULA"
 
-# --- 2. CONFIGURAÇÃO DA INTERFACE (STREAMLIT) ---
+# --- 2. CONFIGURAÇÃO DA INTERFACE (CONFORME SEUS PRINTS) ---
 st.set_page_config(page_title="GF-17 - Projeto Frajola", layout="centered")
 brain = CoreGF17()
 
-# --- 3. MÉTRICAS DINÂMICAS (Sincronizadas com os Prints) ---
+# --- 3. MÉTRICAS DINÂMICAS ---
 st.title(f"{brain.liberado} LIBERADO")
 st.caption("EM AUDITORIA")
 st.subheader(f"{brain.pendente} PENDENTE")
@@ -50,12 +50,10 @@ if st.button("🚀 ATIVAR PROJETO FRAJOLA"):
     if user_input:
         resposta = brain.processar_rag(user_input)
         st.info(f"🧐 GÊMEA FÊNIX: {resposta}")
-    else:
-        st.warning("Maluquinha dos Códigos: Digite um comando para ativar o cérebro!")
 
 st.divider()
 
-# --- 5. TABELA DA FAVELINHA (Lógica de Rodada 1.85x) ---
+# --- 5. TABELA DA FAVELINHA ---
 st.write("### 📋 TABELA DA FAVELINHA")
 proj_rodada = 1.85
 acao_imediata = brain.decisao_sts(proj_rodada)
