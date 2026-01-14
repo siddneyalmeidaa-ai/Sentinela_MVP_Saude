@@ -3,81 +3,85 @@ import pandas as pd
 import urllib.parse
 from datetime import datetime
 
-# --- 1. ÂNCORA DE MEMÓRIA (IMPEDE QUE A MENSAGEM SUMA) ---
-# Inicializa o núcleo de memória para manter a interação viva
-if 'memoria_sentinela' not in st.session_state:
-    st.session_state.memoria_sentinela = []
-if 'ultima_ia_msg' not in st.session_state:
-    st.session_state.ultima_ia_msg = ""
+# --- 1. MOTOR DE MEMÓRIA QUÂNTICA (LLM CONTEXT) ---
+# Garante que a IA não "se perca" ao clicar nos botões
+if 'historico_llm' not in st.session_state:
+    st.session_state.historico_llm = []
+if 'resposta_ativa' not in st.session_state:
+    st.session_state.resposta_ativa = ""
 
-class NucleoInteracao:
+class MotorLLM:
     def __init__(self):
-        self.valor_total = 26801.80 #
+        self.total = 26801.80 #
         self.medicos = ["ANIMA COSTA", "INTERFILE - BI", "DR. MARCOS", "LAB CLINIC"]
 
-    def responder(self, medico, texto):
-        """Interage de forma humana e coerente com o Sidney"""
-        t = texto.lower()
+    def processar_linguagem(self, medico, prompt):
+        """Simula a lógica de um LLM para interagir com o Sidney"""
+        p = prompt.lower()
         
-        # Interação de Saudação
-        if any(x in t for x in ["boa noite", "olá", "oi"]):
-            return f"Boa noite, Sidney! Analisando {medico}, o status é CONFORMIDADE OK. Como as 17 IAs podem te ajudar agora?"
+        # Lógica de Contexto: Identifica saudações ou agradecimentos
+        if any(x in p for x in ["boa noite", "olá", "oi"]):
+            return f"Boa noite, Sidney! Analisando a unidade {medico}, o status atual é CONFORMIDADE OK. Como as 17 IAs podem acelerar seu processo?"
         
-        # Interação de Fechamento (Evita que a IA repita saudações)
-        if any(x in t for x in ["obrigado", "valeu", "entendi", "somente isso"]):
-            return f"Show, Sidney! Registrei a conformidade da {medico}. Diálogo salvo na Memória Quântica. Próximo passo?"
-            
-        return f"Entendido, Sidney. Para {medico}, o parecer sugere fluxo normal. Deseja enviar para o WhatsApp?"
+        if any(x in p for x in ["obrigado", "valeu", "entendi", "somente isso"]):
+            return f"Perfeito, Sidney! Registrei a conformidade da unidade {medico}. Diálogo salvo na Memória Quântica para auditoria."
+        
+        return f"Parecer Técnico: Sidney, verifiquei que {medico} opera com fluxo normal sob o Estatuto Atual (69% Liberado). Alguma outra dúvida?"
 
-ni = NucleoInteracao()
+ai_nucleo = MotorLLM()
 
-# --- 2. INTERFACE ESTÁVEL E SEM ERROS ---
-st.set_page_config(page_title="Sentinela | GF-17", layout="wide")
-st.title("🛡️ Caixa de Diálogo Online")
+# --- 2. INTERFACE PADRÃO OURO (ESTÁVEL) ---
+st.set_page_config(page_title="Sentinela LLM | GF-17", layout="wide")
+st.title("🛡️ Sentinela: Inteligência de Dados")
 
-# Arredondamento Padrão Ouro (69% e 31%)
+# Arredondamento Sincronizado (69% e 31%)
 c1, c2 = st.columns(2)
 c1.metric("ESTATUTO ATUAL", "69% LIBERADO")
 c2.metric("EM AUDITORIA", "31% PENDENTE")
 
-# --- 3. CAIXA DE INTERAÇÃO (DIÁLOGO ONLINE) ---
+# --- 3. CAIXA DE DIÁLOGO ONLINE (PROJETO FRAJOLA) ---
+st.subheader("💬 Caixa de Diálogo Online (IA Viva)")
 with st.container(border=True):
-    # 'key' garante que o Streamlit não limpe o campo sozinho
-    med_foco = st.selectbox("Médico em Foco:", ni.medicos, key="escolha_medico")
-    msg_sidney = st.text_input("Interação:", placeholder="Ex: Boa noite", key="chat_input")
+    col_med, col_msg = st.columns([1, 2])
+    with col_med:
+        u_sel = st.selectbox("Médico em Foco:", ai_nucleo.medicos, key="med_llm")
+    with col_msg:
+        entrada = st.text_input("Interação:", placeholder="Ex: Boa noite, tudo bem?", key="input_llm")
 
     if st.button("🚀 Ativar Projeto Frajola"):
-        if msg_sidney:
-            # IA processa e o resultado é 'ancorado' na sessão
-            resposta = ni.responder(med_foco, msg_sidney)
-            st.session_state.ultima_ia_msg = resposta
+        if entrada:
+            # IA processa e a resposta fica 'travada' na memória
+            resposta_ia = ai_nucleo.processar_linguagem(u_sel, entrada)
+            st.session_state.resposta_ativa = resposta_ia
             
-            # Alimenta o Histórico (Memória Quântica)
-            st.session_state.memoria_sentinela.append({
-                "Hora": datetime.now().strftime("%H:%M"),
-                "Médico": med_foco,
-                "Sidney": msg_sidney,
-                "IA Sentinela": resposta
+            # Alimenta a Memória Quântica (Histórico)
+            st.session_state.historico_llm.append({
+                "Data": datetime.now().strftime("%d/%m %H:%M"),
+                "Unidade": u_sel,
+                "Sidney": entrada,
+                "IA Sentinela": resposta_ia
             })
 
-    # EXIBIÇÃO TRAVADA: A resposta não some ao clicar em outros botões
-    if st.session_state.ultima_ia_msg:
-        st.info(f"**Parecer Sugerido:** {st.session_state.ultima_ia_msg}")
+    # Exibição do Parecer (Não some ao clicar)
+    if st.session_state.resposta_ativa:
+        st.info(f"**Análise da IA:** {st.session_state.resposta_ativa}")
         
-        # WhatsApp Blindado contra TypeError
-        zap_link = f"https://wa.me/5511942971753?text={urllib.parse.quote(st.session_state.ultima_ia_msg)}"
-        st.markdown(f'<a href="{zap_link}" target="_blank" style="text-decoration:none;"><div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR PARA WHATSAPP</div></a>', unsafe_allow_html=True)
+        # Link WhatsApp Blindado (Resolve o TypeError dos seus prints)
+        texto_zap = urllib.parse.quote(st.session_state.resposta_ativa)
+        url_zap = f"https://wa.me/5511942971753?text={texto_zap}"
+        st.markdown(f'<a href="{url_zap}" target="_blank" style="text-decoration:none;"><div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR PARA WHATSAPP</div></a>', unsafe_allow_html=True)
 
-# --- 4. ABA DE HISTÓRICO (MEMÓRIA) ---
+# --- 4. ABA DE SALVAMENTO (MEMÓRIA) ---
 st.divider()
-tab1, tab2 = st.tabs(["📋 Tabela da Favelinha", "📜 Histórico de Diálogo (Memória)"])
+t1, t2 = st.tabs(["📋 Tabela da Favelinha", "📜 Histórico de Diálogo (Memória)"])
 
-with tab1:
-    st.table(pd.DataFrame([{"Médico": med_foco, "Ação": "entra"}]))
+with t1:
+    st.table(pd.DataFrame([{"Médico": u_sel, "Ação": "entra"}])) # Regras salvas
 
-with tab2:
-    if st.session_state.memoria_sentinela:
-        st.dataframe(pd.DataFrame(st.session_state.memoria_sentinela))
+with t2:
+    if st.session_state.historico_llm:
+        st.dataframe(pd.DataFrame(st.session_state.historico_llm))
     else:
-        st.info("Inicie uma interação para alimentar a Memória Quântica.")
-        
+        st.info("Aguardando interações para alimentar a memória.")
+
+st.caption(f"Sidney Pereira de Almeida | {datetime.now().strftime('%d/%m/%Y %H:%M')} | Sincronizado")
