@@ -1,25 +1,22 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. CONFIGURAÇÃO VISUAL MASTER & BLINDAGEM ---
+# --- 1. CONFIGURAÇÃO VISUAL MASTER & BLINDAGEM SELETIVA ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
-# ESTE BLOCO OCULTA O MENU, O BOTÃO GITHUB E O FOOTER "MADE WITH STREAMLIT"
 st.markdown("""
     <style>
-    /* Oculta o cabeçalho padrão do Streamlit (Botões da direita) */
-    header {visibility: hidden;}
+    /* OCULTA APENAS OS BOTÕES DE CONFIGURAÇÃO (DIREITA) */
+    #MainMenu {visibility: hidden;} /* Menu Hambúrguer */
+    .stDeployButton {display:none;}  /* Botão Deploy */
+    header .st-emotion-cache-15ec66s {display:none;} /* Botão GitHub/Edição */
+    footer {visibility: hidden;}    /* Rodapé */
     
-    /* Oculta o rodapé padrão */
-    footer {visibility: hidden;}
-    
-    /* Ajusta o espaçamento para compensar o cabeçalho oculto */
-    .main .block-container { padding-top: 1rem; }
-
+    /* MANTÉM O RESTO DA INTERFACE VISÍVEL E LIMPA */
     .header-box { 
         display: flex; justify-content: space-between; align-items: center; 
-        padding: 15px; background: #1c232d; border-radius: 10px;
-        border-bottom: 2px solid #00d4ff; margin-bottom: 20px;
+        padding: 10px; background: #1c232d; border-radius: 10px;
+        border-bottom: 2px solid #00d4ff; margin-bottom: 15px;
     }
     .pro-tag { background: #00d4ff; color: #12171d; padding: 2px 8px; border-radius: 5px; font-weight: 900; font-size: 0.7rem; }
     
@@ -31,13 +28,12 @@ st.markdown("""
     </style>
     
     <div class="header-box">
-        <span style="color: white; font-size: 1.2rem;">🏛️ CONTROLE: <b>IA-SENTINELA</b></span> 
+        <span style="color: white; font-size: 1.1rem;">🏛️ CONTROLE: <b>IA-SENTINELA</b></span> 
         <span class="pro-tag">PRO V17 - PROTEGIDO</span>
     </div>
     """, unsafe_allow_html=True)
 
-# --- CONTINUAÇÃO DO CÓDIGO (DADOS E LÓGICA) ---
-# Use a base de dados corrigida que enviamos anteriormente para evitar o SyntaxError
+# --- 2. BASE DE DADOS (SEM ERROS DE SINTAXE) ---
 dados_medicos = {
     "ANIMA COSTA": {
         "valor": 16000.0, "motivo": "Divergência de XML", "risco": 15,
@@ -53,4 +49,4 @@ dados_medicos = {
     }
 }
 
-# (O restante do código de abas, gráficos e relatório permanece o mesmo)
+# (O restante do código de abas, cálculos e relatórios segue aqui...)
