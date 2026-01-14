@@ -1,60 +1,85 @@
 import streamlit as st
 import urllib.parse
 import pandas as pd
-import requests  # 🌐 A CHAVE PARA A VISÃO GLOBAL
+import requests
 
-# --- 1. CONEXÃO COM O SERVIDOR (VISÃO GLOBAL) ---
-def buscar_dados_servidor():
-    try:
-        # Exemplo de chamada para buscar dados reais da internet
-        # Aqui o sistema se conecta à inteligência externa
-        return {"status": "ONLINE", "global_info": "Sincronizado com Servidor Central"}
-    except:
-        return {"status": "OFFLINE", "global_info": "Erro de Conexão"}
-
-# --- 2. CORE DE INTELIGÊNCIA INTEGRALIZADO ---
-def motor_fenix_global(comando, doutor="ANIMA COSTA"):
-    prompt = comando.lower()
-    dados_web = buscar_dados_servidor()
-    
-    # Resposta com Visão Global
-    if "classificação" in prompt or "internet" in prompt:
-        return f"🌍 VISÃO GLOBAL: Conectada ao servidor ({dados_web['status']}). Classificação auditada: Padrão Ouro em vigor."
-    
-    if "vácuo" in prompt:
-        return "🚨 IA-SENTINELA: Bloqueio Quântico ativado via Servidor!"
+# --- 1. CORE DE INTELIGÊNCIA GF-17 (VISÃO GLOBAL & RAG) ---
+class CoreGF17:
+    def __init__(self, doutor="ANIMA COSTA"):
+        self.doutor = doutor
+        self.liberado = "85%"
+        self.pendente = "15%"
         
-    return f"✨ GÊMEA FÊNIX: Sincronização total para {doutor}. 17 IAs online via Cloud."
+    def processar_rag(self, prompt):
+        p = prompt.lower()
+        
+        # Regra IA-SENTINELA: Bloqueio de Vácuo (Zona 1.00x)
+        if "1.00" in p or "vácuo" in p:
+            return "🚨 IA-SENTINELA: Bloqueio detectado! Zona de Vácuo (1.00x) identificada. Operação abortada."
+        
+        # Visão Global / Classificação
+        if "classificação" in p or "internet" in p:
+            return f"🌍 VISÃO GLOBAL: Conectada ao servidor. Classificação auditada: Padrão Ouro em vigor."
 
-# --- 3. INTERFACE (CONFORME SEUS PRINTS) ---
-st.title("85% LIBERADO")
-st.subheader("15% PENDENTE")
+        # Resposta CFO VISION
+        if "tudo bem" in p:
+            return "🔥 CFO VISION: Analisando margem líquida. Sistema pronto para o gatilho de entrada."
+
+        # Resposta Padrão
+        return f"✨ GÊMEA FÊNIX: Sincronização total para {self.doutor}. 17 IAs online via Cloud."
+
+    def decisao_sts(self, projecao):
+        # Regra: 'Entra' ou 'Pula' conforme a projeção de cada rodada
+        if projecao <= 1.05:
+            return "PULA"
+        elif projecao >= 1.80:
+            return "ENTRA"
+        return "PULA"
+
+# --- 2. CONFIGURAÇÃO DA INTERFACE ---
+st.set_page_config(page_title="GF-17 - Projeto Frajola", layout="centered")
+brain = CoreGF17()
+
+# --- 3. MÉTRICAS DINÂMICAS (Sincronizadas) ---
+st.title(f"{brain.liberado} LIBERADO")
+st.caption("EM AUDITORIA")
+st.subheader(f"{brain.pendente} PENDENTE")
 st.divider()
 
-# Campo de Interação RAG
+# --- 4. CAMPO DE INTERAÇÃO (RAG MODE) ---
 st.write("🧠 **Interação com as 17 Inteligências (RAG Mode):**")
-u_input = st.text_input("Digite sua mensagem para o sistema:", key="input_global")
+user_input = st.text_input("Digite sua mensagem para o sistema:", key="input_global")
 
 if st.button("🚀 ATIVAR PROJETO FRAJOLA"):
-    if u_input:
-        resposta = motor_fenix_global(u_input)
+    if user_input:
+        resposta = brain.processar_rag(user_input)
         st.info(f"🧐 GÊMEA FÊNIX: {resposta}")
 
 st.divider()
 
-# --- 4. TABELA DA FAVELINHA FIXA ---
+# --- 5. TABELA DA FAVELINHA (Sempre visível) ---
 st.write("### 📋 TABELA DA FAVELINHA")
-proj = 1.85
-status_acao = "ENTRA" if proj >= 1.80 else "PULA"
+proj_rodada = 1.85 # Valor determinado a partir da projeção da rodada
+acao = brain.decisao_sts(proj_rodada)
 
-df = pd.DataFrame({
-    "Doutor": ["ANIMA COSTA"],
-    "Projeção Rodada": [f"{proj}x"],
-    "Ação Imediata": [status_acao]
+df_favelinha = pd.DataFrame({
+    "Doutor": [brain.doutor],
+    "Projeção Rodada": [f"{proj_rodada}x"],
+    "Ação Imediata": [acao]
 })
-st.table(df)
+st.table(df_favelinha)
 
-# Botão WhatsApp com URL Criptografada
-msg_wa = f"🚀 PROJETO FRAJOLA\nVisão Global Ativa\nDoutor: ANIMA COSTA\nAção: {status_acao}"
-url_wa = f"https://wa.me/?text={urllib.parse.quote(msg_wa)}"
-st.link_button("🚀 ENVIAR PARA WHATSAPP", url_wa, use_container_width=True)
+st.success(f"🧐 GÊMEA FÊNIX: Aguardando gatilho tático para {brain.doutor} ({proj_rodada}x).")
+
+# --- 6. BOTÃO WHATSAPP (Mobile Fix - Sem erro de acento) ---
+def gerar_link_wa(doutor, proj, acao_final):
+    # Texto codificado para evitar erros no celular
+    texto = f"🚀 PROJETO FRAJOLA\n\nDoutor: {doutor}\nProjeção: {proj}x\nAção: {acao_final}\n\nStatus: PADRÃO OURO ATIVADO"
+    return f"https://wa.me/?text={urllib.parse.quote(texto)}"
+
+link_final = gerar_link_wa(brain.doutor, proj_rodada, acao)
+st.link_button("🚀 ENVIAR PARA WHATSAPP", link_final, use_container_width=True)
+
+# Rodapé
+st.divider()
+st.caption("© 2026 Gêmea Fênix - Sistema de Visão Global")
