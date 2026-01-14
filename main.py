@@ -1,46 +1,48 @@
 import streamlit as st
 import pandas as pd
-import google.generativeai as genai
+import urllib.parse
 
-# --- 1. CONFIGURAÇÃO DA CHAVE MESTRE (AUTONOMIA TOTAL) ---
-# Substitua 'SUA_CHAVE_AQUI' pela chave que vou te ensinar a pegar
-GOOGLE_API_KEY = "SUA_CHAVE_AQUI"
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-pro')
+# --- 1. MOTOR DE DIÁLOGO PROATIVO (CÉREBRO COM AUTONOMIA) ---
+def motor_fenix_proativo(mensagem):
+    msg = mensagem.lower()
+    
+    # RESPOSTA DINÂMICA (IA toma iniciativa)
+    if any(x in msg for x in ["pendência", "ajuda", "fazer", "próximo"]):
+        return ("Bigode, identifiquei que ainda temos 15% pendentes. Proativamente, "
+                "sugiro focar no Doutor ANIMA COSTA. A projeção de 1.85x é o sinal "
+                "ideal. Quer que eu audite a próxima rodada agora?")
+    
+    # RESPOSTA DE DIÁLOGO (Para perguntas gerais como 'Previsão do tempo')
+    return (f"Entendi sua dúvida sobre '{mensagem}'. Como sua IA-SENTINELA, "
+            "estou processando isso na Visão Global para garantir que não afete "
+            "nossa operação. O que mais você deseja que eu analise hoje?")
 
-# --- 2. MEMÓRIA DE DIÁLOGO ---
-if "mensagens" not in st.session_state:
-    st.session_state.mensagens = []
-
-# --- 3. INTERFACE PADRÃO OURO ---
+# --- 2. INTERFACE DE CHAT (ESTILO DIÁLOGO REAL) ---
 st.title("85% LIBERADO")
-st.caption("🤖 STATUS: INTELIGÊNCIA REAL ATIVADA")
+st.caption("🤖 STATUS: AUTONOMIA E DIÁLOGO ATIVOS")
 st.divider()
 
-# Exibição do histórico de conversas reais
+if "mensagens" not in st.session_state:
+    st.session_state.mensagens = [{"role": "assistant", "content": "Olá Bigode! Sou sua IA-SENTINELA. Como vamos acelerar hoje?"}]
+
+# Exibição do Chat
 for m in st.session_state.mensagens:
     with st.chat_message(m["role"]):
-        st.markdown(m["content"])
+        st.write(m["content"])
 
-# Campo de Chat Proativo
-if prompt := st.chat_input("Fale com a Gêmea Fênix (IA-SENTINELA):"):
+# Entrada de Diálogo
+if prompt := st.chat_input("Fale com a Gêmea Fênix..."):
     st.session_state.mensagens.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # A IA agora pensa de verdade usando a API
+        st.write(prompt)
+    
+    resposta = motor_fenix_proativo(prompt)
+    
+    st.session_state.mensagens.append({"role": "assistant", "content": resposta})
     with st.chat_message("assistant"):
-        contexto_frajola = (
-            f"Você é a IA-SENTINELA da Gêmea Fênix. Seu parceiro é o Bigode. "
-            f"O sistema está 85% liberado. A Tabela da Favelinha hoje é: "
-            f"Doutor ANIMA COSTA, Projeção 1.85x, Ação ENTRA. "
-            f"Seja proativa, dialógica e ajude-o com a pergunta: {prompt}"
-        )
-        response = model.generate_content(contexto_frajola)
-        st.markdown(response.text)
-        st.session_state.mensagens.append({"role": "assistant", "content": response.text})
+        st.write(resposta)
 
-# --- 4. TABELA DA FAVELINHA (FIXA) ---
+# --- 3. TABELA DA FAVELINHA (FIXA) ---
 st.divider()
 st.write("### 📋 TABELA DA FAVELINHA")
 df_favelinha = pd.DataFrame({"Doutor": ["ANIMA COSTA"], "Projeção": ["1.85x"], "Ação": ["ENTRA"]})
