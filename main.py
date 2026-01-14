@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 
-# --- 1. CONFIGURAÇÃO VISUAL (TEXTO NA FRENTE DA IMAGEM) ---
+# --- 1. VISUAL (TEXTO NA FRENTE DA IMAGEM) ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown(
@@ -13,12 +13,12 @@ st.markdown(
         background-attachment: fixed;
         background-size: cover;
     }}
-    /* Caixa escura para o texto não sumir na imagem */
     .main .block-container {{
         background-color: rgba(0, 0, 0, 0.85) !important;
         border-radius: 20px;
         padding: 40px;
         color: #00ffcc !important;
+        border: 1px solid #00ffcc;
     }}
     </style>
     """,
@@ -26,6 +26,7 @@ st.markdown(
 )
 
 # --- 2. CÉREBRO DA IA (CHAVE DIRETA) ---
+# Substituindo o erro de "Secrets" pela chave soldada
 API_KEY = "AIzaSyANo25ILgwmDm20Dc_pHdnbsylm_QGX560"
 genai.configure(api_key=API_KEY)
 cerebro_ia = genai.GenerativeModel('gemini-1.5-flash')
@@ -34,13 +35,15 @@ cerebro_ia = genai.GenerativeModel('gemini-1.5-flash')
 st.title("🛡️ IA-SENTINELA | GLOBAL OPERATIONS")
 
 col1, col2 = st.columns(2)
-col1.metric("STATUS", "SISTEMA ONLINE")
+col1.metric("STATUS", "85% LIBERADO")
 col2.metric("ALVO", "ANIMA COSTA")
 
-if prompt := st.chat_input("Dê sua ordem..."):
+if prompt := st.chat_input("Dê sua ordem operacional..."):
     try:
-        res = cerebro_ia.generate_content(prompt)
-        st.write(f"🛡️ RESPOSTA: {res.text}")
+        # Instrução da Gêmea Fênix (Padrão Ouro)
+        instrucao = "Responda apenas com: ENTRA, NÃO ENTRA ou PULA."
+        res = cerebro_ia.generate_content(f"{instrucao} Pergunta: {prompt}")
+        st.write(f"🛡️ GÊMEA FÊNIX: {res.text}")
     except:
-        st.error("Erro na sincronização. Tente novamente.")
+        st.error("🔄 Tentando nova sincronização...")
         
