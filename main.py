@@ -27,7 +27,7 @@ def add_bg():
 
 add_bg()
 
-# --- 2. CONFIGURAÇÃO SEGURA (CÉREBRO) ---
+# --- 2. CÉREBRO DA IA (SEGURO) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -36,7 +36,7 @@ except:
     st.error("⚠️ Chave não encontrada nos Secrets do Streamlit!")
     st.stop()
 
-# --- 3. INTERFACE OPERACIONAL ---
+# --- 3. PAINEL OPERACIONAL ---
 st.title("🛡️ IA-SENTINELA | GLOBAL OPERATIONS")
 
 col1, col2 = st.columns(2)
@@ -47,5 +47,27 @@ if "chat_log" not in st.session_state:
     st.session_state.chat_log = [{"role": "assistant", "content": "🛡️ Sistema Online. Como vamos escalar?"}]
 
 for m in st.session_state.chat_log:
-    with st
+    with st.chat_message(m["role"]):
+        st.write(m["content"])
+
+if prompt := st.chat_input("Dê sua ordem..."):
+    st.session_state.chat_log.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.write(prompt)
     
+    instrucao = "Você é a Gêmea Fênix. Use apenas 'entra', 'não entra' ou 'pula'. Foco: Marketing e Vácuo."
+    try:
+        res = cerebro_ia.generate_content(f"{instrucao} Pergunta: {prompt}")
+        resposta = res.text
+    except:
+        resposta = "🔄 Sincronizando servidor..."
+            
+    st.session_state.chat_log.append({"role": "assistant", "content": resposta})
+    with st.chat_message("assistant"):
+        st.write(resposta)
+
+# --- 4. TABELA DA FAVELINHA ---
+st.divider()
+st.subheader("📋 TABELA DA FAVELINHA")
+df = pd.DataFrame({"Doutor": ["ANIMA COSTA"], "Projeção": ["1.85x"], "Ação": ["ENTRA"]})
+st.table(df)
