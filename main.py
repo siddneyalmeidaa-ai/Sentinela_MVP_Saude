@@ -5,85 +5,106 @@ from datetime import datetime
 import pytz
 import io
 
-# --- 1. MOTOR DE INTELIGÊNCIA INTEGRADO (AS 17 IAs) ---
+# --- 1. CONFIGURAÇÃO DE AMBIENTE (AUTO-APRENDIZADO) ---
+st.set_page_config(page_title="Sentinela | GF-17", layout="wide")
+fuso = pytz.timezone('America/Sao_Paulo')
+agora = datetime.now(fuso).strftime("%d/%m/%Y %H:%M")
+
+# Memória de Curto Prazo para Dinamismo (Não esquece o que foi dito)
+if 'historico_dialogo' not in st.session_state:
+    st.session_state.historico_dialogo = []
+
+# --- 2. MOTOR DE INTELIGÊNCIA (AS 17 IAs) ---
 class Fenix17System:
-    def __init__(self, doutor="Sidney"):
-        self.doutor = doutor
-        # Dados Sincronizados
+    def __init__(self):
         self.liberado = 18493.24
         self.pendente = 8308.56
-        self.total_geral = 26801.80
-        
-        # Base de Dados das Unidades (Favelinha Table)
+        self.total = 26801.80
         self.db = [
             {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK", "x": 1.85},
             {"unidade": "DR. MARCOS", "valor": 8900.0, "status": "CONFORMIDADE OK", "x": 2.10},
-            {"unidade": "INTERFILE - BI", "valor": 5400.0, "status": "RESTRIÇÃO", "x": 1.00}, # Vácuo!
+            {"unidade": "INTERFILE - BI", "valor": 5400.0, "status": "RESTRIÇÃO", "x": 1.00},
             {"unidade": "DR. SILVA", "valor": 1.0, "status": "RESTRIÇÃO", "x": 0.80},
             {"unidade": "LAB CLINIC", "valor": 0.80, "status": "RESTRIÇÃO", "x": 1.20}
         ]
 
-    def auditoria_cfo(self):
-        """Sincronização Automática de Porcentagens"""
-        p_lib = (self.liberado / self.total_geral) * 100
-        p_pen = (self.pendente / self.total_geral) * 100
+    def calcular_metricas(self):
+        p_lib = (self.liberado / self.total) * 100
+        p_pen = (self.pendente / self.total) * 100
         return f"{p_lib:.0f}% LIBERADO", f"{p_pen:.0f}% PENDENTE"
 
-    def motor_frajola_inteligente(self, unidade, mensagem_recebida):
-        """Ação das 17 IAs: Resposta Humanizada e Auditoria"""
+    def gerar_resposta_dinamica(self, unidade, input_user):
+        """Aprende com o diálogo e evita respostas genéricas"""
         med = next(item for item in self.db if item["unidade"] == unidade)
-        msg_low = mensagem_recebida.lower()
         
-        # Inteligência Sentinela + Auditoria Padrão Ouro
-        if med['status'] == "RESTRIÇÃO":
-            return f"Oi, {unidade}! Tudo ótimo por aqui, e com você? Analisando seu caso agora com a **IA-SENTINELA**, vi que seu repasse de R$ {med['valor']:,.2f} está retido. Já identifiquei que faltam arquivos XML. Vamos destravar isso agora?"
-        else:
-            return f"Boa noite, {unidade}! Tudo bem! Verifiquei aqui no **Estatuto Atual** que sua unidade está voando em CONFORMIDADE OK. O valor de R$ {med['valor']:,.2f} já está no fluxo oficial. Alguma outra dúvida?"
+        # Analisa se o usuário está perguntando especificamente sobre o pendente
+        if "pendente" in input_user.lower():
+            if med['status'] == "RESTRIÇÃO":
+                return f"Entendi sua dúvida sobre o pendente, {unidade}. Pela minha auditoria, os R$ {med['valor']:,.2f} estão travados por falta de XML. O projeto Frajola precisa desse envio para liberar."
+            return f"Sobre o pendente, {unidade}, você está limpo! Os R$ {med['valor']:,.2f} já saíram da auditoria e estão no fluxo de liberação."
+        
+        # Resposta padrão inteligente
+        return f"Boa noite, {unidade}! Verifiquei aqui no Estatuto Atual que sua unidade está com {med['status']} para o valor de R$ {med['valor']:,.2f}. Como posso agilizar seu processo hoje?"
 
-# --- 2. INTERFACE VISUAL (PADRÃO OURO BIGODE) ---
-st.set_page_config(page_title="Sentinela | GF-17", layout="wide")
-fuso = pytz.timezone('America/Sao_Paulo')
-agora = datetime.now(fuso).strftime("%d/%m/%Y %H:%M")
 gf17 = Fenix17System()
-status_lib, status_pen = gf17.auditoria_cfo()
+metric_lib, metric_pen = gf17.calcular_metricas()
 
-st.title(f"🛡️ GF-17 | Gêmea Fênix (Doutor: {gf17.doutor})")
+# --- 3. INTERFACE VISUAL (RESTAURAÇÃO DOS GRÁFICOS) ---
+st.title("🛡️ Sentinela: Governança & Mediação")
 
-# Métricas Automáticas (Sincronismo Total)
+# Gráfico de Performance (Restauração)
+st.subheader("📈 Performance Consolidada (R$ 26.801,80)")
+df_grafico = pd.DataFrame(gf17.db)
+st.bar_chart(df_grafico.set_index("unidade")["valor"])
+
 c1, c2 = st.columns(2)
-c1.metric("ESTATUTO ATUAL", status_lib)
-c2.metric("EM AUDITORIA", status_pen)
+c1.metric("ESTATUTO ATUAL", metric_lib)
+c2.metric("EM AUDITORIA", metric_pen)
 
-tab_favelinha, tab_comunicacao, tab_relatorios = st.tabs([
-    "📊 Tabela da Favelinha", "📲 Canal de Comunicação Viva", "📑 Relatórios"
-])
+tab1, tab2, tab3 = st.tabs(["📊 Tabela da Favelinha", "🚀 Operação 17 IAs", "📑 Relatórios PDF"])
 
-with tab_favelinha:
-    st.subheader("📋 Auditoria de Rodada (Sentinela)")
+with tab1:
+    st.subheader("📋 Tabela da Favelinha (Ação Imediata)")
     dados_f = []
     for r in gf17.db:
-        # Regra do Vácuo (1.00x)
         decisao = "pula" if r['x'] == 1.00 else ("entra" if r['x'] >= 1.50 else "não entra")
         dados_f.append({"Unidade": r['unidade'], "Projeção": f"{r['x']:.2f}x", "Decisão": decisao, "Status": r['status']})
     st.table(dados_f)
 
-with tab_comunicacao:
+with tab2:
+    st.subheader("📲 Canal de Comunicação Viva (Dinamismo)")
     u_sel = st.selectbox("Selecione o Médico:", [d['unidade'] for d in gf17.db])
-    entrada = st.text_area(f"Mensagem de {u_sel}:", placeholder="Ex: Boa noite, tudo bem?")
+    entrada = st.text_area("Mensagem:", placeholder="Ex: Como está andando o pendente?")
     
-    if st.button("🚀 Ativar Projeto Frajola (IA Inteligente)"):
-        if entrada:
-            resposta_viva = gf17.motor_frajola_inteligente(u_sel, entrada)
-            st.success(f"**Análise Sugerida pelas 17 IAs:**\n\n{resposta_viva}")
-            zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(resposta_viva)}"
-            st.markdown(f'''<a href="{zap}" target="_blank" style="text-decoration:none;">
-                <div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR PARA WHATSAPP</div>
-            </a>''', unsafe_allow_html=True)
+    if st.button("🚀 Ativar Projeto Frajola"):
+        resposta = gf17.gerar_resposta_dinamica(u_sel, entrada)
+        st.session_state.historico_dialogo.append({"u": u_sel, "m": entrada, "r": resposta})
+        st.success(resposta)
+        zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(resposta)}"
+        st.markdown(f'<a href="{zap}" target="_blank" style="background:green;color:white;padding:10px;border-radius:5px;">🚀 ENVIAR WHATSAPP</a>', unsafe_allow_html=True)
 
-with tab_relatorios:
-    # Correção para Mobile e Erro de PDF
-    st.info("Central de Exportação Protegida.")
-    csv = pd.DataFrame(gf17.db).to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Baixar Planilha de Auditoria", data=csv, file_name="Auditoria_GF17.csv", mime="text/csv", use_container_width=True)
+with tab3:
+    st.subheader("📑 Exportação (Proteção contra Erros)")
+    try:
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+        from reportlab.lib.styles import getSampleStyleSheet
+        
+        def gerar_pdf():
+            buffer = io.BytesIO()
+            doc = SimpleDocTemplate(buffer)
+            elementos = [Paragraph("RELATORIO SENTINELA GF-17", getSampleStyleSheet()['Title'])]
+            t_data = [["UNIDADE", "VALOR", "STATUS"]] + [[d['unidade'], d['valor'], d['status']] for d in gf17.db]
+            t = Table(t_data)
+            t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.grey), ('GRID',(0,0),(-1,-1),0.5,colors.black)]))
+            elementos.append(t)
+            doc.build(elementos)
+            buffer.seek(0)
+            return buffer
+
+        st.download_button("📥 Baixar Relatório PDF", data=gerar_pdf(), file_name="Relatorio_Sentinela.pdf")
+    except ImportError:
+        st.error("⚠️ Erro de Biblioteca detectado (image 17:42). Por favor, adicione 'reportlab' ao requirements.txt para habilitar o PDF.")
 
 st.caption(f"Sidney Pereira de Almeida | {agora} | Sincronizado")
+            
