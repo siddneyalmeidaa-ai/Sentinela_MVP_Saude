@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 
-# --- 1. CONFIGURAÇÃO VISUAL ---
+# --- 1. CONFIGURAÇÃO VISUAL (BACKGROUND GLOBAL) ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 def add_bg():
@@ -27,7 +27,7 @@ def add_bg():
 
 add_bg()
 
-# --- 2. CÉREBRO DA IA (SEGURO) ---
+# --- 2. CÉREBRO DA IA (MODO BLINDADO) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -36,7 +36,7 @@ except:
     st.error("⚠️ Chave não encontrada nos Secrets do Streamlit!")
     st.stop()
 
-# --- 3. PAINEL OPERACIONAL ---
+# --- 3. INTERFACE DE OPERAÇÕES ---
 st.title("🛡️ IA-SENTINELA | GLOBAL OPERATIONS")
 
 col1, col2 = st.columns(2)
@@ -44,7 +44,7 @@ col1.metric("STATUS", "85% LIBERADO")
 col2.metric("ALVO", "ANIMA COSTA")
 
 if "chat_log" not in st.session_state:
-    st.session_state.chat_log = [{"role": "assistant", "content": "🛡️ Sistema Online. Como vamos escalar?"}]
+    st.session_state.chat_log = [{"role": "assistant", "content": "🛡️ Operação Online. Como vamos escalar?"}]
 
 for m in st.session_state.chat_log:
     with st.chat_message(m["role"]):
