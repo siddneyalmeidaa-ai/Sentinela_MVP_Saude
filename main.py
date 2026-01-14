@@ -1,56 +1,54 @@
 import streamlit as st
 import pandas as pd
 
-# --- CONFIGURAÇÃO DE SEGURANÇA ---
-# Sua chave vai aqui entre as aspas
+# --- SEGURANÇA E CHAVE API ---
+# Substitua pela sua chave quando for rodar no motor real
 API_KEY = "COLOQUE_SUA_CHAVE_AQUI"
 
-# --- CONFIGURAÇÃO DA RODADA (PRINT 14 DE JAN) ---
+# --- CONFIGURAÇÃO PADRÃO OURO (ANIMA COSTA) ---
 doutor = "ANIMA COSTA"
-porcentagem = 85
+porcentagem_liberado = 85
+porcentagem_pendente = 15
 projecao = "1.85x"
-acao = "ENTRA"
-sentinela_msg = "Monitorando o vácuo"
+acao_imediata = "ENTRA"
+sentinela_status = "Monitorando o vácuo"
 
-# --- ESTILIZAÇÃO DA INTERFACE ---
+# --- INTERFACE VISUAL GÊMEA FÊNIX ---
 st.set_page_config(page_title="Gêmea Fênix", layout="centered")
 
-# Título Principal
-st.markdown(f"<h1 style='text-align: center; color: white;'>(GÊMEA FÊNIX)</h1>", unsafe_allow_html=True)
+# Título Estilizado
+st.markdown("<h1 style='text-align: center; color: white;'>(GÊMEA FÊNIX)</h1>", unsafe_allow_html=True)
 st.markdown("---")
 
-# --- ÁREA DE STATUS DA IA ---
-if API_KEY == "COLOQUE_SUA_CHAVE_AQUI":
-    # Alerta de processamento
-    st.warning(f"🤖 Olá Bigode! IA-SENTINELA ativa. {porcentagem}% LIBERADO. Projeção {projecao} para {doutor}. {sentinela_msg}.")
+# Verificação de Motor (API)
+if API_KEY == "COLOQUE_SUA_CHAVE_AQUI" or API_KEY == "":
+    # Alerta de Processamento
+    st.error("❌ STATUS: Erro: Verifique a Chave e as Aspas")
     st.info("🔄 O servidor da IA está processando sua nova chave. Tente novamente em um instante.")
 else:
-    st.success(f"✅ SISTEMA SINCRONIZADO: {porcentagem}% LIBERADO")
+    # Interface Liberada
+    st.success(f"🤖 Olá Bigode! IA-SENTINELA ativa. {porcentagem_liberado}% LIBERADO. Projeção {projecao} para {doutor}. {sentinela_status}.")
 
-# Exemplo de Balão de Chat
+# Balão de Chat de Apoio
 with st.chat_message("user", avatar="🔴"):
     st.write("Bom dia")
 
 # --- TABELA DA FAVELINHA (VISUAL INTERFACE) ---
 st.markdown("### 📋 TABELA DA FAVELINHA")
-
 df_favelinha = pd.DataFrame({
     "Doutor": [doutor],
     "Projeção": [projecao],
-    "Ação": [acao],
-    "IA-SENTINELA": [sentinela_msg]
+    "Ação": [acao_imediata],
+    "IA-SENTINELA": [sentinela_status]
 })
-
-# Exibe a tabela sem o índice para ficar igual ao print
 st.table(df_favelinha)
 
-# --- COMANDO OPERACIONAL (CHAT NO RODAPÉ) ---
-# Simula a barra de digitação do print
+# --- CAMPO DE COMANDO OPERACIONAL ---
 st.chat_input("Fale com a Gêmea Fênix...")
 
 # --- BOTÃO DE DOWNLOAD (CONFIGURADO PARA CELULAR) ---
 st.download_button(
     label="📥 Baixar Relatorio Operacional",
-    data=f"Relatorio: {porcentagem}% LIBERADO para {doutor}",
+    data=f"STATUS: {porcentagem_liberado}% LIBERADO / {porcentagem_pendente}% PENDENTE. Doutor: {doutor}.",
     file_name="relatorio_sentinela.txt"
 )
