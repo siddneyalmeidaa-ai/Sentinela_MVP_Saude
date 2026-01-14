@@ -2,16 +2,15 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-# --- 1. CONFIGURAÇÃO DO ECOSSISTEMA MILITAR ---
-st.set_page_config(page_title="Gêmea Fênix V17", layout="centered")
-
-# Memória Quântica: Salva o Histórico de Conversas
+# --- 1. CONFIGURAÇÃO DA MEMÓRIA QUÂNTICA ---
+# Garante que o histórico não fique oculto e salve tudo
 if "historico_militar" not in st.session_state:
     st.session_state.historico_militar = [
-        {"role": "assistant", "content": "Bom dia, Sidney! Ecossistema militar 17 IA ativo e homologado.", "avatar": "🤖"}
+        {"role": "assistant", "content": "Bom dia, Sidney! Ecossistema militar de 17 IAs ativo e homologado.", "avatar": "🤖"}
     ]
 
 # --- 2. PADRÃO OURO: VARIÁVEIS DO PROJETO ---
+# Sincroniza o gráfico e a tabela automaticamente
 doutor = "ANIMA COSTA"
 porcentagem_liberado = 85
 porcentagem_pendente = 15
@@ -25,16 +24,18 @@ st.markdown("---")
 st.warning(f"🤖 Olá Bigode! IA-SENTINELA ativa. {porcentagem_liberado}% LIBERADO. Projeção {projecao} para {doutor}.")
 
 # --- 4. GRÁFICO DE SINCRONIA (LIBERADO VS PENDENTE) ---
+# Cria o visual profissional que separa o sucesso do pendente
 fig = go.Figure(data=[go.Pie(
     labels=['LIBERADO', 'PENDENTE'],
     values=[porcentagem_liberado, porcentagem_pendente],
     hole=.7,
-    marker_colors=['#556b2f', '#8b0000']
+    marker_colors=['#556b2f', '#8b0000'] # Verde Oliva e Vermelho Escuro
 )])
 fig.update_layout(showlegend=True, height=300, margin=dict(t=0, b=0, l=0, r=0))
 st.plotly_chart(fig, use_container_width=True)
 
-# --- 5. EXIBIÇÃO DO HISTÓRICO (NÃO OCULTADO) ---
+# --- 5. EXIBIÇÃO DO HISTÓRICO DE CONVERSAS ---
+# Mostra as mensagens empilhadas na tela
 for msg in st.session_state.historico_militar:
     with st.chat_message(msg["role"], avatar=msg.get("avatar")):
         st.write(msg["content"])
@@ -48,7 +49,8 @@ st.table({
     "IA-SENTINELA": ["Monitorando vácuo"]
 })
 
-# --- 7. CAMPO DE COMANDO OPERACIONAL (REATIVO) ---
+# --- 7. COMANDO OPERACIONAL REATIVO ---
+# Responde confirmando o recebimento da ordem
 prompt = st.chat_input("Dê sua ordem militar...")
 
 if prompt:
@@ -57,5 +59,5 @@ if prompt:
     st.session_state.historico_militar.append({"role": "assistant", "content": resposta, "avatar": "🤖"})
     st.rerun()
 
-# --- 8. DOWNLOAD OPERACIONAL (BLINDADO) ---
-st.download_button("📥 Baixar Relatorio Operacional", f"LOG: {doutor} - {porcentagem_liberado}%", "relatorio.txt")
+# --- 8. BOTÃO DE DOWNLOAD (LOG DE AUDITORIA) ---
+st.download_button("📥 Baixar Relatorio Operacional", "Log de Auditoria Militar", "relatorio.txt")
