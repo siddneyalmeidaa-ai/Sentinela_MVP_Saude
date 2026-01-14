@@ -1,88 +1,81 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. CONFIGURAÇÃO DE ALTO IMPACTO ---
+# --- 1. CONFIGURAÇÃO PREMIUM ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
     <style>
     [data-testid="stHeader"] {display: none !important;}
     .main .block-container {padding-top: 0.5rem; background-color: #0e1117;}
-    
-    /* Header SPA com Sombra 3D */
     .header-spa {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 12px; background: #1c232d; border-radius: 10px;
-        border-bottom: 4px solid #00d4ff; 
-        box-shadow: 0px 4px 15px rgba(0, 212, 255, 0.3);
-        margin-bottom: 15px;
+        padding: 10px; background: #1c232d; border-radius: 8px;
+        border-bottom: 2px solid #00d4ff; margin-bottom: 15px;
     }
-    .spa-text { color: white; font-weight: 900; font-size: 1.2rem; letter-spacing: 3px; }
+    .spa-text { color: white; font-weight: 900; font-size: 1.1rem; letter-spacing: 2px; }
     </style>
-    
     <div class="header-spa">
         <span style="color: #00d4ff; font-weight: 800; font-size: 0.8rem;">🏛️ IA-SENTINELA PRO</span>
         <span class="spa-text">SPA</span>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 2. DADOS E SINCRONIZAÇÃO ---
+# --- 2. DADOS SINCRONIZADOS ---
 dados = {
     "ANIMA COSTA": {"lib": 13600.0, "pen": 2400.0, "p_ok": 85, "p_pen": 15},
     "DMMIGINIO GUERRA": {"lib": 17550.0, "pen": 4950.0, "p_ok": 78, "p_pen": 22}
 }
-medico_sel = st.selectbox("Unidade:", list(dados.keys()))
+medico_sel = st.selectbox("Selecione a Unidade:", list(dados.keys()))
 info = dados[medico_sel]
 
-# --- 3. GRÁFICO DE PIZZA COM EFEITO DE PROFUNDIDADE (3D VISUAL) ---
-st.markdown("<h4 style='text-align: center; color: #00d4ff;'>📊 Visão de Auditoria 3D</h4>", unsafe_allow_html=True)
+# --- 3. GRÁFICOS LADO A LADO COM PERCENTUAL ---
+st.markdown("#### 📊 Performance de Auditoria")
+col1, col2 = st.columns(2)
 
-df_pizza = pd.DataFrame({
-    "Status": ["LIBERADO", "PENDENTE"],
-    "Valor": [info['p_ok'], info['p_pen']],
-    "Porcentagem": [f"{info['p_ok']}%", f"{info['p_pen']}%"]
-})
+with col1:
+    # PIZZA COM PERCENTUAL
+    df_p = pd.DataFrame({
+        "Status": ["LIBERADO", "PENDENTE"],
+        "Valor": [info['p_ok'], info['p_pen']],
+        "Lab": [f"{info['p_ok']}%", f"{info['p_pen']}%"]
+    })
+    st.vega_lite_chart(df_p, {
+        "width": "container", "height": 300,
+        "layer": [
+            {"mark": {"type": "arc", "innerRadius": 50, "outerRadius": 90},
+             "encoding": {"theta": {"field": "Valor", "type": "quantitative"},
+                          "color": {"field": "Status", "scale": {"range": ["#00d4ff", "#ff4b4b"]}, "legend": {"orient": "bottom"}}}},
+            {"mark": {"type": "text", "radius": 70, "fontSize": 16, "fontWeight": "bold", "fill": "white"},
+             "encoding": {"theta": {"field": "Valor", "type": "quantitative"}, "text": {"field": "Lab"}}}
+        ]
+    })
 
-st.vega_lite_chart(df_pizza, {
-    "width": "container", "height": 450,
-    "layer": [
-        # Camada 1: Sombra Inferior (Dá o efeito de profundidade 3D)
-        {
-            "mark": {"type": "arc", "innerRadius": 75, "outerRadius": 125, "fill": "black", "opacity": 0.5},
-            "encoding": {"theta": {"field": "Valor", "type": "quantitative"}}
-        },
-        # Camada 2: Gráfico Principal
-        {
-            "mark": {"type": "arc", "innerRadius": 70, "outerRadius": 120, "stroke": "#0e1117", "strokeWidth": 3},
-            "encoding": {
-                "theta": {"field": "Valor", "type": "quantitative"},
-                "color": {
-                    "field": "Status", 
-                    "scale": {"range": ["#00d4ff", "#ff4b4b"]}, 
-                    "legend": {"orient": "bottom", "labelColor": "white", "fontSize": 14}
-                }
-            }
-        },
-        # Camada 3: PERCENTUAIS EM DESTAQUE (SPA Ouro)
-        {
-            "mark": {"type": "text", "radius": 95, "fontSize": 24, "fontWeight": "bold", "fill": "white", "stroke": "black", "strokeWidth": 1},
-            "encoding": {
-                "theta": {"field": "Valor", "type": "quantitative"},
-                "text": {"field": "Porcentagem", "type": "nominal"}
-            }
-        }
-    ]
-})
+with col2:
+    # BARRAS COM VALORES
+    df_b = pd.DataFrame({
+        "Status": ["LIB", "PEN"],
+        "Valor": [info['lib'], info['pen']],
+        "Txt": [f"R${info['lib']:,.0f}", f"R${info['pen']:,.0f}"]
+    })
+    st.vega_lite_chart(df_b, {
+        "width": "container", "height": 300,
+        "layer": [
+            {"mark": {"type": "bar", "cornerRadiusTop": 5, "color": "#00d4ff"},
+             "encoding": {"x": {"field": "Status", "type": "nominal", "axis": {"labelAngle": 0}},
+                          "y": {"field": "Valor", "type": "quantitative", "axis": None}}},
+            {"mark": {"type": "text", "baseline": "bottom", "dy": -5, "fill": "white", "fontWeight": "bold"},
+             "encoding": {"x": {"field": "Status", "type": "nominal"}, "y": {"field": "Valor", "type": "quantitative"}, "text": {"field": "Txt"}}}
+        ]
+    })
 
-# --- 4. TABELA DA FAVELINHA ---
+# --- 4. TABELA DA FAVELINHA E AÇÃO IMEDIATA ---
 st.markdown("---")
 st.markdown("### 🏘️ Tabela da Favelinha")
-st.markdown(f"""
-| Métrica | Percentual | Ação Imediata |
-| :--- | :--- | :--- |
-| **LIBERADO** | <span style="color:#00d4ff">{info['p_ok']}%</span> | **ENTRA** |
-| **PENDENTE** | <span style="color:#ff4b4b">{info['p_pen']}%</span> | **PULA** |
-| **VÁCUO** | 0% | **NÃO ENTRA** |
-""", unsafe_allow_html=True)
+st.table(pd.DataFrame({
+    "Métrica": ["LIBERADO", "PENDENTE", "VÁCUO"],
+    "Percentual": [f"{info['p_ok']}%", f"{info['p_pen']}%", "0%"],
+    "Ação": ["ENTRA", "PULA", "NÃO ENTRA"]
+}))
 
-st.button("🚀 EXPORTAR RELATÓRIO SPA (.TXT)")
+st.button("🚀 EXPORTAR DOSSIÊ SPA")
