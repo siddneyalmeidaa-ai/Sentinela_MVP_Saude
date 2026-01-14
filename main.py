@@ -29,6 +29,7 @@ add_bg()
 
 # --- 2. CÉREBRO DA IA (MODO BLINDADO) ---
 try:
+    # Busca a chave nos Secrets para o GitHub não reclamar mais
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
     cerebro_ia = genai.GenerativeModel('gemini-1.5-flash')
@@ -44,7 +45,7 @@ col1.metric("STATUS", "85% LIBERADO")
 col2.metric("ALVO", "ANIMA COSTA")
 
 if "chat_log" not in st.session_state:
-    st.session_state.chat_log = [{"role": "assistant", "content": "🛡️ Operação Online. Como vamos escalar?"}]
+    st.session_state.chat_log = [{"role": "assistant", "content": "🛡️ Operação Online. Sistema Blindado. Como vamos escalar?"}]
 
 for m in st.session_state.chat_log:
     with st.chat_message(m["role"]):
