@@ -10,7 +10,8 @@ def add_bg():
         f"""
         <style>
         .stApp {{
-            background-image: url("https://raw.githubusercontent.com/siddneyalmeidaa-ai/Sentinela_MVP_Saude/main/imagem_fundo.jpg");
+            /* Link atualizado com o nome real do arquivo que você subiu */
+            background-image: url("https://raw.githubusercontent.com/siddneyalmeidaa-ai/Sentinela_MVP_Saude/main/1768384879706.jpg");
             background-attachment: fixed;
             background-size: cover;
         }}
@@ -29,7 +30,6 @@ def add_bg():
 add_bg()
 
 # --- 2. CONFIGURAÇÃO SEGURA (BUSCA NOS SECRETS) ---
-# Aqui o sistema busca a chave que você salvou no cofre do Streamlit
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
