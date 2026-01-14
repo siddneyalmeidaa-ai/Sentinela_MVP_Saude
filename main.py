@@ -5,107 +5,97 @@ from datetime import datetime
 import pytz
 import io
 
-# Tenta importar o ReportLab para o PDF Profissional
-try:
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    PDF_READY = True
-except ImportError:
-    PDF_READY = False
+# Importação para PDF Profissional
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-# --- 1. CONFIGURAÇÃO E BLINDAGEM ---
-st.set_page_config(page_title="Sentinela | Projeto Frajola", layout="wide")
+# --- CONFIGURAÇÃO DE AMBIENTE ---
 fuso_br = pytz.timezone('America/Sao_Paulo')
-agora_br = datetime.now(fuso_br).strftime("%d/%m/%Y %H:%M")
+agora = datetime.now(fuso_br).strftime("%d/%m/%Y %H:%M")
 
-if 'memoria_unidades' not in st.session_state:
-    st.session_state.memoria_unidades = {}
+# --- MOTOR DE INTELIGÊNCIA GF-17 (AS 17 IAs) ---
+class Fenix17System:
+    def __init__(self, doutor="Bigode"):
+        self.doutor = doutor
+        # Valores baseados no seu último fechamento
+        self.liberado = 18493.24
+        self.pendente = 8308.56
+        
+    def auditoria_cfo(self):
+        """Lógica da CFO Vision e Auditora Padrão Ouro"""
+        soma = self.liberado + self.pendente
+        p_lib = (self.liberado / soma) * 100
+        p_pen = (self.pendente / soma) * 100
+        return f"{p_lib:.0f}% LIBERADO", f"{p_pen:.0f}% PENDENTE"
 
-# CSS para esconder menus e focar na Governança
-st.markdown("<style>[data-testid='stSidebar'] {display: none;} footer {visibility: hidden;} header {visibility: hidden;}</style>", unsafe_allow_html=True)
+    def sentinela_vacuo(self, projecao):
+        """Lógica da IA-SENTINELA: Detecção de Morte (1.00x)"""
+        if projecao == 1.00:
+            return "pula", "VÁCUO DETECTADO (DEATH ZONE)"
+        elif projecao < 1.50:
+            return "não entra", "RISCO ALTO"
+        else:
+            return "entra", "OPERACIONAL"
 
-# --- 2. BASE DE DADOS SINCRONIZADA (R$ 26.801,80) ---
-db = [
-    {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK"},
-    {"unidade": "DR. MARCOS", "valor": 8900.0, "status": "CONFORMIDADE OK"},
-    {"unidade": "INTERFILE - BI", "valor": 5400.0, "status": "RESTRIÇÃO"},
-    {"unidade": "DR. SILVA", "valor": 1.0, "status": "RESTRIÇÃO"},
-    {"unidade": "LAB CLINIC", "valor": 0.80, "status": "RESTRIÇÃO"}
-]
-df = pd.DataFrame(db)
+# Inicialização
+gf17 = Fenix17System(doutor="Bigode")
+status_lib, status_pen = gf17.auditoria_cfo()
 
-# --- 3. MOTOR DAS 17 IAs (PROJETO FRAJOLA) ---
-def motor_frajola(unidade, msg_medico, status, valor):
-    msg_low = msg_medico.lower().strip()
+# --- INTERFACE VISUAL INTELIGENTE ---
+st.set_page_config(page_title="GF-17 | Gêmea Fênix", layout="wide")
+st.title(f"🏛️ GF-17 | Gêmea Fênix 17 (Doutor: {gf17.doutor})")
+
+# Sincronização automática nos títulos (Padrão Ouro)
+col_l, col_p = st.columns(2)
+col_l.metric("STATUS FINANCEIRO", status_lib)
+col_p.metric("STATUS AUDITORIA", status_pen)
+
+tab_favelinha, tab_relatorios = st.tabs(["📊 Tabela da Favelinha", "📑 Relatórios Profissionais"])
+
+with tab_favelinha:
+    st.subheader("📋 Ação Imediata & Tabela da Favelinha")
     
-    if status == "RESTRIÇÃO":
-        corpo = f"identifiquei que o seu repasse de R$ {valor:,.2f} está temporariamente retido por falta de arquivos XML. Vamos destravar isso agora?"
-    else:
-        corpo = f"verifiquei que sua unidade está em CONFORMIDADE OK. O valor de R$ {valor:,.2f} segue o fluxo normal de depósito."
-
-    if len(msg_low) < 25:
-        return f"Olá, {unidade}! Já me antecipei ao seu contato e auditei seu caso: {corpo}", "NORMAL"
-    else:
-        return f"Prezado(a) {unidade}, entendo perfeitamente. {corpo} Estou acompanhando pessoalmente.", "ALTA"
-
-# --- 4. INTERFACE VISUAL (ABAS APARTADAS) ---
-st.title("🛡️ Sentinela: Governança & Mediação")
-
-tab_operacional, tab_relatorios = st.tabs(["🚀 Operacional & 17 IAs", "📑 Central de Relatórios"])
-
-with tab_operacional:
-    col_m1, col_m2 = st.columns(2)
-    with col_m1:
-        st.metric("VALOR TOTAL CONSOLIDADO", "R$ 26,801.80")
-    with col_m2:
-        st.info(f"🕒 Servidor Ativo: {agora_br}")
-
-    with st.expander("📊 Performance por Unidade"):
-        st.bar_chart(df.set_index("unidade")["valor"])
-
-    st.subheader("📲 Canal de Comunicação Estratégica")
-    u_selecionada = st.selectbox("Selecione o Médico:", df['unidade'].tolist())
-    medico_info = df[df['unidade'] == u_selecionada].iloc[0]
+    # Simulação de Rodadas com Projeção Variável
+    rodadas = [
+        {"id": 1, "x": 1.85},
+        {"id": 2, "x": 1.00}, # Exemplo de Vácuo
+        {"id": 3, "x": 2.10},
+        {"id": 4, "x": 1.20}
+    ]
     
-    entrada = st.text_area(f"Mensagem de {u_selecionada}:", placeholder="Ex: Boa tarde!")
-    
-    if st.button("🚀 Ativar Projeto Frajola (17 IAs)"):
-        if entrada:
-            viva, urgencia = motor_frajola(u_selecionada, entrada, medico_info['status'], medico_info['valor'])
-            st.session_state.memoria_unidades[u_selecionada] = {
-                "data": datetime.now(fuso_br).strftime("%H:%M:%S"),
-                "status": urgencia, "resposta": viva
-            }
-            st.rerun()
+    tabela_final = []
+    for r in rodadas:
+        decisao, analise = gf17.sentinela_vacuo(r['x'])
+        tabela_final.append({
+            "Rodada": f"R-{r['id']}",
+            "Projeção": f"{r['x']:.2f}x",
+            "Decisão": decisao,
+            "Análise IA": analise
+        })
 
-    if u_selecionada in st.session_state.memoria_unidades:
-        atend = st.session_state.memoria_unidades[u_selecionada]
-        st.success(f"**Parecer Sugerido (Urgência: {atend['status']}):**\n\n{atend['resposta']}")
-        zap_link = f"https://wa.me/5511942971753?text={urllib.parse.quote(atend['resposta'])}"
-        st.markdown(f'<a href="{zap_link}" target="_blank" style="text-decoration:none;"><div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR PARA WHATSAPP</div></a>', unsafe_allow_html=True)
+    st.table(tabela_final)
+    st.info("💡 **Dica da Maluquinha dos Códigos:** A decisão muda automaticamente conforme a projeção de cada rodada.")
 
 with tab_relatorios:
     st.subheader("📥 Central de Exportação")
     
-    def gerar_pdf(dados, tipo):
+    def gerar_pdf_executivo():
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4)
-        elementos = []
         styles = getSampleStyleSheet()
+        elementos = []
         
-        elementos.append(Paragraph("S E N T I N E L A", ParagraphStyle('T', fontSize=22, alignment=1, fontName="Helvetica-Bold")))
-        elementos.append(Paragraph(f"RELATORIO {tipo} - PROJETO FRAJOLA", ParagraphStyle('S', fontSize=10, alignment=1, textColor=colors.gray)))
+        # Timbre S E N T I N E L A
+        estilo_timbre = ParagraphStyle('T', fontSize=24, alignment=1, fontName="Helvetica-Bold", spaceAfter=20)
+        elementos.append(Paragraph("S E N T I N E L A", estilo_timbre))
+        elementos.append(Paragraph(f"RELATÓRIO GF-17 | EMISSÃO: {agora}", styles['Normal']))
         elementos.append(Spacer(1, 20))
         
-        t_data = [["UNIDADE", "VALOR (R$)", "STATUS"]]
-        for _, r in dados.iterrows():
-            # Limpeza de caracteres para evitar erro no PDF
-            unid = str(r['unidade']).replace("Ã", "A").replace("Ó", "O").replace("Ç", "C")
-            t_data.append([unid, f"{r['valor']:,.2f}", r['status']])
-        
-        t = Table(t_data, colWidths=[180, 100, 150])
+        # Tabela Profissional Zebrada
+        dados = [["MÉTRICA", "RESULTADO"], ["Sincronismo", status_lib], ["Auditoria", status_pen]]
+        t = Table(dados, colWidths=[200, 200])
         t.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1B2631")),
             ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
@@ -117,19 +107,15 @@ with tab_relatorios:
         buffer.seek(0)
         return buffer
 
-    col_r1, col_r2 = st.columns(2)
-    with col_r1:
-        st.info("📊 **Relatório Consolidado**")
-        if PDF_READY:
-            st.download_button("📥 Baixar PDF Consolidado", data=gerar_pdf(df, "CONSOLIDADO"), file_name="Consolidado_Frajola.pdf", use_container_width=True)
-        else:
-            st.error("Biblioteca 'reportlab' ausente.")
+    # Correção de acento para Mobile (urllib.parse.quote)
+    nome_doc = f"Relatorio_GF17_{gf17.doutor}.pdf"
+    
+    st.download_button(
+        label="📥 BAIXAR PDF (FORMATO PROFISSIONAL)",
+        data=gerar_pdf_executivo(),
+        file_name=nome_doc,
+        mime="application/pdf",
+        use_container_width=True
+    )
 
-    with col_r2:
-        st.warning("🩺 **Relatório por Unidade**")
-        u_rel = st.selectbox("Escolha a Unidade:", df['unidade'].tolist(), key="rel_ind")
-        if PDF_READY:
-            st.download_button(f"📥 Baixar PDF {u_rel}", data=gerar_pdf(df[df['unidade'] == u_rel], f"INDIVIDUAL: {u_rel}"), file_name=f"Relatorio_{u_rel}.pdf", use_container_width=True)
-
-st.divider()
-st.caption(f"Sidney Pereira de Almeida | {agora_br}")
+st.caption(f"Status: Padrão Ouro | Desenvolvedor: Bigode | {agora}")
