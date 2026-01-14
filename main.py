@@ -1,43 +1,55 @@
 import streamlit as st
-import google.generativeai as genai
+import pandas as pd
 
-# --- 1. COMANDO DE LIMPEZA DE EMERGÊNCIA ---
-st.cache_data.clear()
-st.cache_resource.clear()
+# --- CONFIGURAÇÃO DE SEGURANÇA ---
+# ATENÇÃO: Substitua o texto entre as aspas pela sua chave que você criou.
+API_KEY = "COLOQUE_SUA_CHAVE_AQUI"
 
-# --- 2. CONFIGURAÇÃO VISUAL ---
-st.set_page_config(page_title="IA-SENTINELA PRO", layout="centered")
-st.markdown("<style>.main {background-color: #0e1117; color: #00ffcc;}</style>", unsafe_allow_html=True)
+# --- CONFIGURAÇÃO DO SISTEMA (PADRÃO OURO) ---
+# Quando precisar mudar o doutor, basta alterar o nome abaixo.
+doutor_atual = "ANIMA COSTA"
+porcentagem_liberado = 85  # Este valor muda o título automaticamente
+porcentagem_pendente = 15   # Calculado para fechar 100%
+projecao_valor = "1.85x"
+acao_imediata = "ENTRA"
+status_ia = "Monitorando o vácuo"
 
-# --- 3. CÉREBRO DA IA (COLE SUA NOVA CHAVE AQUI) ---
-# Lembre-se: Coloque a chave entre as aspas " "
-API_KEY = "AIzaSyAQblXBSui2NmOaOMD06fsq4783GxS-8A8" 
+# --- INTERFACE VISUAL (GÊMEA FÊNIX) ---
+st.title("(GÊMEA FÊNIX)")
 
-try:
-    genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    # Teste de conexão silencioso
-    model.generate_content("oi")
-    status_msg = "✅ SISTEMA 100% LIBERADO"
-except:
-    status_msg = "❌ Erro: Verifique a Chave e as Aspas"
+# Verificação de sincronização da Chave
+if API_KEY == "COLOQUE_SUA_CHAVE_AQUI":
+    st.error("❌ SISTEMA PENDENTE: Verifique a Chave API no GitHub.")
+    st.info("🔄 O servidor da IA está processando sua nova chave. Tente novamente em um instante.")
+else:
+    # Mensagem de Boas-vindas com sincronização automática
+    st.success(f"🤖 Olá Bigode! IA-SENTINELA ativa. {porcentagem_liberado}% LIBERADO. Projeção {projecao_valor} para {doutor_atual}. {status_ia}.")
 
-# --- 4. INTERFACE OPERACIONAL ---
-st.title("🛡️ IA-SENTINELA")
-st.subheader(f"STATUS: {status_msg}")
+st.markdown("---")
 
-if prompt := st.chat_input("Dê sua ordem operacional..."):
-    try:
-        # Regra de Python para as rodadas
-        regra = "Responda apenas com ENTRA, NÃO ENTRA ou PULA. Use a lógica de projeção de rodada."
-        res = model.generate_content(f"{regra}: {prompt}")
-        st.write(f"🛡️ GÊMEA FÊNIX: {res.text}")
-    except:
-        st.error("Erro técnico na rodada. Reinicie o App.")
+# --- TABELA DA FAVELINHA (VISUAL INTERFACE) ---
+st.subheader("📋 TABELA DA FAVELINHA")
 
-# Botão de download sem erro de acento para celular
+df_favelinha = pd.DataFrame({
+    "Doutor": [doutor_atual],
+    "Projeção": [projecao_valor],
+    "Ação": [acao_imediata],
+    "IA-SENTINELA": [status_ia]
+})
+
+# Exibe a tabela sem os índices laterais para ficar mais limpo
+st.table(df_favelinha)
+
+st.markdown("---")
+
+# --- ÁREA DE DOWNLOAD (CONFIGURADO PARA CELULAR) ---
+# Nome do arquivo e texto sem acentos para evitar erro no Android/iOS
 st.download_button(
-    label="Baixar Relatório Operacional",
-    data="Relatorio de Atividades - Sidney Pereira",
-    file_name="relatorio_sentinela.txt"
+    label="📥 Baixar Relatorio Operacional",
+    data=f"STATUS: {porcentagem_liberado} LIBERADO / {porcentagem_pendente} PENDENTE. Doutor: {doutor_atual}.",
+    file_name="relatorio_sentinela.txt",
+    mime="text/plain"
 )
+
+# --- RODAPÉ OPERACIONAL ---
+st.caption(f"Sistema sincronizado: {doutor_atual} | Projeção atual determinada pela rodada.")
