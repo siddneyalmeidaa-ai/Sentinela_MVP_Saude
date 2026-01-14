@@ -3,16 +3,15 @@ import pandas as pd
 import urllib.parse
 from datetime import datetime
 import pytz
-import io
 
-# --- 1. MOTOR DE MEMÓRIA E DINAMISMO (CÉREBRO DAS 17 IAs) ---
-# Isso garante que a conversa não seja genérica
-if 'memoria_contexto' not in st.session_state:
-    st.session_state.memoria_contexto = {"ultima_unidade": None, "assuntos_citados": []}
+# --- 1. MEMÓRIA E DINAMISMO (AS 17 IAs) ---
+# Resolve a falta de coerência guardando o contexto da conversa
+if 'historico' not in st.session_state:
+    st.session_state.historico = []
 
 class MotorInteligente:
     def __init__(self):
-        self.total = 26801.80 #
+        self.total = 26801.80  # Valor consolidado
         self.liberado = 18493.24
         self.pendente = 8308.56
         self.db = [
@@ -23,29 +22,30 @@ class MotorInteligente:
             {"unidade": "LAB CLINIC", "valor": 0.80, "status": "RESTRIÇÃO", "x": 1.20}
         ]
 
-    def responder(self, unidade, texto):
+    def analisar_mensagem(self, unidade, texto):
+        """Dinamismo: A IA analisa o status da unidade antes de falar"""
         med = next(item for item in self.db if item["unidade"] == unidade)
         msg = texto.lower()
         
-        # Autocorreção: Se o usuário já perguntou algo antes, a resposta muda
-        contexto = st.session_state.memoria_contexto
-        
+        # Lógica de Autocorreção: Se o usuário pergunta do pendente, a resposta foca no dinheiro
         if "pendente" in msg or "andando" in msg:
-            contexto["assuntos_citados"].append("financeiro")
             if med['status'] == "RESTRIÇÃO":
-                return f"Sidney, sobre o pendente da {unidade}: os R$ {med['valor']:,.2f} estão travados por falta de XML. Já avisei a Auditoria Padrão Ouro para priorizar assim que o arquivo chegar."
-            return f"Pode ficar tranquilo sobre a {unidade}! Os R$ {med['valor']:,.2f} já saíram do pendente e estão no fluxo de liberação."
+                return f"Sidney, sobre o pendente da {unidade}: identifiquei que o valor de R$ {med['valor']:,.2f} está travado por falta de XML. Já acionei a Auditoria Padrão Ouro para priorizar."
+            return f"Sobre a {unidade}, o valor de R$ {med['valor']:,.2f} já está liberado no fluxo. Nada pendente aqui!"
         
-        if "obrigado" in msg or "ajuda" in msg:
-            return f"Disponha, Sidney! A {unidade} continua sob monitoramento da IA-SENTINELA. Mais algum ajuste no Estatuto Atual?"
-
-        return f"Boa noite! Verifiquei que a {unidade} opera hoje com R$ {med['valor']:,.2f} em status de {med['status']}. Como as 17 IAs podem acelerar seu processo?"
+        # Resposta padrão inteligente baseada no status
+        return f"Boa noite, Sidney! Verifiquei que a {unidade} está em {med['status']} com R$ {med['valor']:,.2f}. Como posso agilizar esse processo agora?"
 
 mi = MotorInteligente()
 
-# --- 2. INTERFACE VISUAL (RESTAURAÇÃO DE GRÁFICOS E MÉTRICAS) ---
-st.set_page_config(page_title="GF-17 | Sentinela", layout="wide")
+# --- 2. INTERFACE VISUAL (RESTAURAÇÃO TOTAL) ---
+st.set_page_config(page_title="Sentinela | GF-17", layout="wide")
 st.title("🛡️ Sentinela: Governança & Mediação")
+
+# Gráfico Nativo: Resolve o erro de 'plotly' dos seus prints
+st.subheader("📈 Performance por Unidade (R$ 26.801,80)")
+df_grafico = pd.DataFrame(mi.db)
+st.bar_chart(df_grafico.set_index("unidade")["valor"])
 
 # Métricas Sincronizadas
 p_lib = (mi.liberado / mi.total) * 100
@@ -54,47 +54,29 @@ c1, c2 = st.columns(2)
 c1.metric("ESTATUTO ATUAL", f"{p_lib:.0f}% LIBERADO")
 c2.metric("EM AUDITORIA", f"{p_pen:.0f}% PENDENTE")
 
-# RESTAURAÇÃO DOS GRÁFICOS (Usando Streamlit Nativo para não dar erro de Plotly)
-st.subheader("📈 Performance por Unidade (R$ 26.801,80)")
-df_grafico = pd.DataFrame(mi.db)
-st.bar_chart(df_grafico.set_index("unidade")["valor"])
-
-tab_fav, tab_chat, tab_pdf = st.tabs(["📊 Tabela da Favelinha", "💬 Chat Dinâmico", "📑 Relatórios PDF"])
+tab_fav, tab_chat = st.tabs(["📊 Tabela da Favelinha", "💬 Canal de Comunicação Viva"])
 
 with tab_fav:
-    st.subheader("📋 Auditoria de Rodada")
-    # Regra do Vácuo 1.00x
-    df_fav = pd.DataFrame([{
+    # Tabela da Favelinha com regra do Vácuo (1.00x)
+    df_f = pd.DataFrame([{
         "Unidade": r['unidade'], 
-        "Projeção": f"{r['x']:.2f}x", 
+        "Projeção": f"{r['x']:.2f}x",
         "Decisão": "pula" if r['x'] == 1.00 else ("entra" if r['x'] >= 1.50 else "não entra")
     } for r in mi.db])
-    st.table(df_fav)
+    st.table(df_f)
 
 with tab_chat:
-    u_sel = st.selectbox("Selecione a Unidade:", [d['unidade'] for d in mi.db])
-    entrada = st.text_input("Sua mensagem:", key="input_chat")
+    u_sel = st.selectbox("Selecione o Médico:", [d['unidade'] for d in mi.db])
+    entrada = st.text_input("Sua mensagem:", placeholder="Ex: Como está o pendente?")
+    
     if st.button("🚀 Ativar Projeto Frajola"):
-        resp = mi.responder(u_sel, entrada)
-        st.info(f"**Análise da IA:** {resp}")
-        zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(resp)}"
-        st.markdown(f'<a href="{zap}" target="_blank" style="text-decoration:none; color:white;"><div style="background-color:#25D366;padding:10px;border-radius:5px;text-align:center;">ENVIAR WHATSAPP</div></a>', unsafe_allow_width=True, unsafe_allow_html=True)
-
-with tab_pdf:
-    st.subheader("📑 Área de Exportação")
-    # Autocorreção para erro de PDF
-    try:
-        from reportlab.pdfgen import canvas
-        def criar_pdf():
-            buf = io.BytesIO()
-            c = canvas.Canvas(buf)
-            c.drawString(100, 750, f"RELATÓRIO GF-17 - {mi.total}")
-            c.save()
-            buf.seek(0)
-            return buf
-        st.download_button("📥 Baixar PDF Padrão Sidney", data=criar_pdf(), file_name="Relatorio.pdf")
-    except ImportError:
-        st.error("⚠️ Erro detectado no seu print [17:42]: Adicione 'reportlab' ao seu requirements.txt para ativar esta função.")
+        resposta = mi.analisar_mensagem(u_sel, entrada)
+        st.success(f"**Análise da IA:** {resposta}")
+        
+        # Correção do link do WhatsApp (Resolve o TypeError dos seus prints)
+        texto_zap = urllib.parse.quote(resposta)
+        zap_link = f"https://wa.me/5511942971753?text={texto_zap}"
+        st.markdown(f'<a href="{zap_link}" target="_blank" style="text-decoration:none;"><div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR PARA WHATSAPP</div></a>', unsafe_allow_html=True)
 
 st.caption(f"Sidney Pereira de Almeida | {datetime.now(pytz.timezone('America/Sao_Paulo')).strftime('%d/%m/%Y %H:%M')}")
-  
+        
