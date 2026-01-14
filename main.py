@@ -26,56 +26,64 @@ dados = {
     "ANIMA COSTA": {"lib": 13600.0, "pen": 2400.0, "p_ok": 85, "p_pen": 15},
     "DMMIGINIO GUERRA": {"lib": 17550.0, "pen": 4950.0, "p_ok": 78, "p_pen": 22}
 }
-medico_sel = st.selectbox("Selecione a Unidade:", list(dados.keys()))
+medico_sel = st.selectbox("Unidade para Auditoria:", list(dados.keys()))
 info = dados[medico_sel]
 
-# --- 3. GRÁFICOS LADO A LADO COM PERCENTUAL ---
-st.markdown("#### 📊 Performance de Auditoria")
-col1, col2 = st.columns(2)
+# --- 3. ORGANIZAÇÃO EM ABAS SEPARADAS ---
+tab1, tab2, tab3 = st.tabs(["📊 PIZZA (%)", "📈 BARRAS (R$)", "🏘️ FAVELINHA"])
 
-with col1:
-    # PIZZA COM PERCENTUAL
+with tab1:
+    st.markdown("<h4 style='text-align: center;'>Distribuição Percentual</h4>", unsafe_allow_html=True)
     df_p = pd.DataFrame({
-        "Status": ["LIBERADO", "PENDENTE"],
-        "Valor": [info['p_ok'], info['p_pen']],
-        "Lab": [f"{info['p_ok']}%", f"{info['p_pen']}%"]
+        "Status": [f"LIBERADO ({info['p_ok']}%)", f"PENDENTE ({info['p_pen']}%)"],
+        "Valor": [info['p_ok'], info['p_pen']]
     })
+    # Gráfico limpo com percentual na legenda para não errar no mobile
     st.vega_lite_chart(df_p, {
-        "width": "container", "height": 300,
-        "layer": [
-            {"mark": {"type": "arc", "innerRadius": 50, "outerRadius": 90},
-             "encoding": {"theta": {"field": "Valor", "type": "quantitative"},
-                          "color": {"field": "Status", "scale": {"range": ["#00d4ff", "#ff4b4b"]}, "legend": {"orient": "bottom"}}}},
-            {"mark": {"type": "text", "radius": 70, "fontSize": 16, "fontWeight": "bold", "fill": "white"},
-             "encoding": {"theta": {"field": "Valor", "type": "quantitative"}, "text": {"field": "Lab"}}}
-        ]
+        "width": "container", "height": 350,
+        "mark": {"type": "arc", "innerRadius": 60, "outerRadius": 100},
+        "encoding": {
+            "theta": {"field": "Valor", "type": "quantitative"},
+            "color": {
+                "field": "Status", 
+                "scale": {"range": ["#00d4ff", "#ff4b4b"]},
+                "legend": {"orient": "bottom", "labelColor": "white", "fontSize": 15}
+            }
+        }
     })
+    st.info(f"💡 Faturamento Auditado: {info['p_ok']}% Liberado.")
 
-with col2:
-    # BARRAS COM VALORES
+with tab2:
+    st.markdown("<h4 style='text-align: center;'>Volume Financeiro</h4>", unsafe_allow_html=True)
     df_b = pd.DataFrame({
-        "Status": ["LIB", "PEN"],
+        "Status": ["LIBERADO", "PENDENTE"],
         "Valor": [info['lib'], info['pen']],
-        "Txt": [f"R${info['lib']:,.0f}", f"R${info['pen']:,.0f}"]
+        "Label": [f"R$ {info['lib']:,.0f}", f"R$ {info['pen']:,.0f}"]
     })
     st.vega_lite_chart(df_b, {
-        "width": "container", "height": 300,
+        "width": "container", "height": 350,
         "layer": [
-            {"mark": {"type": "bar", "cornerRadiusTop": 5, "color": "#00d4ff"},
-             "encoding": {"x": {"field": "Status", "type": "nominal", "axis": {"labelAngle": 0}},
-                          "y": {"field": "Valor", "type": "quantitative", "axis": None}}},
-            {"mark": {"type": "text", "baseline": "bottom", "dy": -5, "fill": "white", "fontWeight": "bold"},
-             "encoding": {"x": {"field": "Status", "type": "nominal"}, "y": {"field": "Valor", "type": "quantitative"}, "text": {"field": "Txt"}}}
+            {"mark": {"type": "bar", "color": "#00d4ff", "cornerRadiusTop": 8},
+             "encoding": {
+                 "x": {"field": "Status", "type": "nominal", "axis": {"labelAngle": 0, "labelColor": "white"}},
+                 "y": {"field": "Valor", "type": "quantitative", "axis": None}}},
+            {"mark": {"type": "text", "baseline": "bottom", "dy": -10, "fontSize": 16, "fill": "white"},
+             "encoding": {
+                 "x": {"field": "Status", "type": "nominal"},
+                 "y": {"field": "Valor", "type": "quantitative"},
+                 "text": {"field": "Label"}}}
         ]
     })
 
-# --- 4. TABELA DA FAVELINHA E AÇÃO IMEDIATA ---
-st.markdown("---")
-st.markdown("### 🏘️ Tabela da Favelinha")
-st.table(pd.DataFrame({
-    "Métrica": ["LIBERADO", "PENDENTE", "VÁCUO"],
-    "Percentual": [f"{info['p_ok']}%", f"{info['p_pen']}%", "0%"],
-    "Ação": ["ENTRA", "PULA", "NÃO ENTRA"]
-}))
+with tab3:
+    # Tabela da Favelinha
+    st.markdown("### Ação Imediata")
+    st.table(pd.DataFrame({
+        "Métrica": ["LIBERADO", "PENDENTE", "VÁCUO"],
+        "Percentual": [f"{info['p_ok']}%", f"{info['p_pen']}%", "0%"],
+        "Regra": ["ENTRA", "PULA", "NÃO ENTRA"]
+    }))
 
-st.button("🚀 EXPORTAR DOSSIÊ SPA")
+# --- 4. EXPORTAÇÃO ---
+st.markdown("---")
+st.button("🚀 EXPORTAR DOSSIÊ COMPLETO SPA")
