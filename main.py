@@ -27,7 +27,7 @@ class MotorAuditoria:
         t = texto.lower()
         
         # Identificação de encerramento ou agradecimento
-        if any(x in t for x in ["obrigado", "valeu", "tá bom", "entendi"]):
+        if any(x in t for x in ["obrigado", "valeu", "tá bom", "entendi", "somente isso"]):
             return f"Show, Sidney! Registrei a conformidade da {unidade}. O histórico está salvo para auditoria. Próximo passo?"
         
         # Identificação de dúvida sobre pendências
