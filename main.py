@@ -1,104 +1,124 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. CONFIGURAÇÃO DE TELA E TOPO SPA ---
+# --- 1. CONFIGURAÇÃO VISUAL MASTER (Fusão de Estilos) ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
     <style>
+    .main { background-color: #0e1117; }
     [data-testid="stHeader"] {display: none !important;}
-    .main .block-container {padding-top: 0.5rem; background-color: #0e1117;}
-    .header-spa {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 8px 15px; background: #1c232d; border-radius: 5px;
-        border-bottom: 2px solid #00d4ff; margin-bottom: 10px;
+    
+    /* CABEÇALHO DIRETORIA SPA */
+    .header-box { 
+        display: flex; justify-content: space-between; align-items: center; 
+        padding: 15px; background: #1c232d; border-radius: 10px;
+        border-bottom: 2px solid #00d4ff; margin-bottom: 15px;
+    }
+    .pro-tag { background: #00d4ff; color: #12171d; padding: 2px 8px; border-radius: 5px; font-weight: 900; font-size: 0.7rem; }
+    
+    /* ESTILIZAÇÃO DAS ABAS */
+    .stTabs [data-baseweb="tab-list"] { background-color: #1c2e4a; border-radius: 10px; padding: 5px; }
+    .stTabs [data-baseweb="tab"] { color: #8899A6; font-weight: bold; }
+    .stTabs [aria-selected="true"] { background-color: #2c3e50 !important; color: #00d4ff !important; border-bottom: 3px solid #00d4ff !important; }
+
+    /* PREVIEW DO RELATÓRIO (FORMATO DESEJADO) */
+    .report-preview { 
+        background: #f8f9fa; color: #1a1a1a; padding: 20px; 
+        border-radius: 8px; font-family: 'Courier New', monospace; 
+        font-size: 1rem; border: 1px solid #dee2e6; white-space: pre-wrap;
     }
     </style>
-    <div class="header-spa">
-        <div style="color: #00d4ff; font-weight: 800; font-size: 0.9rem;">💠 IA-SENTINELA PRO</div>
-        <div style="color: white; font-weight: 900; font-size: 1rem;">SPA</div>
+    
+    <div class="header-box">
+        <div style="color: white; font-size: 1.1rem;">
+            <b>SIDNEY PEREIRA DE ALMEIDA</b><br>
+            <span style="color: #00d4ff; font-size: 0.9rem;">DIRETOR OPERACIONAL | IA-SENTINELA</span>
+        </div>
+        <span class="pro-tag">PRO</span>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 2. BANCO DE DADOS DETALHADO ---
-dados = {
-    "ANIMA COSTA": {
-        "lib": 13600.0, "pen": 2400.0, "p_ok": 85, "p_pen": 15,
-        "detalhes": [
-            {"Cliente": "Convênio A", "Motivo": "Doc. Pendente", "Valor": 1400.0},
-            {"Cliente": "Convênio B", "Motivo": "Glosa Técnica", "Valor": 1000.0}
-        ]
-    },
-    "DMMIGINIO GUERRA": {
-        "lib": 17550.0, "pen": 4950.0, "p_ok": 78, "p_pen": 22,
-        "detalhes": [
-            {"Cliente": "Convênio C", "Motivo": "Falta Assinatura", "Valor": 2950.0},
-            {"Cliente": "Convênio D", "Motivo": "Erro de Código", "Valor": 2000.0}
-        ]
-    }
+# --- 2. BASE DE DADOS INTEGRADA ---
+dados_medicos = {
+    "ANIMA COSTA": {"valor": 16000.0, "p_pen": 15, "motivo": "Divergência de XML"},
+    "DMMIGINIO GUERRA": {"valor": 22500.0, "p_pen": 22, "motivo": "Assinatura Digital"},
+    "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "p_pen": 18, "motivo": "Erro Cadastral"}
 }
 
-medico_sel = st.selectbox("Unidade para Auditoria:", list(dados.keys()))
-info = dados[medico_sel]
+medico_sel = st.selectbox("Selecione a Unidade para Auditoria:", list(dados_medicos.keys()))
+info = dados_medicos[medico_sel]
 
-# --- 3. ABAS ORGANIZADAS (Cada um em uma água) ---
-tab_pizza, tab_barras, tab_detalhes, tab_favelinha, tab_relatorio = st.tabs([
-    "⭕ PIZZA (%)", "📊 BARRAS (R$)", "🔍 DETALHES PEN", "🏘️ FAVELINHA", "📄 RELATÓRIO"
-])
+# Cálculos Dinâmicos
+p_risco = info["p_pen"]
+p_ok = 100 - p_risco
+v_liberado = info["valor"] * (p_ok / 100)
+v_pendente = info["valor"] * (p_risco / 100)
 
-with tab_pizza:
-    df_p = pd.DataFrame({
-        "Status": [f"LIBERADO ({info['p_ok']}%)", f"PENDENTE ({info['p_pen']}%)"],
-        "Valor": [info['p_ok'], info['p_pen']]
+# --- 3. DADOS PRINCIPAIS NO TOPO (Padrão Sidney) ---
+st.markdown(f"### 📍 Análise: {medico_sel}")
+col_a, col_b = st.columns(2)
+col_a.metric(f"LIBERADO ({p_ok}%)", f"R$ {v_liberado:,.2f}")
+col_b.metric(f"PENDENTE ({p_risco}%)", f"R$ {v_pendente:,.2f}", delta_color="inverse")
+
+# --- 4. INTERFACE DE ABAS FUSIONADA ---
+tab1, tab2, tab3 = st.tabs(["📊 GRÁFICOS", "🏘️ FAVELINHA", "📄 RELATÓRIO"])
+
+with tab1:
+    st.markdown("<h4 style='text-align: center; color: white;'>Distribuição de Auditoria</h4>", unsafe_allow_html=True)
+    # Gráfico de Barras com CORES DIFERENTES (Azul e Vermelho)
+    df_bar = pd.DataFrame({
+        'Status': [f'LIBERADO ({p_ok}%)', f'PENDENTE ({p_risco}%)'],
+        'Valor': [v_liberado, v_pendente],
+        'Cor': ['#00d4ff', '#ff4b4b']
     })
-    st.vega_lite_chart(df_p, {
-        "width": "container", "height": 380,
-        "mark": {"type": "arc", "innerRadius": 70, "outerRadius": 110},
-        "encoding": {
-            "theta": {"field": "Valor", "type": "quantitative"},
-            "color": {"field": "Status", "scale": {"range": ["#00d4ff", "#ff4b4b"]}, "legend": {"orient": "bottom", "labelColor": "white"}}
+    st.vega_lite_chart(df_bar, {
+        'width': 'container', 'height': 300,
+        'mark': {'type': 'bar', 'cornerRadiusTop': 10, 'size': 50},
+        'encoding': {
+            'x': {'field': 'Status', 'axis': {'labelAngle': 0, 'title': None}},
+            'y': {'field': 'Valor', 'axis': {'title': 'R$'}},
+            'color': {'field': 'Cor', 'type': 'nominal', 'scale': None}
         }
     })
 
-with tab_barras:
-    df_b = pd.DataFrame({"Status": ["LIBERADO", "PENDENTE"], "Valor": [info['lib'], info['pen']]})
-    st.vega_lite_chart(df_b, {
-        "width": "container", "height": 350,
-        "mark": {"type": "bar", "color": "#00d4ff"},
-        "encoding": {"x": {"field": "Status", "axis": {"labelAngle": 0}}, "y": {"field": "Valor"}}
-    })
-
-with tab_detalhes:
-    st.markdown("### 📋 Pendências por Cliente")
-    st.table(pd.DataFrame(info['detalhes']))
-
-with tab_favelinha:
+with tab2:
+    # Tabela da Favelinha exigida pelo sistema
     st.markdown("### 🏘️ Tabela da Favelinha")
     df_fav = pd.DataFrame({
         "Métrica": ["LIBERADO", "PENDENTE"],
-        "Percentual": [f"{info['p_ok']}%", f"{info['p_pen']}%"],
+        "Percentual": [f"{p_ok}%", f"{p_risco}%"],
         "Ação Imediata": ["ENTRA", "NÃO ENTRA"]
     })
     st.table(df_fav)
 
-with tab_relatorio:
-    st.markdown(f"""
-    <div style="background: #1c232d; padding: 15px; border-radius: 8px; border-left: 4px solid #00d4ff; color: white;">
-        <h4 style="color: #00d4ff; margin-top:0;">CERTIFICADO DE AUDITORIA SPA</h4>
-        <p><b>UNIDADE:</b> {medico_sel}</p>
-        <hr style="border-color: #262730; margin: 10px 0;">
-        <p>✅ <b>LIBERADO:</b> {info['p_ok']}% (R$ {info['lib']:,.2f})</p>
-        <p>❌ <b>PENDENTE:</b> {info['p_pen']}% (R$ {info['pen']:,.2f})</p>
-    </div>
-    """, unsafe_allow_html=True)
+with tab3:
+    # RELATÓRIO NO FORMATO DO CÓDIGO ENVIADO (LETRA GRANDE E CLARA)
+    relatorio_txt = (
+        "==========================================\n"
+        "   DOSSIÊ DE AUDITORIA - IA-SENTINELA PRO \n"
+        "==========================================\n"
+        f"MÉDICO/UNIDADE : {medico_sel}\n"
+        f"DATA EMISSÃO   : 14/01/2026\n"
+        "------------------------------------------\n"
+        f"Faturamento Total  : R$ {info['valor']:,.2f}\n"
+        f"Percentual Correto : {p_ok}% (R$ {v_liberado:,.2f})\n"
+        f"Percentual Risco   : {p_risco}% (R$ {v_pendente:,.2f})\n"
+        "------------------------------------------\n"
+        f"MOTIVO PRINCIPAL   : {info['motivo']}\n"
+        "==========================================\n"
+        "STATUS FINAL: ENTRA\n"
+        "RESPONSÁVEL : DIRETORIA OPERACIONAL"
+    )
     
-    # FORMATO DE DOWNLOAD SEGURO PARA CELULAR (utf-8-sig e sem caracteres especiais no nome)
-    rel_txt = f"AUDITORIA SPA\r\nUNIDADE: {medico_sel}\r\nLIBERADO: {info['p_ok']}%\r\nPENDENTE: {info['p_pen']}%"
+    st.markdown(f'<div class="report-preview">{relatorio_txt}</div>', unsafe_allow_html=True)
+    
     st.download_button(
-        label="⬇️ BAIXAR RELATÓRIO OFICIAL",
-        data=rel_txt.encode('utf-8-sig'),
-        file_name=f"Auditoria_{medico_sel.replace(' ', '_')}.txt",
+        label="⬇️ BAIXAR RELATÓRIO OFICIAL (.TXT)",
+        data=relatorio_txt.encode('utf-8-sig'),
+        file_name=f"Dossie_{medico_sel.replace(' ', '_')}.txt",
         mime="text/plain"
     )
 
 st.caption("IA-SENTINELA PRO | Sistema de Gestão SPA")
+        
