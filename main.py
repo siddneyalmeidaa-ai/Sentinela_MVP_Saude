@@ -1,37 +1,47 @@
 import streamlit as st
 import pandas as pd
 
-# --- CONFIGURAÇÃO DE APOIO ---
-API_KEY = "COLOQUE_SUA_CHAVE_AQUI"
+# --- ESQUELETO MILITAR: MEMÓRIA DE SESSÃO ---
+if "historico" not in st.session_state:
+    st.session_state.historico = [
+        {"role": "assistant", "content": "Bom dia, Sidney! O ecossistema está em modo de espera. Aguardando ignição da chave."}
+    ]
 
-# --- DADOS DO PADRÃO OURO ---
+# --- CONFIGURAÇÃO OPERACIONAL ---
+API_KEY = "COLOQUE_SUA_CHAVE_AQUI"
 doutor = "ANIMA COSTA"
 porcentagem = 85
 projecao = "1.85x"
-status_ia = "Monitorando o vácuo"
 
-# --- INTERFACE VISUAL ---
+# --- INTERFACE VISUAL (GÊMEA FÊNIX) ---
 st.title("(GÊMEA FÊNIX)")
 
-# Balão de Intenção da IA
+# Alerta de Status Militar
 st.warning(f"🤖 Olá Bigode! IA-SENTINELA ativa. {porcentagem}% LIBERADO. Projeção {projecao} para {doutor}.")
 
-# Simulando a Resposta de Bom Dia
-with st.chat_message("assistant", avatar="🤖"):
-    st.write("Bom dia, Sidney! O ecossistema está em modo de espera. Aguardando ignição da chave para análise em tempo real.")
+# Exibição do Histórico de Mensagens
+for mensagem in st.session_state.historico:
+    with st.chat_message(mensagem["role"]):
+        st.write(mensagem["content"])
 
 # --- TABELA DA FAVELINHA ---
 st.subheader("📋 TABELA DA FAVELINHA")
-st.table({"Doutor": [doutor], "Projeção": [projecao], "Ação": ["ENTRA"], "IA-SENTINELA": [status_ia]})
+st.table({"Doutor": [doutor], "Projeção": [projecao], "Ação": ["ENTRA"], "IA-SENTINELA": ["Monitorando o vácuo"]})
 
-# --- CAMPO DE INTERAÇÃO ---
+# --- INPUT DE COMANDO COM REAÇÃO ---
 prompt = st.chat_input("Dê sua ordem operacional...")
 
 if prompt:
-    with st.chat_message("user", avatar="🔴"):
+    # Salva e exibe a mensagem do usuário
+    st.session_state.historico.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
         st.write(prompt)
-    with st.chat_message("assistant", avatar="🤖"):
-        st.write(f"Recebi sua ordem: '{prompt}'. O motor está pronto, só aguardando a chave para executar.")
+    
+    # Resposta de Intenção do Sistema
+    resposta = f"Recebi sua ordem: '{prompt}'. O motor está pronto, só aguardando a chave para executar."
+    st.session_state.historico.append({"role": "assistant", "content": resposta})
+    with st.chat_message("assistant"):
+        st.write(resposta)
 
-# --- DOWNLOAD ---
-st.download_button("📥 Baixar Relatorio Operacional", f"Relatorio: {doutor}", "relatorio.txt")
+# --- BOTÃO DE DOWNLOAD SEM ACENTO ---
+st.download_button("Baixar Relatorio Operacional", f"Relatorio: {doutor} - {porcentagem}%", "relatorio.txt")
