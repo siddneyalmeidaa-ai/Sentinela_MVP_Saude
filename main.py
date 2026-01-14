@@ -1,18 +1,18 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. CONFIGURAÇÃO E BLINDAGEM DE INTERFACE ---
+# --- 1. CONFIGURAÇÃO E OCULTAÇÃO DO CABEÇALHO DIREITO ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown("""
     <style>
-    /* Oculta menus de sistema à direita para segurança */
+    /* Oculta apenas os itens do sistema no canto superior direito */
     #MainMenu {visibility: hidden;}
     .stDeployButton {display:none;}
     header .st-emotion-cache-15ec66s {display:none;}
     footer {visibility: hidden;}
 
-    /* Estilização Premium do Painel */
+    /* Design VIP do Cabeçalho Principal */
     .header-box { 
         display: flex; justify-content: space-between; align-items: center; 
         padding: 15px; background: linear-gradient(90deg, #1c232d, #0e1117); 
@@ -24,12 +24,11 @@ st.markdown("""
     
     <div class="header-box">
         <span style="color: white; font-size: 1.2rem;">🏛️ CONTROLE: <b>IA-SENTINELA</b></span> 
-        <span class="pro-tag">PRO V22 - BLINDADO</span>
+        <span class="pro-tag">PRO V23 - ESTÁVEL</span>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS (SEM ERROS DE SINTAXE) ---
-# Dicionário revisado para evitar SyntaxError
+# --- 2. BASE DE DADOS (CORREÇÃO DE SINTAXE) ---
 dados_medicos = {
     "ANIMA COSTA": {
         "faturamento": 16000.0,
@@ -47,26 +46,26 @@ dados_medicos = {
     }
 }
 
-# --- 3. BARRA LATERAL (CENTRO DE COMANDO) ---
+# --- 3. BARRA LATERAL ---
 with st.sidebar:
     st.header("⚙️ Configurações Alpha")
     medico_sel = st.selectbox("Selecione a Unidade:", list(dados_medicos.keys()))
     info = dados_medicos[medico_sel]
     
-    # Slider que controla os valores em tempo real
+    # Controle central de porcentagem
     p_ok = st.slider("Porcentagem Liberada (%)", 0, 100, 85)
     p_risco = 100 - p_ok
 
-# --- 4. CÁLCULOS FINANCEIROS SINCRONIZADOS ---
+# --- 4. MOTOR DE CÁLCULO SINCRONIZADO ---
 v_total = info["faturamento"]
 v_liberado = v_total * (p_ok / 100)
 v_pendente = v_total * (p_risco / 100)
 
-# Rateio automático do prejuízo por paciente
+# Cálculo do gasto individual por paciente
 num_pacientes = len(info["pacientes"])
-valor_individual = v_pendente / num_pacientes if num_pacientes > 0 else 0
+valor_por_paciente = v_pendente / num_pacientes if num_pacientes > 0 else 0
 
-# --- 5. INTERFACE OPERACIONAL (ABAS RESTAURADAS) ---
+# --- 5. INTERFACE OPERACIONAL (ABAS) ---
 tab1, tab2, tab3 = st.tabs(["🏢 CLÍNICA", "📊 GRÁFICOS", "📄 RELATÓRIO"])
 
 with tab1:
@@ -76,21 +75,21 @@ with tab1:
     col2.metric(f"{p_risco}% PENDENTE", f"R$ {v_pendente:,.2f}", delta=f"-{p_risco}%", delta_color="inverse")
     
     st.markdown("---")
-    st.subheader("📌 Gasto Detalhado das Pendências")
+    st.subheader("📌 Gasto Detalhado por Paciente")
     
-    # Tabela dinâmica com valores calculados
+    # Tabela dinâmica com os valores atualizados pelo slider
     lista_detalhada = []
     for p in info["pacientes"]:
         lista_detalhada.append({
             "Paciente": p["nome"],
-            "Tipo de Glosa": p["glosa"],
-            "Prejuízo Estimado": f"R$ {valor_individual:,.2f}"
+            "Motivo da Pendência": p["glosa"],
+            "Valor da Glosa": f"R$ {valor_por_paciente:,.2f}"
         })
     st.table(lista_detalhada)
 
 with tab2:
-    st.write("**Composição de Auditoria (%)**")
-    # Gráfico robusto que substitui o Plotly (evita erros de módulo)
+    st.write("**Composição de Auditoria**")
+    # Gráfico que responde ao slider
     df_grafico = pd.DataFrame({'Status': ['Liberado', 'Pendente'], 'Valor': [p_ok, p_risco]})
     st.vega_lite_chart(df_grafico, {
         'mark': {'type': 'arc', 'innerRadius': 50, 'outerRadius': 90},
@@ -101,21 +100,21 @@ with tab2:
     })
 
 with tab3:
-    if st.button("🚀 GERAR RELATÓRIO PADRÃO OURO"):
-        txt_pendencias = "".join([f"- {p['nome']} ({p['glosa']}): R$ {valor_individual:,.2f}\n" for p in info["pacientes"]])
-        dossie = f"""
+    if st.button("🚀 GERAR RELATÓRIO DETALHADO"):
+        detalhes_rel = "".join([f"- {p['nome']} ({p['glosa']}): R$ {valor_por_paciente:,.2f}\n" for p in info["pacientes"]])
+        txt = f"""
 ==========================================
    DOSSIÊ DE AUDITORIA - IA-SENTINELA 
 ==========================================
 UNIDADE  : {medico_sel}
-STATUS   : {p_ok}% LIBERADO / {p_risco}% PENDENTE
+DATA     : 14/01/2026
 ------------------------------------------
-VALOR LIBERADO : R$ {v_liberado:,.2f}
-VALOR PENDENTE : R$ {v_pendente:,.2f}
+TOTAL LIBERADO : R$ {v_liberado:,.2f}
+TOTAL PENDENTE : R$ {v_pendente:,.2f}
 
 DETALHAMENTO POR PACIENTE:
-{txt_pendencias}
+{detalhes_rel}
 =========================================="""
-        st.code(dossie)
-        st.download_button("⬇️ BAIXAR RELATÓRIO (.TXT)", dossie.encode('utf-8-sig'), f"Relatorio_{medico_sel}.txt")
-        
+        st.code(txt)
+        st.download_button("⬇️ BAIXAR (.TXT)", txt.encode('utf-8-sig'), f"Relatorio_{medico_sel}.txt")
+                                                                    
