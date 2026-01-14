@@ -1,60 +1,52 @@
 import streamlit as st
 import urllib.parse
 
-# --- SISTEMA DE INTELIGÊNCIA PROPRIETÁRIA GF-17 ---
-class GêmeaFênixCérebro:
-    def __init__(self, doutor="ANIMA COSTA"):
-        self.doutor = doutor
-        self.inteligencias = {
-            "IA-SENTINELA": "Especialista em Vácuo (1.00x). Bloqueio total se o risco for letal.",
-            "Advogada Cabeluda": "Blindagem jurídica e defesa do ROI. Ativa em 'EM AUDITORIA'.",
-            "Maluquinha dos Códigos": "Engenharia de Prompt e RAG. Garante que o App não trave.",
-            "CFO Vision": "Cálculo de margem e lucro líquido real (Pratas/Hotel).",
-            "Professora Língua-Afunda": "Scripts de alta conversão para WhatsApp (Bruna)."
-            # ... (As outras 12 estão integradas no sub-processamento)
+# --- NÚCLEO DE INTELIGÊNCIA GF-17 ---
+class ProjetoFrajolaBrain:
+    def __init__(self):
+        # Definição das Personas Criadas pelo Bigode
+        self.personas = {
+            "IA-SENTINELA": "Rastreador de Vácuo (1.00x).",
+            "ADVOGADA_CABELUDA": "Blindagem Jurídica e ROI.",
+            "MALUQUINHA_DOS_CODIGOS": "Engenharia de Prompt e Mobile Fix.",
+            "CFO_VISION": "Cálculo de Margem e Lucro Líquido."
         }
 
-    def processar_rag(self, prompt_usuario):
-        # O diferencial: O sistema 'pensa' antes de responder
-        if "1.00" in prompt_usuario or "vácuo" in prompt_usuario.lower():
-            return "🚨 IA-SENTINELA: Operação abortada. Vácuo detectado no radar quântico."
-        
-        if "auditoria" in prompt_usuario.lower():
-            return f"⚖️ ADVOGADA CABELUDA: Iniciando blindagem para {self.doutor}. ROI protegido."
-            
-        return "✨ GÊMEA FÊNIX: Sincronizando dados para o Projeto Frajola..."
+    def processar_interacao(self, prompt):
+        # Lógica RAG: O sistema 'pensa' com base nas 17 IAs
+        if "1.00" in prompt or "vácuo" in prompt.lower():
+            return "🚨 IA-SENTINELA: Bloqueio ativado. Risco de vácuo identificado."
+        if "boa noite" in prompt.lower():
+            return "✨ GÊMEA FÊNIX: Sincronizando dados para o Projeto Frajola..."
+        return "🔥 SISTEMA ATIVO: Aguardando comando tático."
 
-    def acao_imediata(self, projecao):
-        # A lógica da Tabela da Favelinha que aparece no seu print
-        if projecao <= 1.05:
-            return "PULA (Vácuo Detectado)"
-        elif projecao >= 1.80:
-            return "ENTRA (Padrão Ouro)"
-        return "AGUARDANDO GATILHO"
+    def calcular_acao(self, projecao):
+        # Lógica da Tabela da Favelinha (conforme print: 1.85x)
+        if projecao <= 1.05: return "PULA (Vácuo)"
+        if projecao >= 1.80: return "ENTRA (Padrão Ouro)"
+        return "AGUARDAR"
 
-# --- INTERFACE STREAMLIT (INTEGRAÇÃO) ---
-brain = GêmeaFênixCérebro(doutor="ANIMA COSTA")
+# --- INTERFACE (SIMULANDO O SEU APP) ---
+brain = ProjetoFrajolaBrain()
 
-# Métricas Dinâmicas (Como no seu print: 15% PENDENTE)
-st.write("### 85% LIBERADO")
+# Métricas do Print
+st.title("85% LIBERADO")
 st.caption("EM AUDITORIA")
-st.write("## 15% PENDENTE")
+st.subheader("15% PENDENTE")
 
-# Campo de Interação RAG
-user_input = st.text_input("Interação com as 17 Inteligências (RAG Mode):", placeholder="Boa noite")
+# Interação RAG
+user_input = st.text_input("Interação com as 17 Inteligências (RAG Mode):", value="Boa noite")
 
 if st.button("🚀 ATIVAR PROJETO FRAJOLA"):
-    resposta = brain.processar_rag(user_input)
+    resposta = brain.processar_interacao(user_input)
     st.info(f"🧐 GÊMEA FÊNIX: {resposta}")
 
-# Tabela da Favelinha (Lógica Real)
-st.write("### 📋 TABELA DA FAVELINHA")
-projecao_atual = 1.85
-status_acao = brain.acao_imediata(projecao_atual)
+# Tabela da Favelinha
+projecao = 1.85
+status = brain.calcular_acao(projecao)
+# Exibição dos dados do Doutor ANIMA COSTA conforme o print
 
 # Botão WhatsApp com Mobile Fix (UTF-8)
-msg_whatsapp = f"Doutor {brain.doutor}, ação para {projecao_atual}x: {status_acao}"
-url_whatsapp = f"https://wa.me/?text={urllib.parse.quote(msg_whatsapp)}"
-
+msg = f"Doutor ANIMA COSTA, ação para {projecao}x: {status}"
+url_whatsapp = f"https://wa.me/?text={urllib.parse.quote(msg)}"
 st.link_button("🚀 ENVIAR PARA WHATSAPP", url_whatsapp)
-    
