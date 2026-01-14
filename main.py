@@ -2,52 +2,55 @@ import streamlit as st
 import pandas as pd
 
 # --- CONFIGURAÇÃO DE SEGURANÇA ---
-# Coloque sua chave entre as aspas quando estiver pronto
+# Sua chave vai aqui entre as aspas
 API_KEY = "COLOQUE_SUA_CHAVE_AQUI"
 
-# --- CONFIGURAÇÃO OPERACIONAL (VALORES DO PRINT DE 14 DE JAN) ---
-# Altere os valores abaixo para atualizar o sistema automaticamente
-doutor_atual = "ANIMA COSTA"
-porcentagem_liberado = 85
-projecao_valor = "1.85x"
-acao_imediata = "ENTRA"
-status_ia = "Monitorando o vácuo"
+# --- CONFIGURAÇÃO DA RODADA (PRINT 14 DE JAN) ---
+doutor = "ANIMA COSTA"
+porcentagem = 85
+projecao = "1.85x"
+acao = "ENTRA"
+sentinela_msg = "Monitorando o vácuo"
 
-# --- INTERFACE GÊMEA FÊNIX ---
-st.title("(GÊMEA FÊNIX)")
+# --- ESTILIZAÇÃO DA INTERFACE ---
+st.set_page_config(page_title="Gêmea Fênix", layout="centered")
 
-# Verificação de Sincronização
-if API_KEY == "COLOQUE_SUA_CHAVE_AQUI" or API_KEY == "":
-    st.error("❌ STATUS: Erro: Verifique a Chave e as Aspas")
+# Título Principal
+st.markdown(f"<h1 style='text-align: center; color: white;'>(GÊMEA FÊNIX)</h1>", unsafe_allow_html=True)
+st.markdown("---")
+
+# --- ÁREA DE STATUS DA IA ---
+if API_KEY == "COLOQUE_SUA_CHAVE_AQUI":
+    # Alerta de processamento
+    st.warning(f"🤖 Olá Bigode! IA-SENTINELA ativa. {porcentagem}% LIBERADO. Projeção {projecao} para {doutor}. {sentinela_msg}.")
     st.info("🔄 O servidor da IA está processando sua nova chave. Tente novamente em um instante.")
 else:
-    # Mensagem sincronizada: Altera os valores no texto automaticamente
-    st.success(f"🤖 Olá Bigode! IA-SENTINELA ativa. {porcentagem_liberado}% LIBERADO. Projeção {projecao_valor} para {doutor_atual}. {status_ia}.")
+    st.success(f"✅ SISTEMA SINCRONIZADO: {porcentagem}% LIBERADO")
 
-st.markdown("---")
+# Exemplo de Balão de Chat
+with st.chat_message("user", avatar="🔴"):
+    st.write("Bom dia")
 
 # --- TABELA DA FAVELINHA (VISUAL INTERFACE) ---
-st.subheader("📋 TABELA DA FAVELINHA")
+st.markdown("### 📋 TABELA DA FAVELINHA")
 
 df_favelinha = pd.DataFrame({
-    "Doutor": [doutor_atual],
-    "Projeção": [projecao_valor],
-    "Ação": [acao_imediata],
-    "IA-SENTINELA": [status_ia]
+    "Doutor": [doutor],
+    "Projeção": [projecao],
+    "Ação": [acao],
+    "IA-SENTINELA": [sentinela_msg]
 })
 
-# Exibe a tabela sem o índice lateral (scannable)
+# Exibe a tabela sem o índice para ficar igual ao print
 st.table(df_favelinha)
 
-st.markdown("---")
+# --- COMANDO OPERACIONAL (CHAT NO RODAPÉ) ---
+# Simula a barra de digitação do print
+st.chat_input("Fale com a Gêmea Fênix...")
 
-# --- BOTÃO DE DOWNLOAD (CONFIGURADO SEM ACENTO PARA CELULAR) ---
+# --- BOTÃO DE DOWNLOAD (CONFIGURADO PARA CELULAR) ---
 st.download_button(
     label="📥 Baixar Relatorio Operacional",
-    data=f"STATUS: {porcentagem_liberado}% LIBERADO. Doutor: {doutor_atual}. Projeção: {projecao_valor}.",
-    file_name="relatorio_sentinela.txt",
-    mime="text/plain"
+    data=f"Relatorio: {porcentagem}% LIBERADO para {doutor}",
+    file_name="relatorio_sentinela.txt"
 )
-
-# --- RODAPÉ DE AUDITORIA ---
-st.caption(f"Sistema Sincronizado: {doutor_atual} | IA-SENTINELA v1.0")
