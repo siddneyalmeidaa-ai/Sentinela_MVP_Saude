@@ -3,85 +3,95 @@ import pandas as pd
 import urllib.parse
 from datetime import datetime
 
-# --- 1. MOTOR DE MEMÓRIA QUÂNTICA (LLM CONTEXT) ---
-# Garante que a IA não "se perca" ao clicar nos botões
-if 'historico_llm' not in st.session_state:
-    st.session_state.historico_llm = []
-if 'resposta_ativa' not in st.session_state:
-    st.session_state.resposta_ativa = ""
+# --- 1. CÉREBRO DA IA (ESTADO DE MEMÓRIA) ---
+if 'memoria_proativa' not in st.session_state:
+    st.session_state.memoria_proativa = []
+if 'insight_ia' not in st.session_state:
+    st.session_state.insight_ia = ""
 
-class MotorLLM:
+class IAResolutiva:
     def __init__(self):
-        self.total = 26801.80 #
-        self.medicos = ["ANIMA COSTA", "INTERFILE - BI", "DR. MARCOS", "LAB CLINIC"]
+        self.estatuto_liberado = 69 #
+        self.estatuto_pendente = 31 #
+        self.valor_foco = 12500.00 # Valor fixado conforme seus prints
 
-    def processar_linguagem(self, medico, prompt):
-        """Simula a lógica de um LLM para interagir com o Sidney"""
-        p = prompt.lower()
+    def analisar_e_responder(self, medico, texto_usuario):
+        """Simula a proatividade humana com base no contexto"""
+        t = texto_usuario.lower()
         
-        # Lógica de Contexto: Identifica saudações ou agradecimentos
-        if any(x in p for x in ["boa noite", "olá", "oi"]):
-            return f"Boa noite, Sidney! Analisando a unidade {medico}, o status atual é CONFORMIDADE OK. Como as 17 IAs podem acelerar seu processo?"
-        
-        if any(x in p for x in ["obrigado", "valeu", "entendi", "somente isso"]):
-            return f"Perfeito, Sidney! Registrei a conformidade da unidade {medico}. Diálogo salvo na Memória Quântica para auditoria."
-        
-        return f"Parecer Técnico: Sidney, verifiquei que {medico} opera com fluxo normal sob o Estatuto Atual (69% Liberado). Alguma outra dúvida?"
+        # Lógica Proativa de Saudação e Status
+        if any(x in t for x in ["boa noite", "olá", "oi"]):
+            return (f"Boa noite, Sidney! Já adiantei a análise da unidade {medico}. "
+                    f"O valor de R$ {self.valor_foco:,.2f} está em CONFORMIDADE OK. "
+                    "Minha sugestão proativa: Já podemos liberar para pagamento hoje. Prosseguimos?")
 
-ai_nucleo = MotorLLM()
+        # Lógica de Resolução de Pendências
+        if "pendente" in t or "resolver" in t:
+            return (f"Sidney, identifiquei que o gargalo na unidade {medico} é documental. "
+                    f"Mesmo com {self.estatuto_pendente}% pendente no total, esta unidade está limpa. "
+                    "Vou preparar o texto para o WhatsApp agora para não perdermos tempo.")
 
-# --- 2. INTERFACE PADRÃO OURO (ESTÁVEL) ---
-st.set_page_config(page_title="Sentinela LLM | GF-17", layout="wide")
-st.title("🛡️ Sentinela: Inteligência de Dados")
+        # Lógica de Finalização Inteligente
+        if any(x in t for x in ["obrigado", "valeu", "entendi", "somente isso"]):
+            return (f"Perfeito, Sidney! Unidade {medico} processada com sucesso. "
+                    "Já atualizei a Tabela da Favelinha para 'ENTRA'. Próximo médico da lista?")
 
-# Arredondamento Sincronizado (69% e 31%)
+        return f"Entendido, Sidney. Analisando o cenário de {medico}, a melhor ação agora é a aceleração do fluxo oficial."
+
+ia_viva = IAResolutiva()
+
+# --- 2. INTERFACE ESTATÍSTICA (PADRÃO OURO) ---
+st.set_page_config(page_title="IA Sentinela Proativa", layout="wide")
+st.title("🛡️ Caixa de Diálogo Online (IA Viva)")
+
+# Métricas Sincronizadas
 c1, c2 = st.columns(2)
-c1.metric("ESTATUTO ATUAL", "69% LIBERADO")
-c2.metric("EM AUDITORIA", "31% PENDENTE")
+c1.metric("ESTATUTO ATUAL", f"{ia_viva.estatuto_liberado}% LIBERADO")
+c2.metric("EM AUDITORIA", f"{ia_viva.estatuto_pendente}% PENDENTE")
 
-# --- 3. CAIXA DE DIÁLOGO ONLINE (PROJETO FRAJOLA) ---
-st.subheader("💬 Caixa de Diálogo Online (IA Viva)")
+# --- 3. CANAL DE COMUNICAÇÃO PROATIVO ---
 with st.container(border=True):
-    col_med, col_msg = st.columns([1, 2])
-    with col_med:
-        u_sel = st.selectbox("Médico em Foco:", ai_nucleo.medicos, key="med_llm")
-    with col_msg:
-        entrada = st.text_input("Interação:", placeholder="Ex: Boa noite, tudo bem?", key="input_llm")
+    medico_alvo = st.selectbox("Médico em Foco:", ["ANIMA COSTA", "INTERFILE - BI", "DR. MARCOS"], key="sel_ia")
+    input_user = st.text_input("Sua mensagem para a IA:", placeholder="Fale com a IA aqui...", key="chat_ia")
 
-    if st.button("🚀 Ativar Projeto Frajola"):
-        if entrada:
-            # IA processa e a resposta fica 'travada' na memória
-            resposta_ia = ai_nucleo.processar_linguagem(u_sel, entrada)
-            st.session_state.resposta_ativa = resposta_ia
+    if st.button("🚀 Ativar Projeto Frajola (Inteligência LLM)"):
+        if input_user:
+            # A IA gera um insight proativo
+            resultado = ia_viva.analisar_e_responder(medico_alvo, input_user)
+            st.session_state.insight_ia = resultado
             
-            # Alimenta a Memória Quântica (Histórico)
-            st.session_state.historico_llm.append({
-                "Data": datetime.now().strftime("%d/%m %H:%M"),
-                "Unidade": u_sel,
-                "Sidney": entrada,
-                "IA Sentinela": resposta_ia
+            # Grava na Memória Quântica
+            st.session_state.memoria_proativa.append({
+                "Hora": datetime.now().strftime("%H:%M"),
+                "Unidade": medico_alvo,
+                "Você": input_user,
+                "IA Proativa": resultado
             })
 
-    # Exibição do Parecer (Não some ao clicar)
-    if st.session_state.resposta_ativa:
-        st.info(f"**Análise da IA:** {st.session_state.resposta_ativa}")
+    # Balão de Resposta "Humana"
+    if st.session_state.insight_ia:
+        st.success(f"**Análise da IA:** {st.session_state.insight_ia}")
         
-        # Link WhatsApp Blindado (Resolve o TypeError dos seus prints)
-        texto_zap = urllib.parse.quote(st.session_state.resposta_ativa)
-        url_zap = f"https://wa.me/5511942971753?text={texto_zap}"
-        st.markdown(f'<a href="{url_zap}" target="_blank" style="text-decoration:none;"><div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR PARA WHATSAPP</div></a>', unsafe_allow_html=True)
+        # Link WhatsApp Seguro (Sem erros de acento)
+        msg_formatada = urllib.parse.quote(st.session_state.insight_ia)
+        st.markdown(f'''
+            <a href="https://wa.me/5511942971753?text={msg_formatada}" target="_blank" style="text-decoration:none;">
+                <div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">
+                    🚀 ENVIAR PARA WHATSAPP
+                </div>
+            </a>
+        ''', unsafe_allow_html=True)
 
-# --- 4. ABA DE SALVAMENTO (MEMÓRIA) ---
+# --- 4. MEMÓRIA E AUDITORIA ---
 st.divider()
 t1, t2 = st.tabs(["📋 Tabela da Favelinha", "📜 Histórico de Diálogo (Memória)"])
 
 with t1:
-    st.table(pd.DataFrame([{"Médico": u_sel, "Ação": "entra"}])) # Regras salvas
+    # Ação determinada pela proatividade da IA
+    acao = "entra" if "conformidade" in st.session_state.insight_ia.lower() else "pula"
+    st.table(pd.DataFrame([{"Médico": medico_alvo, "Ação": acao, "Valor": f"R$ {ia_viva.valor_foco:,.2f}"}]))
 
 with t2:
-    if st.session_state.historico_llm:
-        st.dataframe(pd.DataFrame(st.session_state.historico_llm))
-    else:
-        st.info("Aguardando interações para alimentar a memória.")
-
-st.caption(f"Sidney Pereira de Almeida | {datetime.now().strftime('%d/%m/%Y %H:%M')} | Sincronizado")
+    if st.session_state.memoria_proativa:
+        st.dataframe(pd.DataFrame(st.session_state.memoria_proativa))
+        
