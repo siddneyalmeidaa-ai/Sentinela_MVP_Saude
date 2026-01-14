@@ -25,8 +25,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- 2. CÉREBRO DA IA (CONEXÃO COM NOVA CHAVE) ---
-# Chave atualizada conforme seu print das 11:30
+# --- 2. CÉREBRO DA IA (CHAVE ATUALIZADA) ---
+# Substituída a chave antiga pela nova (final 4_p0)
 API_KEY = "AIzaSyDY_J0MUpYJw_70qBlx8t25KwyW46Y4_p0"
 
 def inicializar_ia():
@@ -48,7 +48,7 @@ col2.metric("ALVO", "ANIMA COSTA")
 if prompt := st.chat_input("Dê sua ordem operacional..."):
     if cerebro_ia:
         try:
-            # Protocolo Padrão Ouro
+            # Protocolo de Resposta Curta: ENTRA, NÃO ENTRA ou PULA
             instrucao = "Responda apenas com: ENTRA, NÃO ENTRA ou PULA."
             res = cerebro_ia.generate_content(f"{instrucao} Pergunta: {prompt}")
             st.write(f"🛡️ GÊMEA FÊNIX: {res.text}")
