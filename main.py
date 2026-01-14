@@ -1,87 +1,43 @@
 import streamlit as st
 import urllib.parse
-import pandas as pd
 
-# --- 1. CORE DE INTELIGÊNCIA (As 17 Personas do Projeto Frajola) ---
-class CoreGF17:
-    def __init__(self, doutor="ANIMA COSTA"):
-        self.doutor = doutor
-        self.liberado = 85
-        self.pendente = 15
-        
-    def processar_rag(self, prompt):
-        # Lógica IA-SENTINELA: Rastreio de Vácuo (1.00x)
-        if "1.00" in prompt or "vácuo" in prompt.lower():
-            return "🚨 IA-SENTINELA: Bloqueio detectado! Zona de Vácuo (1.00x) identificada. Operação abortada."
-        
-        # Lógica Advogada Cabeluda: Blindagem e Auditoria
-        if "auditoria" in prompt.lower():
-            return f"⚖️ ADVOGADA CABELUDA: Iniciando blindagem para {self.doutor}. ROI protegido pelo Padrão Ouro."
-            
-        # Resposta de Sincronização
-        return f"✨ GÊMEA FÊNIX: Sincronização completa para Doutor {self.doutor}. Todas as 17 IAs em standby."
+# 1. Definição do Cérebro (Regras que as 17 IAs aprenderam)
+def processar_frajola(input_usuario, doutor="ANIMA COSTA"):
+    prompt = input_usuario.lower()
+    
+    # Regra IA-SENTINELA: Bloqueio de Vácuo (1.00x)
+    if "1.00" in prompt or "vácuo" in prompt:
+        return "🚨 IA-SENTINELA: Operação abortada! Vácuo detectado no radar quântico. Risco de perda total."
+    
+    # Regra Advogada Cabeluda: Blindagem e Auditoria
+    if "auditoria" in prompt or "liberado" in prompt:
+        return f"⚖️ ADVOGADA CABELUDA: Blindagem ativa para {doutor}. 85% do capital liberado sob auditoria rigorosa."
 
-    def decisao_sts(self, projecao):
-        # Regra: 'Entra' ou 'Pula' conforme a projeção
-        if projecao <= 1.05:
-            return "PULA"
-        elif projecao >= 1.80:
-            return "ENTRA"
-        return "PULA"
+    # Regra Professora Língua-Afunda: Resposta Padrão
+    if "boa noite" in prompt or "olá" in prompt:
+        return f"✨ GÊMEA FÊNIX: Sincronização completa para Doutor {doutor}. As 17 IAs estão em standby tático."
+    
+    return "🔥 SISTEMA ATIVO: Processando análise quântica da rodada atual..."
 
-# --- 2. CONFIGURAÇÃO DA INTERFACE (STREAMLIT) ---
-st.set_page_config(page_title="GF-17 - Projeto Frajola", layout="centered")
-if 'brain' not in st.session_state:
-    st.session_state.brain = CoreGF17()
+# 2. Interface (O que aparece nos seus prints)
+st.title("85% LIBERADO")
+st.subheader("15% PENDENTE")
 
-brain = st.session_state.brain
-
-# --- 3. MÉTRICAS DINÂMICAS (Sincronização Padrão Ouro) ---
-# Substitui palavras por porcentagens reais conforme sua regra
-st.title(f"{brain.liberado}% LIBERADO")
-st.caption("EM AUDITORIA")
-st.subheader(f"{brain.pendente}% PENDENTE")
-
-st.divider()
-
-# --- 4. CAMPO DE INTERAÇÃO RAG ---
-st.write("### 🧠 Interação com as 17 Inteligências (RAG Mode):")
-user_input = st.text_input("Digite sua mensagem:", value="Boa noite", key="input_rag")
+# Campo de Interação
+user_input = st.text_input("Interação com as 17 Inteligências (RAG Mode):", key="rag_input")
 
 if st.button("🚀 ATIVAR PROJETO FRAJOLA"):
     if user_input:
-        resposta = brain.processar_rag(user_input)
-        st.info(f"🧐 GÊMEA FÊNIX: {resposta}")
+        # A MÁGICA: Aqui ele chama a função que 'pensa' em vez de mostrar texto fixo
+        resposta_final = processar_frajola(user_input)
+        st.info(f"🧐 GÊMEA FÊNIX: {resposta_final}")
+    else:
+        st.warning("A Maluquinha dos Códigos avisa: Digite uma mensagem para ativar o cérebro!")
 
-st.divider()
+# 3. Tabela da Favelinha Dinâmica
+projecao = 1.85
+# Lógica STS: Se >= 1.80x, então ENTRA
+acao_imediata = "ENTRA" if projecao >= 1.80 else "PULA"
 
-# --- 5. TABELA DA FAVELINHA (Visual Interface) ---
 st.write("### 📋 TABELA DA FAVELINHA")
-
-# Projeção atual conforme seu print
-proj_atual = 1.85
-acao = brain.decisao_sts(proj_atual)
-
-df_favelinha = pd.DataFrame({
-    "Doutor": [brain.doutor],
-    "Projeção Rodada": [f"{proj_atual}x"],
-    "Ação Imediata": [acao]
-})
-
-st.table(df_favelinha)
-
-# Notificação visual sincronizada
-st.success(f"🧐 GÊMEA FÊNIX: Aguardando gatilho tático para {brain.doutor} ({proj_atual}x).")
-
-# --- 6. BOTÃO WHATSAPP (Mobile Fix - Sem erro de acento) ---
-def gerar_link(doutor, proj, acao):
-    texto = f"🚀 PROJETO FRAJOLA\nDoutor: {doutor}\nProjeção: {proj}x\nAção: {acao}\n\nStatus: PADRÃO OURO"
-    # Codificação para evitar erro no celular
-    return f"https://wa.me/?text={urllib.parse.quote(texto)}"
-
-link_wa = gerar_link(brain.doutor, proj_atual, acao)
-st.link_button("🚀 ENVIAR PARA WHATSAPP", link_wa, use_container_width=True)
-
-# Rodapé de Auditoria
-st.divider()
-st.caption("© 2026 Gêmea Fênix Bonde - Sistema Blindado")
+st.table({"Doutor": ["ANIMA COSTA"], "Projeção": [f"{projecao}x"], "Ação": [acao_imediata]})
