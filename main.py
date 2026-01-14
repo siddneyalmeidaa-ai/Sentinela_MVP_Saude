@@ -1,18 +1,18 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. CONFIGURAÇÃO E OCULTAÇÃO DO CABEÇALHO DIREITO ---
+# --- 1. CONFIGURAÇÃO E BLINDAGEM DE INTERFACE ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown("""
     <style>
-    /* Oculta apenas os itens do sistema no canto superior direito */
+    /* Oculta apenas elementos de sistema do topo direito */
     #MainMenu {visibility: hidden;}
     .stDeployButton {display:none;}
     header .st-emotion-cache-15ec66s {display:none;}
     footer {visibility: hidden;}
 
-    /* Design VIP do Cabeçalho Principal */
+    /* Design VIP Sentinela */
     .header-box { 
         display: flex; justify-content: space-between; align-items: center; 
         padding: 15px; background: linear-gradient(90deg, #1c232d, #0e1117); 
@@ -24,11 +24,11 @@ st.markdown("""
     
     <div class="header-box">
         <span style="color: white; font-size: 1.2rem;">🏛️ CONTROLE: <b>IA-SENTINELA</b></span> 
-        <span class="pro-tag">PRO V23 - ESTÁVEL</span>
+        <span class="pro-tag">PRO V24 - TOTAL</span>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS (CORREÇÃO DE SINTAXE) ---
+# --- 2. BASE DE DADOS (REVISADA) ---
 dados_medicos = {
     "ANIMA COSTA": {
         "faturamento": 16000.0,
@@ -46,52 +46,48 @@ dados_medicos = {
     }
 }
 
-# --- 3. BARRA LATERAL ---
-with st.sidebar:
-    st.header("⚙️ Configurações Alpha")
-    medico_sel = st.selectbox("Selecione a Unidade:", list(dados_medicos.keys()))
-    info = dados_medicos[medico_sel]
-    
-    # Controle central de porcentagem
-    p_ok = st.slider("Porcentagem Liberada (%)", 0, 100, 85)
-    p_risco = 100 - p_ok
-
-# --- 4. MOTOR DE CÁLCULO SINCRONIZADO ---
-v_total = info["faturamento"]
-v_liberado = v_total * (p_ok / 100)
-v_pendente = v_total * (p_risco / 100)
-
-# Cálculo do gasto individual por paciente
-num_pacientes = len(info["pacientes"])
-valor_por_paciente = v_pendente / num_pacientes if num_pacientes > 0 else 0
-
-# --- 5. INTERFACE OPERACIONAL (ABAS) ---
-tab1, tab2, tab3 = st.tabs(["🏢 CLÍNICA", "📊 GRÁFICOS", "📄 RELATÓRIO"])
+# --- 3. ÁREA DE TRABALHO E ABAS ---
+tab1, tab2, tab3 = st.tabs(["🏢 CLÍNICA / AUDITORIA", "📊 GRÁFICOS", "📄 RELATÓRIO"])
 
 with tab1:
-    st.markdown(f"### Auditoria Ativa: {medico_sel}")
-    col1, col2 = st.columns(2)
-    col1.metric(f"{p_ok}% LIBERADO", f"R$ {v_liberado:,.2f}")
-    col2.metric(f"{p_risco}% PENDENTE", f"R$ {v_pendente:,.2f}", delta=f"-{p_risco}%", delta_color="inverse")
+    # SELEÇÃO INTERNA: Agora dentro da interface para não sumir ao ocultar cabeçalho
+    st.subheader("🕵️ Seleção de Auditoria")
+    col_sel1, col_sel2 = st.columns([1, 1])
     
+    with col_sel1:
+        medico_sel = st.selectbox("Médico/Unidade:", list(dados_medicos.keys()))
+        info = dados_medicos[medico_sel]
+    
+    with col_sel2:
+        p_ok = st.slider("Porcentagem Liberada (%):", 0, 100, 85)
+        p_risco = 100 - p_ok
+
     st.markdown("---")
-    st.subheader("📌 Gasto Detalhado por Paciente")
     
-    # Tabela dinâmica com os valores atualizados pelo slider
-    lista_detalhada = []
+    # Cálculos Sincronizados
+    v_total = info["faturamento"]
+    v_liberado = v_total * (p_ok / 100)
+    v_pendente = v_total * (p_risco / 100)
+    valor_individual = v_pendente / len(info["pacientes"]) if info["pacientes"] else 0
+
+    c1, c2 = st.columns(2)
+    c1.metric(f"{p_ok}% LIBERADO", f"R$ {v_liberado:,.2f}")
+    c2.metric(f"{p_risco}% PENDENTE", f"R$ {v_pendente:,.2f}", delta=f"-{p_risco}%", delta_color="inverse")
+    
+    st.markdown("#### 📌 Detalhamento por Paciente")
+    tabela_resumo = []
     for p in info["pacientes"]:
-        lista_detalhada.append({
+        tabela_resumo.append({
             "Paciente": p["nome"],
-            "Motivo da Pendência": p["glosa"],
-            "Valor da Glosa": f"R$ {valor_por_paciente:,.2f}"
+            "Motivo": p["glosa"],
+            "Glosa Indiv.": f"R$ {valor_individual:,.2f}"
         })
-    st.table(lista_detalhada)
+    st.table(tabela_resumo)
 
 with tab2:
     st.write("**Composição de Auditoria**")
-    # Gráfico que responde ao slider
-    df_grafico = pd.DataFrame({'Status': ['Liberado', 'Pendente'], 'Valor': [p_ok, p_risco]})
-    st.vega_lite_chart(df_grafico, {
+    df_pizza = pd.DataFrame({'Status': ['Liberado', 'Pendente'], 'Valor': [p_ok, p_risco]})
+    st.vega_lite_chart(df_pizza, {
         'mark': {'type': 'arc', 'innerRadius': 50, 'outerRadius': 90},
         'encoding': {
             'theta': {'field': 'Valor', 'type': 'quantitative'},
@@ -100,21 +96,21 @@ with tab2:
     })
 
 with tab3:
-    if st.button("🚀 GERAR RELATÓRIO DETALHADO"):
-        detalhes_rel = "".join([f"- {p['nome']} ({p['glosa']}): R$ {valor_por_paciente:,.2f}\n" for p in info["pacientes"]])
-        txt = f"""
+    if st.button("🚀 GERAR RELATÓRIO FINAL"):
+        detalhes = "".join([f"- {p['nome']} ({p['glosa']}): R$ {valor_individual:,.2f}\n" for p in info["pacientes"]])
+        relatorio = f"""
 ==========================================
    DOSSIÊ DE AUDITORIA - IA-SENTINELA 
 ==========================================
-UNIDADE  : {medico_sel}
+MÉDICO   : {medico_sel}
 DATA     : 14/01/2026
 ------------------------------------------
-TOTAL LIBERADO : R$ {v_liberado:,.2f}
-TOTAL PENDENTE : R$ {v_pendente:,.2f}
+LIBERADO : R$ {v_liberado:,.2f} ({p_ok}%)
+PENDENTE : R$ {v_pendente:,.2f} ({p_risco}%)
 
-DETALHAMENTO POR PACIENTE:
-{detalhes_rel}
+PENDÊNCIAS DETALHADAS:
+{detalhes}
 =========================================="""
-        st.code(txt)
-        st.download_button("⬇️ BAIXAR (.TXT)", txt.encode('utf-8-sig'), f"Relatorio_{medico_sel}.txt")
-                                                                    
+        st.code(relatorio)
+        st.download_button("⬇️ BAIXAR (.TXT)", relatorio.encode('utf-8-sig'), f"Auditoria_{medico_sel}.txt")
+    
