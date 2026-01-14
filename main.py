@@ -11,7 +11,7 @@ st.markdown("<style>.main {background-color: #0e1117; color: #00ffcc;}</style>",
 
 # --- 3. CÉREBRO DA IA (COLE SUA NOVA CHAVE AQUI) ---
 # Lembre-se: Coloque a chave entre as aspas " "
-API_KEY = "gen-lang-client-0387384358" 
+API_KEY ="gen-lang-client-0387384358" 
 
 try:
     genai.configure(api_key=API_KEY)
