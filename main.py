@@ -57,4 +57,4 @@ msg_whatsapp = f"Doutor {brain.doutor}, ação para {projecao_atual}x: {status_a
 url_whatsapp = f"https://wa.me/?text={urllib.parse.quote(msg_whatsapp)}"
 
 st.link_button("🚀 ENVIAR PARA WHATSAPP", url_whatsapp)
-        
+    
