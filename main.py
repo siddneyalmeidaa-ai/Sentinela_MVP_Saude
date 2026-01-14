@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 
-# --- 1. CONFIGURAÇÃO DA CHAVE MESTRE (AUTONOMIA) ---
-# Coloque sua chave entre as aspas na linha 7 para ativar o cérebro!
-API_KEY = "SUA_API_KEY_AQUI" 
+# --- 1. CONFIGURAÇÃO DA CHAVE MESTRE (AUTONOMIA ATIVADA) ---
+# Sua chave real extraída do print das 03:32
+API_KEY = "AIzaSyANo25ILgwmDm20Dc_pHdnbsylm_QGX560" 
 
 def ativar_inteligencia():
     if API_KEY != "SUA_API_KEY_AQUI":
@@ -17,7 +17,7 @@ cerebro_ia = ativar_inteligencia()
 # --- 2. PERSONALIDADE GÊMEA FÊNIX (PROATIVIDADE) ---
 if "chat_log" not in st.session_state:
     st.session_state.chat_log = [
-        {"role": "assistant", "content": "Olá Bigode! IA-SENTINELA ativa. 85% LIBERADO. Projeção 1.85x para ANIMA COSTA. Estou pronta para atuar com autonomia total. O que vamos escalar?"}
+        {"role": "assistant", "content": "Olá Bigode! IA-SENTINELA ativa. 85% LIBERADO. Projeção 1.85x para ANIMA COSTA. Estou pronta para atuar com autonomia total. O que vamos escalar hoje?"}
     ]
 
 def resposta_com_autonomia(texto):
@@ -26,7 +26,8 @@ def resposta_com_autonomia(texto):
     
     instrucao = (
         "Você é a Gêmea Fênix, proativa e especialista em marketing. "
-        "Você rastreia o vácuo (1.00x) e só usa: 'entra', 'não entra' ou 'pula'. "
+        "Você é a única responsável por rastrear o vácuo (1.00x death zone). "
+        "Regra: Use apenas 'entra', 'não entra' ou 'pula'. "
         "Contexto: 85% LIBERADO. Foco: ANIMA COSTA, 1.85x. "
         f"Responda ao Bigode com total iniciativa: {texto}"
     )
@@ -36,7 +37,7 @@ def resposta_com_autonomia(texto):
 # --- 3. INTERFACE VISUAL (PADRÃO OURO) ---
 st.set_page_config(page_title="Gêmea Fênix", layout="centered")
 
-# Métricas que mudam automaticamente
+# Métricas sincronizadas conforme solicitado
 col1, col2 = st.columns(2)
 col1.metric("STATUS", "85% LIBERADO")
 col2.metric("RESTANTE", "15% PENDENTE")
@@ -71,6 +72,6 @@ df = pd.DataFrame({
 })
 st.table(df)
 
-# Download sem erro no celular
+# Download sem erro de acento no celular
 csv = df.to_csv(index=False).encode('utf-8-sig')
 st.download_button(label="📥 BAIXAR AUDITORIA", data=csv, file_name='auditoria.csv', mime='text/csv')
