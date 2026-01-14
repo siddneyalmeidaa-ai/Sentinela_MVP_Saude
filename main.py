@@ -1,30 +1,26 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. CONFIGURAÇÃO DE TELA E TOPO COMPACTO SPA ---
+# --- 1. CONFIGURAÇÃO DE TELA E TOPO SPA ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
     <style>
     [data-testid="stHeader"] {display: none !important;}
     .main .block-container {padding-top: 0.5rem; background-color: #0e1117;}
-    
-    .header-compacto {
+    .header-spa {
         display: flex; justify-content: space-between; align-items: center;
         padding: 8px 15px; background: #1c232d; border-radius: 5px;
         border-bottom: 2px solid #00d4ff; margin-bottom: 10px;
     }
-    .logo-area { color: #00d4ff; font-weight: 800; font-size: 0.9rem; }
-    .iniciais-spa { color: white; font-weight: 900; font-size: 1rem; letter-spacing: 1px; }
     </style>
-    
-    <div class="header-compacto">
-        <div class="logo-area">💠 IA-SENTINELA PRO</div>
-        <div class="iniciais-spa">SPA</div>
+    <div class="header-spa">
+        <div style="color: #00d4ff; font-weight: 800; font-size: 0.9rem;">💠 IA-SENTINELA PRO</div>
+        <div style="color: white; font-weight: 900; font-size: 1rem;">SPA</div>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 2. BANCO DE DADOS COM DETALHAMENTO TÉCNICO ---
+# --- 2. BANCO DE DADOS DETALHADO ---
 dados = {
     "ANIMA COSTA": {
         "lib": 13600.0, "pen": 2400.0, "p_ok": 85, "p_pen": 15,
@@ -46,8 +42,8 @@ medico_sel = st.selectbox("Unidade para Auditoria:", list(dados.keys()))
 info = dados[medico_sel]
 
 # --- 3. ABAS ORGANIZADAS (Cada um em uma água) ---
-tab_pizza, tab_barras, tab_detalhes, tab_relatorio = st.tabs([
-    "⭕ PIZZA (%)", "📊 BARRAS (R$)", "🔍 DETALHES PEN", "📄 RELATÓRIO"
+tab_pizza, tab_barras, tab_detalhes, tab_favelinha, tab_relatorio = st.tabs([
+    "⭕ PIZZA (%)", "📊 BARRAS (R$)", "🔍 DETALHES PEN", "🏘️ FAVELINHA", "📄 RELATÓRIO"
 ])
 
 with tab_pizza:
@@ -60,53 +56,49 @@ with tab_pizza:
         "mark": {"type": "arc", "innerRadius": 70, "outerRadius": 110},
         "encoding": {
             "theta": {"field": "Valor", "type": "quantitative"},
-            "color": {
-                "field": "Status", 
-                "scale": {"range": ["#00d4ff", "#ff4b4b"]},
-                "legend": {"orient": "bottom", "labelColor": "white", "fontSize": 14}
-            }
+            "color": {"field": "Status", "scale": {"range": ["#00d4ff", "#ff4b4b"]}, "legend": {"orient": "bottom", "labelColor": "white"}}
         }
     })
 
 with tab_barras:
-    df_b = pd.DataFrame({
-        "Status": ["LIBERADO", "PENDENTE"],
-        "Valor": [info['lib'], info['pen']],
-        "Texto": [f"R$ {info['lib']:,.0f}", f"R$ {info['pen']:,.0f}"]
-    })
+    df_b = pd.DataFrame({"Status": ["LIBERADO", "PENDENTE"], "Valor": [info['lib'], info['pen']]})
     st.vega_lite_chart(df_b, {
         "width": "container", "height": 350,
-        "layer": [
-            {"mark": {"type": "bar", "color": "#00d4ff", "cornerRadiusTop": 8},
-             "encoding": {"x": {"field": "Status", "axis": {"labelAngle": 0}}, "y": {"field": "Valor", "axis": None}}},
-            {"mark": {"type": "text", "baseline": "bottom", "dy": -10, "fontSize": 16, "fill": "white"},
-             "encoding": {"x": {"field": "Status"}, "y": {"field": "Valor"}, "text": {"field": "Texto"}}}
-        ]
+        "mark": {"type": "bar", "color": "#00d4ff"},
+        "encoding": {"x": {"field": "Status", "axis": {"labelAngle": 0}}, "y": {"field": "Valor"}}
     })
 
 with tab_detalhes:
-    st.markdown("### 📋 Detalhamento de Itens Pendentes")
-    df_detalhes = pd.DataFrame(info['detalhes'])
-    st.table(df_detalhes) # Tabela fixa para facilitar o print
-    st.metric("Total Pendente", f"R$ {info['pen']:,.2f}")
+    st.markdown("### 📋 Pendências por Cliente")
+    st.table(pd.DataFrame(info['detalhes']))
+
+with tab_favelinha:
+    st.markdown("### 🏘️ Tabela da Favelinha")
+    df_fav = pd.DataFrame({
+        "Métrica": ["LIBERADO", "PENDENTE"],
+        "Percentual": [f"{info['p_ok']}%", f"{info['p_pen']}%"],
+        "Ação Imediata": ["ENTRA", "NÃO ENTRA"]
+    })
+    st.table(df_fav)
 
 with tab_relatorio:
-    # Relatório com terminologia do departamento
     st.markdown(f"""
     <div style="background: #1c232d; padding: 15px; border-radius: 8px; border-left: 4px solid #00d4ff; color: white;">
         <h4 style="color: #00d4ff; margin-top:0;">CERTIFICADO DE AUDITORIA SPA</h4>
-        <p style="font-size: 0.9rem;"><b>UNIDADE:</b> {medico_sel}</p>
+        <p><b>UNIDADE:</b> {medico_sel}</p>
         <hr style="border-color: #262730; margin: 10px 0;">
         <p>✅ <b>LIBERADO:</b> {info['p_ok']}% (R$ {info['lib']:,.2f})</p>
         <p>❌ <b>PENDENTE:</b> {info['p_pen']}% (R$ {info['pen']:,.2f})</p>
     </div>
     """, unsafe_allow_html=True)
     
-    rel_txt = f"AUDITORIA SPA\nUNIDADE: {medico_sel}\nLIBERADO: {info['p_ok']}%\nPENDENTE: {info['p_pen']}%"
+    # FORMATO DE DOWNLOAD SEGURO PARA CELULAR (utf-8-sig e sem caracteres especiais no nome)
+    rel_txt = f"AUDITORIA SPA\r\nUNIDADE: {medico_sel}\r\nLIBERADO: {info['p_ok']}%\r\nPENDENTE: {info['p_pen']}%"
     st.download_button(
         label="⬇️ BAIXAR RELATÓRIO OFICIAL",
         data=rel_txt.encode('utf-8-sig'),
-        file_name=f"Relatorio_{medico_sel}.txt"
+        file_name=f"Auditoria_{medico_sel.replace(' ', '_')}.txt",
+        mime="text/plain"
     )
 
 st.caption("IA-SENTINELA PRO | Sistema de Gestão SPA")
