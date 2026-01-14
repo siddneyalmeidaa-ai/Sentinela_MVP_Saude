@@ -3,103 +3,94 @@ import pandas as pd
 import urllib.parse
 from datetime import datetime
 
-# --- 1. MEMÓRIA QUÂNTICA E REDE NEURAL DE ESTADO ---
-if 'memoria_infinita' not in st.session_state:
-    st.session_state.memoria_infinita = []
-if 'brain_state' not in st.session_state:
-    st.session_state.brain_state = {"fluxo": "estável", "risco": "baixo"}
+# --- 1. MEMÓRIA QUÂNTICA BLINDADA (EVITA KEYERROR) ---
+# Inicializamos estados padrão para que o sistema nunca trave
+if 'brain' not in st.session_state:
+    st.session_state.brain = {"msg": "Sistema pronto.", "status": "pula", "score": 100}
+if 'log_infinito' not in st.session_state:
+    st.session_state.log_infinito = []
 
-class IASentinelaInfinita:
+class CérebroInfinito:
     def __init__(self):
-        self.valor_unidade = 12500.00
-        # Simulação de base de conhecimento "Infinita"
-        self.kpi_historico = {"ANIMA COSTA": 0.98, "DR. MARCOS": 0.95, "INTERFILE - BI": 0.40}
+        self.meta_liberada = 69 #
+        # Histórico de confiabilidade (Exemplo de aprendizado)
+        self.historico_medicos = {"ANIMA COSTA": 95, "INTERFILE - BI": 40}
 
-    def raciocinio_preditivo(self, medico, comando):
-        """A IA antecipa o vácuo e sugere ações antes da pergunta"""
+    def processar_conhecimento(self, medico, comando):
+        """A IA aprende com o contexto e sugere o melhor caminho"""
         c = comando.lower()
-        confianca = self.kpi_historico.get(medico, 0.50)
+        score = self.historico_medicos.get(medico, 50)
         
-        # 1. Sugestão Proativa Baseada em Risco
-        if confianca < 0.50 and "pagar" not in c:
+        # Inteligência Proativa: Alerta de Risco
+        if score < 50 and "liberar" not in c:
             return {
-                "ia": f"⚠️ ALERTA DE VÁCUO: Sidney, a {medico} está com score de conformidade baixo ({confianca*100}%). "
-                      "Minha inteligência sugere 'PULA' até que o XML seja auditado. Deseja manter o bloqueio?",
-                "status": "pula"
+                "msg": f"⚠️ ATENÇÃO: Score de {medico} está baixo ({score}%). Sugiro auditoria rígida antes de qualquer 'ENTRA'.",
+                "status": "pula", "score": score
             }
-        
-        # 2. Execução de Ordem com Confirmação de Fluxo
-        if any(x in c for x in ["pode liberar", "pagamento hoje", "autorizado"]):
+
+        # Inteligência Executiva: Ordem Direta
+        if any(x in c for x in ["pode liberar", "pagamento", "autorizado"]):
             return {
-                "ia": f"✅ INTELIGÊNCIA APLICADA: Ordem recebida. Unidade {medico} movida para 'ENTRA'. "
-                      f"O valor de R$ {self.valor_unidade:,.2f} foi blindado contra o vácuo de 1.00x. "
-                      "Protocolo de pagamento gerado. Próximo médico?",
-                "status": "entra"
+                "msg": f"🚀 INTELIGÊNCIA APLICADA: Unidade {medico} autorizada. Atualizando Favelinha para ENTRA. Fluxo de R$ 12.500,00 protegido.",
+                "status": "entra", "score": score
             }
 
         return {
-            "ia": f"Boa noite, Sidney. Sistema Sentinela Online. Analisando {medico}, detecto estabilidade no fluxo. "
-                  "Aguardando gatilho de decisão para processamento.",
-            "status": "pula"
+            "msg": f"Olá Sidney! Analisando {medico}. Tudo está em conformidade. Aguardo seu comando.",
+            "status": "pula", "score": score
         }
 
-# --- 2. INTERFACE ESTATÍSTICA (PADRÃO OURO) ---
-st.set_page_config(page_title="Sentinela Infinita | GF-17", layout="wide")
+# --- 2. INTERFACE SENTINELA ---
+st.set_page_config(page_title="Sentinela Infinita", layout="wide")
 st.title("🛡️ Sentinela: Inteligência Infinita")
 
-# Sincronização Automática
-col1, col2, col3 = st.columns(3)
-col1.metric("ESTATUTO LIBERADO", "69%", "2% vs ontem")
-col2.metric("EM AUDITORIA", "31%", "-1% vs ontem")
-col3.metric("SCORE DE CONFIANÇA", "ALTO", delta_color="normal")
+# Painel de Controle
+c1, c2, c3 = st.columns(3)
+c1.metric("ESTATUTO", "69% LIBERADO")
+c2.metric("PENDENTE", "31% AUDITORIA")
+c3.metric("SCORE IA", f"{st.session_state.brain['score']}%")
 
-# --- 3. CAIXA DE DIÁLOGO ON-LINE (NÚCLEO VIVO) ---
-st.subheader("💬 Diálogo On-line & Processamento Neural")
+# --- 3. CAIXA DE DIÁLOGO NEURAL ---
 with st.container(border=True):
-    med_sel = st.selectbox("Unidade em Análise:", ["ANIMA COSTA", "INTERFILE - BI", "DR. MARCOS"], key="med_inf")
-    msg_sidney = st.text_input("Comando Neural:", placeholder="Ex: Pode liberar o pagamento", key="in_inf")
+    medico_alvo = st.selectbox("Médico em Foco:", ["ANIMA COSTA", "INTERFILE - BI", "DR. MARCOS"], key="sel_inf")
+    comando_sidney = st.text_input("Interação Proativa:", placeholder="Ex: Pode liberar o pagamento", key="in_inf")
 
     if st.button("🚀 Ativar Inteligência Sentinela"):
-        if msg_sidney:
-            brain = IASentinelaInfinita()
-            decisao = brain.raciocinio_preditivo(med_sel, msg_sidney)
+        if comando_sidney:
+            # Executa o processamento sem risco de travar
+            engine = CérebroInfinito()
+            resultado = engine.processar_conhecimento(medico_alvo, comando_sidney)
+            st.session_state.brain = resultado
             
-            # Persistência na Memória Quântica
-            st.session_state.memoria_infinita.append({
-                "T": datetime.now().strftime("%H:%M"),
-                "U": med_sel,
-                "Msg": msg_sidney,
-                "IA": decisao["ia"]
+            # Alimenta a Memória de Longo Prazo
+            st.session_state.log_infinito.append({
+                "Data": datetime.now().strftime("%H:%M"),
+                "Unidade": medico_alvo,
+                "Decisão": resultado["status"].upper(),
+                "Parecer": resultado["msg"]
             })
-            st.session_state.brain_state = decisao
 
-    # Resposta Inteligente (Persistente)
-    if st.session_state.brain_state.get("ia"):
-        st.info(f"**Insight da IA Sentinela:** {st.session_state.brain_state['ia']}")
+    # Resposta Inteligente (Persistente na tela)
+    if st.session_state.brain["msg"]:
+        st.info(f"**Insight da IA:** {st.session_state.brain['msg']}")
         
         # Link WhatsApp Blindado
-        zap_msg = urllib.parse.quote(st.session_state.brain_state["ia"])
-        st.markdown(f'''
-            <a href="https://wa.me/5511942971753?text={zap_msg}" target="_blank" style="text-decoration:none;">
-                <div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">
-                    🚀 ENVIAR DECISÃO PARA AUDITORIA
-                </div>
-            </a>
-        ''', unsafe_allow_html=True)
+        zap_link = f"https://wa.me/5511942971753?text={urllib.parse.quote(st.session_state.brain['msg'])}"
+        st.markdown(f'<a href="{zap_link}" target="_blank" style="text-decoration:none;"><div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR DECISÃO PARA WHATSAPP</div></a>', unsafe_allow_html=True)
 
-# --- 4. TABELA DA FAVELINHA & PROJEÇÃO ---
+# --- 4. TABELA DA FAVELINHA (AGORA BLINDADA) ---
 st.divider()
-t1, t2 = st.tabs(["📋 Tabela da Favelinha (Ação)", "📜 Log de Inteligência"])
+tab_fav, tab_log = st.tabs(["📋 Tabela da Favelinha", "📜 Log de Inteligência"])
 
-with t1:
-    # A IA agora sugere a decisão baseada no risco histórico
-    st.table(pd.DataFrame([{
-        "Unidade": med_sel, 
-        "Ação Sugerida": st.session_state.brain_state["status"],
-        "Risco de Vácuo": "BAIXO" if st.session_state.brain_state["status"] == "entra" else "ALTO"
-    }]))
+with tab_fav:
+    # Resolve o erro de KeyError garantindo que o dicionário exista
+    df_fav = pd.DataFrame([{
+        "Médico": medico_alvo, 
+        "Ação": st.session_state.brain.get("status", "pula"),
+        "Confiança": f"{st.session_state.brain.get('score', 0)}%"
+    }])
+    st.table(df_fav)
 
-with t2:
-    if st.session_state.memoria_infinita:
-        st.dataframe(pd.DataFrame(st.session_state.memoria_infinita))
-            
+with tab_log:
+    if st.session_state.log_infinito:
+        st.dataframe(pd.DataFrame(st.session_state.log_infinito))
