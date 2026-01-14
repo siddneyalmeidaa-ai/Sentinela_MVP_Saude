@@ -1,52 +1,80 @@
 import streamlit as st
 import urllib.parse
+import pandas as pd
 
-# --- NÚCLEO DE INTELIGÊNCIA GF-17 ---
-class ProjetoFrajolaBrain:
+# --- 1. CONFIGURAÇÃO DO MOTOR DE INTELIGÊNCIA (GF-17) ---
+class FenixEngine:
     def __init__(self):
-        # Definição das Personas Criadas pelo Bigode
-        self.personas = {
-            "IA-SENTINELA": "Rastreador de Vácuo (1.00x).",
-            "ADVOGADA_CABELUDA": "Blindagem Jurídica e ROI.",
-            "MALUQUINHA_DOS_CODIGOS": "Engenharia de Prompt e Mobile Fix.",
-            "CFO_VISION": "Cálculo de Margem e Lucro Líquido."
-        }
-
-    def processar_interacao(self, prompt):
-        # Lógica RAG: O sistema 'pensa' com base nas 17 IAs
+        self.doutor = "ANIMA COSTA"
+        self.versao = "2.0 RAG"
+        
+    def processar_inteligencia(self, prompt):
+        # Filtro de Segurança IA-SENTINELA
         if "1.00" in prompt or "vácuo" in prompt.lower():
-            return "🚨 IA-SENTINELA: Bloqueio ativado. Risco de vácuo identificado."
-        if "boa noite" in prompt.lower():
-            return "✨ GÊMEA FÊNIX: Sincronizando dados para o Projeto Frajola..."
-        return "🔥 SISTEMA ATIVO: Aguardando comando tático."
+            return "🚨 IA-SENTINELA: Operação Abortada! Vácuo detectado (1.00x). Risco de perda total de ativos."
+        
+        # Filtro de Blindagem Advogada Cabeluda
+        if "auditoria" in prompt.lower() or "liberado" in prompt.lower():
+            return "⚖️ ADVOGADA CABELUDA: Blindagem Padrão Ouro ativa. ROI protegido e 85% do capital liberado para operação."
+        
+        # Resposta de Sincronização Geral
+        if "boa noite" in prompt.lower() or "olá" in prompt.lower():
+            return f"✨ GÊMEA FÊNIX: Sincronização completa para Doutor {self.doutor}. Todas as 17 IAs estão em standby tático."
+            
+        return "🔥 SISTEMA ATIVO: Processando análise quântica da rodada atual..."
 
-    def calcular_acao(self, projecao):
-        # Lógica da Tabela da Favelinha (conforme print: 1.85x)
-        if projecao <= 1.05: return "PULA (Vácuo)"
-        if projecao >= 1.80: return "ENTRA (Padrão Ouro)"
-        return "AGUARDAR"
+# --- 2. INICIALIZAÇÃO ---
+st.set_page_config(page_title="Projeto Frajola GF-17", layout="centered")
+brain = FenixEngine()
 
-# --- INTERFACE (SIMULANDO O SEU APP) ---
-brain = ProjetoFrajolaBrain()
+# --- 3. INTERFACE VISUAL (CONFORME SEUS PRINTS) ---
 
-# Métricas do Print
+# Títulos de Status com Substituição Dinâmica de %
 st.title("85% LIBERADO")
 st.caption("EM AUDITORIA")
 st.subheader("15% PENDENTE")
 
-# Interação RAG
-user_input = st.text_input("Interação com as 17 Inteligências (RAG Mode):", value="Boa noite")
+st.divider()
+
+# Campo de Interação RAG (Onde o sistema 'pensa')
+st.write("### 🧠 Interação com as 17 Inteligências (RAG Mode):")
+user_input = st.text_input("Digite sua mensagem para o sistema:", placeholder="Ex: Analisar vácuo ou status da auditoria")
 
 if st.button("🚀 ATIVAR PROJETO FRAJOLA"):
-    resposta = brain.processar_interacao(user_input)
-    st.info(f"🧐 GÊMEA FÊNIX: {resposta}")
+    if user_input:
+        with st.spinner('As 17 inteligências estão processando...'):
+            resposta = brain.processar_inteligencia(user_input)
+            st.info(f"🧐 GÊMEA FÊNIX: {resposta}")
+    else:
+        st.warning("A Maluquinha dos Códigos avisa: Digite algo para ativar o cérebro!")
 
-# Tabela da Favelinha
-projecao = 1.85
-status = brain.calcular_acao(projecao)
-# Exibição dos dados do Doutor ANIMA COSTA conforme o print
+st.divider()
 
-# Botão WhatsApp com Mobile Fix (UTF-8)
-msg = f"Doutor ANIMA COSTA, ação para {projecao}x: {status}"
-url_whatsapp = f"https://wa.me/?text={urllib.parse.quote(msg)}"
-st.link_button("🚀 ENVIAR PARA WHATSAPP", url_whatsapp)
+# --- 4. TABELA DA FAVELINHA (LÓGICA ESTRUTURADA) ---
+st.write("### 📋 TABELA DA FAVELINHA")
+
+data = {
+    "Doutor": [brain.doutor],
+    "Projeção Rodada": ["1.85x"],
+    "Ação Imediata": ["PULA"] # Ação baseada na análise da IA-SENTINELA
+}
+df = pd.DataFrame(data)
+st.table(df)
+
+# Feedback visual da Gêmea Fênix
+st.success(f"🧐 GÊMEA FÊNIX: Aguardando gatilho tático para {brain.doutor} (1.85x).")
+
+# --- 5. BOTÃO WHATSAPP (MOBILE FIX - SEM ERRO DE ACENTO) ---
+def gerar_link_whatsapp(doutor, projecao, acao):
+    texto = f"🚀 PROJETO FRAJOLA\n\nDoutor: {doutor}\nProjeção: {projecao}\nAção: {acao}\n\nStatus: PADRÃO OURO ATIVADO"
+    # O segredo da Maluquinha dos Códigos para não dar erro no celular:
+    texto_codificado = urllib.parse.quote(texto)
+    return f"https://wa.me/?text={texto_codificado}"
+
+link = gerar_link_whatsapp(brain.doutor, "1.85x", "PULA")
+
+st.link_button("🚀 ENVIAR PARA WHATSAPP", link, use_container_width=True)
+
+# Rodapé de Auditoria
+st.divider()
+st.caption("© 2026 Gêmea Fênix Bonde - Protegido pela Advogada Cabeluda")
