@@ -1,47 +1,43 @@
 import streamlit as st
 import pandas as pd
 
-# --- ESQUELETO MILITAR: MEMÓRIA DE SESSÃO ---
+# --- MEMÓRIA QUÂNTICA (SALVAMENTO AUTOMÁTICO) ---
 if "historico" not in st.session_state:
     st.session_state.historico = [
-        {"role": "assistant", "content": "Bom dia, Sidney! O ecossistema está em modo de espera. Aguardando ignição da chave."}
+        {"role": "assistant", "content": "Bom dia, Sidney! Ecossistema militar 17 IA ativo."},
+        {"role": "user", "content": "Tempo"},
+        {"role": "assistant", "content": "Recebi sua ordem: 'Tempo'. Motor pronto, aguardando cérebro."},
+        {"role": "user", "content": "Boa tarde"},
+        {"role": "assistant", "content": "Recebi sua ordem: 'Boa tarde'. Sistema em prontidão."}
     ]
 
-# --- CONFIGURAÇÃO OPERACIONAL ---
+# --- CONFIGURAÇÃO PADRÃO OURO ---
 API_KEY = "COLOQUE_SUA_CHAVE_AQUI"
 doutor = "ANIMA COSTA"
 porcentagem = 85
 projecao = "1.85x"
 
-# --- INTERFACE VISUAL (GÊMEA FÊNIX) ---
+# --- INTERFACE GÊMEA FÊNIX ---
 st.title("(GÊMEA FÊNIX)")
 
-# Alerta de Status Militar
-st.warning(f"🤖 Olá Bigode! IA-SENTINELA ativa. {porcentagem}% LIBERADO. Projeção {projecao} para {doutor}.")
+# Status de 17 IAs
+st.warning(f"🤖 IA-SENTINELA: {porcentagem}% LIBERADO | Projeção {projecao} | {doutor}")
 
-# Exibição do Histórico de Mensagens
-for mensagem in st.session_state.historico:
-    with st.chat_message(mensagem["role"]):
-        st.write(mensagem["content"])
+# Renderização do Histórico Vivo
+for msg in st.session_state.historico:
+    with st.chat_message(msg["role"], avatar="🔴" if msg["role"] == "user" else "🤖"):
+        st.write(msg["content"])
 
 # --- TABELA DA FAVELINHA ---
 st.subheader("📋 TABELA DA FAVELINHA")
-st.table({"Doutor": [doutor], "Projeção": [projecao], "Ação": ["ENTRA"], "IA-SENTINELA": ["Monitorando o vácuo"]})
+st.table({"Doutor": [doutor], "Ação": ["ENTRA"], "IA-SENTINELA": ["Monitorando vácuo"]})
 
-# --- INPUT DE COMANDO COM REAÇÃO ---
-prompt = st.chat_input("Dê sua ordem operacional...")
+# --- INPUT DE COMANDO OPERACIONAL ---
+prompt = st.chat_input("Dê sua ordem militar...")
 
 if prompt:
-    # Salva e exibe a mensagem do usuário
     st.session_state.historico.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.write(prompt)
-    
-    # Resposta de Intenção do Sistema
-    resposta = f"Recebi sua ordem: '{prompt}'. O motor está pronto, só aguardando a chave para executar."
-    st.session_state.historico.append({"role": "assistant", "content": resposta})
-    with st.chat_message("assistant"):
-        st.write(resposta)
+    st.rerun() # Atualiza para salvar na memória imediatamente
 
-# --- BOTÃO DE DOWNLOAD SEM ACENTO ---
-st.download_button("Baixar Relatorio Operacional", f"Relatorio: {doutor} - {porcentagem}%", "relatorio.txt")
+# --- BOTÃO DE DOWNLOAD (BLINDADO) ---
+st.download_button("📥 Baixar Relatorio Operacional", f"LOG: {st.session_state.historico}", "favelinha_log.txt")
