@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 
-# --- 1. CONFIGURAÇÃO VISUAL (PADRÃO GLOBAL OPERATIONS) ---
+# --- 1. CONFIGURAÇÃO VISUAL ---
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 def add_bg():
@@ -14,16 +14,11 @@ def add_bg():
             background-attachment: fixed;
             background-size: cover;
         }}
-        /* Estilização para leitura sobre o fundo futurista */
         .stMarkdown, .stTable, .stChatMessage, [data-testid="stMetricValue"], .stChatInput {{
             background-color: rgba(0, 0, 0, 0.8) !important;
             border-radius: 15px;
             padding: 15px;
             color: #00ffcc !important;
-        }}
-        /* Ajuste para o texto das métricas */
-        [data-testid="stMetricLabel"] {{
-            color: white !important;
         }}
         </style>
         """,
@@ -32,12 +27,25 @@ def add_bg():
 
 add_bg()
 
-# --- 2. CONFIGURAÇÃO SEGURA (CÉREBRO BLINDADO) ---
-# O sistema busca a chave nos 'Secrets' para o GitHub parar de reclamar
+# --- 2. CONFIGURAÇÃO SEGURA (CÉREBRO) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
     cerebro_ia = genai.GenerativeModel('gemini-1.5-flash')
 except:
-    st.error("⚠️ Bigode
-             
+    st.error("⚠️ Chave não encontrada nos Secrets do Streamlit!")
+    st.stop()
+
+# --- 3. INTERFACE OPERACIONAL ---
+st.title("🛡️ IA-SENTINELA | GLOBAL OPERATIONS")
+
+col1, col2 = st.columns(2)
+col1.metric("STATUS", "85% LIBERADO")
+col2.metric("ALVO", "ANIMA COSTA")
+
+if "chat_log" not in st.session_state:
+    st.session_state.chat_log = [{"role": "assistant", "content": "🛡️ Sistema Online. Como vamos escalar?"}]
+
+for m in st.session_state.chat_log:
+    with st
+    
