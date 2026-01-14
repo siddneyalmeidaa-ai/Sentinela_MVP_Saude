@@ -1,52 +1,72 @@
 import streamlit as st
 import pandas as pd
 
-# --- 1. CONFIGURAÇÃO E OCULTAÇÃO TOTAL DO TOPO ---
-st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
+# --- 1. CONFIGURAÇÃO E LIMPEZA TOTAL DO TOPO ---
+st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide", initial_sidebar_state="collapsed")
 
-st.markdown("""
+# Link do seu logo (Troque o link abaixo pelo link da sua imagem)
+URL_LOGO = "https://cdn-icons-png.flaticon.com/512/3914/3914404.png" 
+
+st.markdown(f"""
     <style>
-    /* Blindagem: Oculta Share, Star, Edit e GitHub */
-    #MainMenu {visibility: hidden;}
-    .stDeployButton {display:none;}
-    header {visibility: hidden !important;} 
-    footer {visibility: hidden;}
-    [data-testid="stHeader"] {background: rgba(0,0,0,0); height: 0px;}
+    /* Oculta completamente a barra de sistema */
+    [data-testid="stHeader"] {{display: none !important;}}
+    #MainMenu {{visibility: hidden;}}
+    .stDeployButton {{display:none;}}
+    
+    /* Ajuste do container para preencher o espaço preto superior */
+    .main .block-container {{padding-top: 0rem;}}
 
-    /* Design VIP Sentinela - Ajuste de Margens */
-    .header-box { 
-        display: flex; justify-content: space-between; align-items: center; 
-        padding: 15px; background: linear-gradient(90deg, #0e1117, #1c232d); 
-        border-radius: 12px; border-left: 6px solid #00d4ff; margin-bottom: 20px;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
-    }
-    .pro-tag { background: #00d4ff; color: #12171d; padding: 4px 10px; border-radius: 6px; font-weight: 900; font-size: 0.75rem; }
-    [data-testid="stMetricValue"] { color: #00d4ff !important; font-size: 1.8rem !important; font-weight: 800; }
+    /* BANNER DE MARCA PERSONALIZADO (Logo + Nome) */
+    .brand-container {{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 10px;
+        background: linear-gradient(180deg, #0e1117 0%, #1c232d 100%);
+        border-bottom: 2px solid #00d4ff;
+        margin-bottom: 20px;
+    }}
+    .logo-img {{
+        width: 60px;
+        margin-bottom: 10px;
+        filter: drop-shadow(0px 0px 8px #00d4ff);
+    }}
+    .user-name {{
+        color: white;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }}
+    .system-sub {{
+        color: #00d4ff;
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 4px;
+    }}
     </style>
     
-    <div class="header-box">
-        <span style="color: white; font-size: 1.2rem; letter-spacing: 1px;">🏛️ CONTROLE: <b>IA-SENTINELA</b></span> 
-        <span class="pro-tag">PRO V26 - FINAL</span>
+    <div class="brand-container">
+        <img src="{URL_LOGO}" class="logo-img">
+        <div class="user-name">SIDNEY OLIVEIRA</div>
+        <div class="system-sub">SISTEMA IA-SENTINELA PRO</div>
     </div>
     """, unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS (VALORES FIXOS PARA SEGURANÇA) ---
+# --- 2. BASE DE DADOS (Sincronizada e Protegida) ---
 dados_medicos = {
     "ANIMA COSTA": {
-        "liberado": 13600.0,
-        "pendente": 2400.0,
-        "p_ok": 85,
-        "p_pend": 15,
+        "liberado": 13600.0, "pendente": 2400.0, "p_ok": 85, "p_pend": 15,
         "pacientes": [
             {"nome": "João Silva", "glosa": "XML Inválido", "valor": 1200.0},
             {"nome": "Maria Oliveira", "glosa": "Divergência Tuss", "valor": 1200.0}
         ]
     },
     "DMMIGINIO GUERRA": {
-        "liberado": 17550.0,
-        "pendente": 4950.0,
-        "p_ok": 78,
-        "p_pend": 22,
+        "liberado": 17550.0, "pendente": 4950.0, "p_ok": 78, "p_pend": 22,
         "pacientes": [
             {"nome": "João Souza", "glosa": "Assinatura Digital", "valor": 1650.0},
             {"nome": "Ana Costa", "glosa": "Falta Assinatura", "valor": 1650.0},
@@ -56,39 +76,36 @@ dados_medicos = {
 }
 
 # --- 3. INTERFACE OPERACIONAL ---
-tab1, tab2, tab3 = st.tabs(["🏥 PAINEL", "📊 ANÁLISE", "📄 DOSSIÊ"])
+medico_sel = st.selectbox("🏥 Selecione a Unidade para Auditoria:", list(dados_medicos.keys()))
+info = dados_medicos[medico_sel]
+
+tab1, tab2, tab3 = st.tabs(["📊 PAINEL", "📈 GRÁFICO", "📄 RELATÓRIO"])
 
 with tab1:
-    # Seletor de Doutor Sincronizado
-    st.markdown("#### 🕵️ Seleção de Unidade")
-    medico_sel = st.selectbox("Doutor Responsável:", list(dados_medicos.keys()))
-    info = dados_medicos[medico_sel]
-
+    # Métricas Reais
+    c1, c2 = st.columns(2)
+    c1.metric(f"{info['p_ok']}% LIBERADO", f"R$ {info['liberado']:,.2f}")
+    c2.metric(f"{info['p_pend']}% PENDENTE", f"R$ {info['pendente']:,.2f}", delta=f"-{info['p_pend']}%", delta_color="inverse")
+    
     st.markdown("---")
-    
-    # Exibição de Métricas Reais (Sem manipulação de slider)
-    col_m1, col_m2 = st.columns(2)
-    col_m1.metric(f"{info['p_ok']}% LIBERADO", f"R$ {info['liberado']:,.2f}")
-    col_m2.metric(f"{info['p_pend']}% PENDENTE", f"R$ {info['pendente']:,.2f}", delta=f"-{info['p_pend']}%", delta_color="inverse")
-    
-    st.markdown("#### 📌 Lista de Pacientes")
-    df_pacientes = pd.DataFrame([
-        {"Paciente": p["nome"], "Motivo": p["glosa"], "Valor (R$)": f"R$ {p['valor']:,.2f}"} 
+    st.markdown("#### 📌 Detalhamento da Auditoria")
+    df_p = pd.DataFrame([
+        {"Paciente": p["nome"], "Motivo": p["glosa"], "Valor": f"R$ {p['valor']:,.2f}"} 
         for p in info["pacientes"]
     ])
-    st.table(df_pacientes)
+    st.table(df_p)
 
 with tab2:
-    st.markdown("#### 📊 Distribuição de Faturamento")
-    # Gráfico Redimensionado para não cortar no celular
+    # Gráfico Donut Redimensionado (Sem cortes no celular)
+    st.markdown("#### 📊 Composição de Faturamento")
     source = pd.DataFrame({
         "Status": ["LIBERADO", "PENDENTE"],
         "Valor": [info['p_ok'], info['p_pend']]
     })
     
     st.vega_lite_chart(source, {
-        "width": "container", "height": 250,
-        "mark": {"type": "arc", "innerRadius": 60, "outerRadius": 90, "stroke": "#0e1117", "strokeWidth": 2},
+        "width": "container", "height": 240,
+        "mark": {"type": "arc", "innerRadius": 60, "outerRadius": 95, "stroke": "#0e1117", "strokeWidth": 2},
         "encoding": {
             "theta": {"field": "Valor", "type": "quantitative"},
             "color": {"field": "Status", "type": "nominal", "scale": {"range": ["#00d4ff", "#ff4b4b"]}, "legend": {"orient": "bottom", "labelColor": "white"}}
@@ -97,21 +114,11 @@ with tab2:
     })
 
 with tab3:
-    if st.button("🚀 GERAR RELATÓRIO"):
-        txt_lista = "".join([f"- {p['nome']} ({p['glosa']}): R$ {p['valor']:,.2f}\n" for p in info["pacientes"]])
-        relatorio = f"""
-==========================================
-   DOSSIÊ DE AUDITORIA - IA-SENTINELA 
-==========================================
-DOUTOR   : {medico_sel}
-DATA     : 14/01/2026
-------------------------------------------
-LIBERADO : {info['p_ok']}% (R$ {info['liberado']:,.2f})
-PENDENTE : {info['p_pend']}% (R$ {info['pendente']:,.2f})
-
-DETALHAMENTO:
-{txt_lista}
-=========================================="""
-        st.code(relatorio)
-        st.download_button("⬇️ BAIXAR (.TXT)", relatorio.encode('utf-8-sig'), f"Sentinela_{medico_sel}.txt")
-        
+    # Relatório Gerado
+    st.markdown("#### 📄 Dossiê de Auditoria")
+    lista_txt = "".join([f"- {p['nome']} ({p['glosa']}): R$ {p['valor']:,.2f}\n" for p in info["pacientes"]])
+    relatorio_final = f"SENTINELA PRO V28\nRESPONSÁVEL: {medico_sel}\nLIBERADO: {info['p_ok']}%\nPENDENTE: {info['p_pend']}%\n\nDETALHES:\n{lista_txt}"
+    
+    st.code(relatorio_final)
+    st.download_button("⬇️ BAIXAR RELATORIO", relatorio_final.encode('utf-8-sig'), f"Auditoria_Sentinela.txt")
+    
