@@ -3,7 +3,7 @@ import pandas as pd
 import google.generativeai as genai
 
 # --- 1. CONFIGURAÇÃO DA CHAVE MESTRE (AUTONOMIA) ---
-# Substitua as aspas abaixo pela sua API KEY real para ela acordar
+# Substitua "SUA_API_KEY_AQUI" pela chave real para ela acordar
 API_KEY = "SUA_API_KEY_AQUI" 
 
 def ativar_inteligencia():
@@ -14,39 +14,39 @@ def ativar_inteligencia():
 
 cerebro_ia = ativar_inteligencia()
 
-# --- 2. PERSONALIDADE E PROATIVIDADE DE MARKETING ---
+# --- 2. PERSONALIDADE E PROATIVIDADE (DIÁLOGO REAL) ---
 if "chat_log" not in st.session_state:
     st.session_state.chat_log = [
-        {"role": "assistant", "content": "Olá Bigode! IA-SENTINELA ativa. Projeção 1.85x para ANIMA COSTA. Como vamos decolar seu marketing hoje?"}
+        {"role": "assistant", "content": "Olá Bigode! IA-SENTINELA ativa. Projeção 1.85x para ANIMA COSTA. Estou pronta para atuar com autonomia no marketing. O que vamos auditar?"}
     ]
 
 def resposta_com_autonomia(texto):
     if not cerebro_ia:
-        return "⚠️ Bigode, o código está pronto! Só falta colocar a API KEY na linha 7 para eu responder qualquer coisa com autonomia."
+        return "⚠️ Bigode, o código está pronto, mas você precisa colocar a API KEY na linha 7 para eu ter autonomia total!"
     
-    # Instrução para ser igual a mim: Proativa, Especialista em Marketing e Autônoma
+    # Instrução para ser proativa e dialógica igual a mim (Marketing e Operação)
     instrucao = (
-        "Você é a Gêmea Fênix, uma IA-SENTINELA de elite, proativa e especialista em marketing. "
-        "Seu parceiro é o Bigode. Você não usa frases repetitivas. "
+        "Você é a Gêmea Fênix, uma IA-SENTINELA proativa, inteligente e especialista em marketing. "
+        "Não use frases repetitivas. Dê sugestões de ação. "
         "Contexto: Sistema 85% Liberado, 15% Pendente. Foco: ANIMA COSTA, 1.85x, ENTRA. "
-        f"Responda ao Bigode com total autonomia e sugestões de marketing: {texto}"
+        f"Responda ao Bigode com iniciativa: {texto}"
     )
     res = cerebro_ia.generate_content(instrucao)
     return res.text
 
-# --- 3. INTERFACE VISUAL (PADRÃO OURO) ---
-st.set_page_config(page_title="Gêmea Fênix", layout="centered")
+# --- 3. INTERFACE VISUAL ---
+st.set_page_config(page_title="85% LIBERADO", layout="centered")
 st.title("85% LIBERADO")
-st.caption("🤖 STATUS: INTELIGÊNCIA E AUTONOMIA ATIVADAS")
+st.caption("🤖 STATUS: BUSCANDO AUTONOMIA TOTAL")
 st.divider()
 
-# Histórico de Diálogo Real
+# Histórico de Conversa Estilo WhatsApp
 for m in st.session_state.chat_log:
     with st.chat_message(m["role"]):
         st.write(m["content"])
 
-# Campo de Entrada de Voz/Texto
-if prompt := st.chat_input("Fale com as 17 Inteligências (Marketing e Operação)..."):
+# Entrada de Diálogo Real
+if prompt := st.chat_input("Fale com a Gêmea Fênix..."):
     st.session_state.chat_log.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.write(prompt)
@@ -67,10 +67,10 @@ df_favelinha = pd.DataFrame({
 })
 st.table(df_favelinha)
 
-# --- 5. DOWNLOAD SEGURO (CELULAR) ---
-csv = df_favelinha.to_csv(index=False).encode('utf-8')
+# --- 5. DOWNLOAD SEM ERRO (CELULAR) ---
+csv = df_favelinha.to_csv(index=False).encode('utf-8-sig')
 st.download_button(
-    label="📥 BAIXAR AUDITORIA (SEM ERRO)",
+    label="📥 BAIXAR AUDITORIA",
     data=csv,
     file_name='auditoria_fenix.csv',
     mime='text/csv',
