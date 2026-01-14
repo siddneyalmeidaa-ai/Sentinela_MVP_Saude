@@ -1,55 +1,52 @@
 import streamlit as st
 import pandas as pd
 import json
-import os
-from datetime import datetime
 
-# --- PERSONA 17: MALUQUINHA DOS CÓDIGOS (NÚCLEO DE MEMÓRIA) ---
-def gerenciar_memoria_eterna():
-    arquivo = 'memoria_fenix_bonde.json'
-    # Se o arquivo não existir, cria o subconsciente da IA
-    if not os.path.exists(arquivo):
-        with open(arquivo, 'w') as f:
-            json.dump({"aprendizados": [], "configuracoes": {}}, f)
+# --- 1. PERSONA 17: BLINDAGEM CONTRA KEYERROR ---
+# Resolve o erro do print 01:37 garantindo que a memória exista sempre
+if 'memoria_rag' not in st.session_state:
+    st.session_state.memoria_rag = {"acao": "Pula", "status": "Auditando..."}
+
+# --- 2. BASE DE CONHECIMENTO (Onde ela tira a informação) ---
+# Aqui simulamos o RAG: a IA lendo seus dados de 69% e 31%
+DATA_AUDITORIA = {
+    "ANIMA COSTA": {"liberado": "85%", "pendente": "15%", "projecao": 1.85},
+    "INTERFILE - BI": {"liberado": "40%", "pendente": "60%", "projecao": 1.00},
+}
+
+# --- 3. CORE DAS 17 INTELIGÊNCIAS (PROATIVIDADE) ---
+def motor_de_decisao(medico, comando):
+    dados = DATA_AUDITORIA.get(medico, {"liberado": "0%", "pendente": "100%", "projecao": 0})
+    c = comando.lower()
     
-    with open(arquivo, 'r') as f:
-        return json.load(f)
+    # REGRA DO VÁCUO (Persona 12):
+    if dados["projecao"] <= 1.00:
+        return "Pula", f"⚠️ IA-SENTINELA: Vácuo detectado ({dados['projecao']}x). Risco de perda total. Ação: PULA."
 
-# Inicialização para evitar o KeyError
-if 'brain_state' not in st.session_state:
-    st.session_state.brain_state = {"acao": "Pula", "msg": "Iniciando sistemas..."}
+    # LÓGICA DE APRENDIZADO (Persona 5): Se você autoriza, ela aprende
+    if any(x in c for x in ["pode", "liberar", "pagar", "agendar"]):
+        return "Entra", f"✅ CFO VISION: Analisado {medico}. Projeção favorável de {dados['projecao']}x. Efetuando ENTRA."
 
-# --- MOTOR DE RACIOCÍNIO PROATIVO ---
-class InteligenciaFenix:
-    def __init__(self, doutor):
-        self.doutor = doutor
-        self.valor_unidade = 12500.00 # Extraído da sua interface
+    return "Não Entra", "🧐 GÊMEA FÊNIX: Contexto insuficiente. Aguardando instrução de fluxo."
 
-    def decidir(self, comando):
-        # A IA agora identifica intenções proativamente
-        cmd = comando.lower()
-        if any(x in cmd for x in ["pagar", "liberar", "autorizar"]):
-            return "Entra", f"CFO Vision: Autorizando R$ {self.valor_unidade:,.2f} para {self.doutor}."
-        
-        # Regra do Vácuo (Persona 12)
-        return "Pula", f"IA-Sentinela: Aguardando conformidade para {self.doutor}."
+# --- 4. INTERFACE PADRÃO OURO ---
+st.title("🛡️ GÊMEA FÊNIX BONDE | RAG 2.0")
 
-# --- INTERFACE GF-17 (VERSÃO 2.0 RAG) ---
-st.title("🛡️ GÊMEA FÊNIX BONDE | RAG Ativado")
+# Sincronização Automática
+dr = st.selectbox("Doutor Responsável:", list(DATA_AUDITORIA.keys()))
+dados_dr = DATA_AUDITORIA[dr]
 
-# Métricas Dinâmicas baseadas no Doutor
-st.subheader(f"ESTATUTO ANIMA COSTA: 85% LIBERADO")
+col1, col2 = st.columns(2)
+col1.metric(f"ESTATUTO {dr}", f"{dados_dr['liberado']} LIBERADO")
+col2.metric("EM AUDITORIA", f"{dados_dr['pendente']} PENDENTE")
 
-dr = st.selectbox("Doutor Responsável:", ["ANIMA COSTA", "INTERFILE - BI", "DR. MARCOS"])
-msg_sidney = st.text_input("Interação com as 17 Inteligências:")
+interacao = st.text_input("Comando para as 17 Inteligências:")
 
 if st.button("🚀 ATIVAR PROJETO FRAJOLA"):
-    ia = InteligenciaFenix(dr)
-    acao, parecer = ia.decidir(msg_sidney)
-    st.session_state.brain_state = {"acao": acao, "msg": parecer}
+    acao, parecer = motor_de_decisao(dr, interacao)
+    st.session_state.memoria_rag = {"acao": acao, "status": parecer}
 
-# Exibição da Tabela da Favelinha (Sempre Visível)
-df_fav = pd.DataFrame([{"Doutor": dr, "Ação": st.session_state.brain_state["acao"], "Status": "Sincronizado"}])
+# TABELA DA FAVELINHA (AÇÃO IMEDIATA)
+st.subheader("📋 Tabela da Favelinha")
+df_fav = pd.DataFrame([{"Doutor": dr, "Ação": st.session_state.memoria_rag["acao"], "Parecer": st.session_state.memoria_rag["status"]}])
 st.table(df_fav)
-
-st.info(st.session_state.brain_state["msg"])
