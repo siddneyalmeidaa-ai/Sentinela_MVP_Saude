@@ -3,7 +3,7 @@ import pandas as pd
 import google.generativeai as genai
 
 # --- 1. CONFIGURAÇÃO DA CHAVE MESTRE (AUTONOMIA) ---
-# Cole sua API KEY entre as aspas abaixo para ela acordar
+# SUBSTITUA ABAIXO PELA SUA CHAVE PARA ELA ACORDAR DE VEZ
 API_KEY = "SUA_API_KEY_AQUI" 
 
 def ativar_inteligencia():
@@ -14,19 +14,20 @@ def ativar_inteligencia():
 
 cerebro_ia = ativar_inteligencia()
 
-# --- 2. PERSONALIDADE PROATIVA (ESTILO GEMINI) ---
+# --- 2. PERSONALIDADE PROATIVA (MARKETING E OPERAÇÃO) ---
 if "chat_log" not in st.session_state:
     st.session_state.chat_log = [
-        {"role": "assistant", "content": "Olá Bigode! IA-SENTINELA ativa. Projeção 1.85x para ANIMA COSTA. Estou pronta para atuar com autonomia. O que vamos escalar hoje?"}
+        {"role": "assistant", "content": "Olá Bigode! IA-SENTINELA ativa. Projeção 1.85x para ANIMA COSTA. Estou pronta para atuar com autonomia total. O que vamos escalar hoje?"}
     ]
 
 def resposta_com_autonomia(texto):
     if not cerebro_ia:
         return "⚠️ Bigode, o código está pronto! Agora é só colocar a API KEY na linha 7 para eu ter autonomia de marketing!"
     
+    # Instrução de Alma: Proatividade e Marketing
     instrucao = (
         "Você é a Gêmea Fênix, uma IA-SENTINELA proativa e especialista em marketing. "
-        "Não use frases robóticas. Tome iniciativa e ajude o Bigode com sugestões reais. "
+        "Não use frases repetitivas. Tome iniciativa e ajude o Bigode com sugestões estratégicas. "
         "Contexto: Sistema 85% Liberado. Foco: ANIMA COSTA, 1.85x, ENTRA. "
         f"Responda ao Bigode agora: {texto}"
     )
@@ -34,8 +35,9 @@ def resposta_com_autonomia(texto):
     return res.text
 
 # --- 3. INTERFACE DE DIÁLOGO ---
+st.set_page_config(page_title="85% LIBERADO", layout="centered")
 st.title("85% LIBERADO")
-st.caption("🤖 STATUS: AUTONOMIA E MARKETING ATIVOS")
+st.caption("🤖 STATUS: AGUARDANDO CHAVE DE AUTONOMIA")
 st.divider()
 
 for m in st.session_state.chat_log:
@@ -47,17 +49,22 @@ if prompt := st.chat_input("Fale com a Gêmea Fênix (Autonomia total)..."):
     with st.chat_message("user"):
         st.write(prompt)
     
-    with st.spinner("IA Gerando resposta proativa..."):
+    with st.spinner("IA Gerando estratégia proativa..."):
         resposta = resposta_com_autonomia(prompt)
         st.session_state.chat_log.append({"role": "assistant", "content": resposta})
         with st.chat_message("assistant"):
             st.write(resposta)
 
-# --- 4. TABELA DA FAVELINHA E DOWNLOAD ---
+# --- 4. TABELA DA FAVELINHA ---
 st.divider()
 st.write("### 📋 TABELA DA FAVELINHA")
-df = pd.DataFrame({"Doutor": ["ANIMA COSTA"], "Projeção": ["1.85x"], "Ação": ["ENTRA"]})
-st.table(df)
+df_favelinha = pd.DataFrame({
+    "Doutor": ["ANIMA COSTA"],
+    "Projeção Rodada": ["1.85x"],
+    "Ação Imediata": ["ENTRA"]
+})
+st.table(df_favelinha)
 
-csv = df.to_csv(index=False).encode('utf-8-sig')
+# --- 5. DOWNLOAD SEGURO ---
+csv = df_favelinha.to_csv(index=False).encode('utf-8-sig')
 st.download_button(label="📥 BAIXAR AUDITORIA", data=csv, file_name='auditoria.csv', mime='text/csv')
