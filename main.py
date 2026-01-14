@@ -4,87 +4,95 @@ import urllib.parse
 from datetime import datetime
 import pytz
 import io
+import plotly.express as px # Para gráficos mais inteligentes
 
-# --- 1. CONFIGURAÇÃO DE AMBIENTE (AUTO-APRENDIZADO) ---
+# --- 1. CONFIGURAÇÃO DE AMBIENTE E MEMÓRIA VIVA ---
 st.set_page_config(page_title="Sentinela | GF-17", layout="wide")
 fuso = pytz.timezone('America/Sao_Paulo')
 agora = datetime.now(fuso).strftime("%d/%m/%Y %H:%M")
 
-# Memória de Curto Prazo para Dinamismo (Não esquece o que foi dito)
-if 'historico_dialogo' not in st.session_state:
-    st.session_state.historico_dialogo = []
+# Memória das 17 IAs: O sistema aprende com o diálogo
+if 'historico' not in st.session_state:
+    st.session_state.historico = []
 
-# --- 2. MOTOR DE INTELIGÊNCIA (AS 17 IAs) ---
-class Fenix17System:
+# --- 2. MOTOR DE INTELIGÊNCIA (PADRÃO OURO) ---
+class SistemaFenix17:
     def __init__(self):
+        self.total_consolidado = 26801.80 #
         self.liberado = 18493.24
         self.pendente = 8308.56
-        self.total = 26801.80
         self.db = [
             {"unidade": "ANIMA COSTA", "valor": 12500.0, "status": "CONFORMIDADE OK", "x": 1.85},
             {"unidade": "DR. MARCOS", "valor": 8900.0, "status": "CONFORMIDADE OK", "x": 2.10},
-            {"unidade": "INTERFILE - BI", "valor": 5400.0, "status": "RESTRIÇÃO", "x": 1.00},
+            {"unidade": "INTERFILE - BI", "valor": 5400.0, "status": "RESTRIÇÃO", "x": 1.00}, # Vácuo!
             {"unidade": "DR. SILVA", "valor": 1.0, "status": "RESTRIÇÃO", "x": 0.80},
             {"unidade": "LAB CLINIC", "valor": 0.80, "status": "RESTRIÇÃO", "x": 1.20}
         ]
 
-    def calcular_metricas(self):
-        p_lib = (self.liberado / self.total) * 100
-        p_pen = (self.pendente / self.total) * 100
+    def calcular_porcentagens(self):
+        p_lib = (self.liberado / self.total_consolidado) * 100
+        p_pen = (self.pendente / self.total_consolidado) * 100
         return f"{p_lib:.0f}% LIBERADO", f"{p_pen:.0f}% PENDENTE"
 
-    def gerar_resposta_dinamica(self, unidade, input_user):
-        """Aprende com o diálogo e evita respostas genéricas"""
+    def motor_dialogo_inteligente(self, unidade, texto):
+        """Autocorreção e Dinamismo: A IA entende a intenção"""
         med = next(item for item in self.db if item["unidade"] == unidade)
+        t = texto.lower()
         
-        # Analisa se o usuário está perguntando especificamente sobre o pendente
-        if "pendente" in input_user.lower():
+        # Inteligência de Contexto: Cruzando Saudação com Auditoria
+        if "bom" in t or "boa" in t or "oi" in t:
+            prefixo = f"Olá, {unidade}! Analisando aqui seu estatuto agora: "
             if med['status'] == "RESTRIÇÃO":
-                return f"Entendi sua dúvida sobre o pendente, {unidade}. Pela minha auditoria, os R$ {med['valor']:,.2f} estão travados por falta de XML. O projeto Frajola precisa desse envio para liberar."
-            return f"Sobre o pendente, {unidade}, você está limpo! Os R$ {med['valor']:,.2f} já saíram da auditoria e estão no fluxo de liberação."
+                return prefixo + f"identifiquei que seus R$ {med['valor']:,.2f} estão presos. O Projeto Frajola detectou falta de XML. Vamos destravar?"
+            return prefixo + f"sua unidade está voando com R$ {med['valor']:,.2f} em conformidade. O que mais posso agilizar?"
         
-        # Resposta padrão inteligente
-        return f"Boa noite, {unidade}! Verifiquei aqui no Estatuto Atual que sua unidade está com {med['status']} para o valor de R$ {med['valor']:,.2f}. Como posso agilizar seu processo hoje?"
+        if "pendente" in t:
+            return f"Sobre o pendente de R$ {med['valor']:,.2f}: a Auditora Padrão Ouro está processando os dados para liberação imediata."
+            
+        return f"Entendi sua solicitação, {unidade}. Pela regra da GF-17, estamos operando em {med['status']}. Como as 17 IAs podem ajudar agora?"
 
-gf17 = Fenix17System()
-metric_lib, metric_pen = gf17.calcular_metricas()
+sf = SistemaFenix17()
+status_lib, status_pen = sf.calcular_porcentagens()
 
-# --- 3. INTERFACE VISUAL (RESTAURAÇÃO DOS GRÁFICOS) ---
-st.title("🛡️ Sentinela: Governança & Mediação")
+# --- 3. INTERFACE VISUAL (RESTALRAÇÃO DOS GRÁFICOS) ---
+st.title(f"🛡️ Sentinela: Governança & Mediação")
+st.subheader(f"VALOR TOTAL CONSOLIDADO: R$ {sf.total_consolidado:,.2f}")
 
-# Gráfico de Performance (Restauração)
-st.subheader("📈 Performance Consolidada (R$ 26.801,80)")
-df_grafico = pd.DataFrame(gf17.db)
-st.bar_chart(df_grafico.set_index("unidade")["valor"])
+# Gráfico de Performance Restaurado
+df_graf = pd.DataFrame(sf.db)
+fig = px.bar(df_graf, x="unidade", y="valor", color="status", title="Performance por Unidade")
+st.plotly_chart(fig, use_container_width=True)
 
 c1, c2 = st.columns(2)
-c1.metric("ESTATUTO ATUAL", metric_lib)
-c2.metric("EM AUDITORIA", metric_pen)
+c1.metric("ESTATUTO ATUAL", status_lib)
+c2.metric("EM AUDITORIA", status_pen)
 
-tab1, tab2, tab3 = st.tabs(["📊 Tabela da Favelinha", "🚀 Operação 17 IAs", "📑 Relatórios PDF"])
+tab_fav, tab_ia, tab_pdf = st.tabs(["📊 Tabela da Favelinha", "🚀 Operação 17 IAs", "📑 Relatórios PDF"])
 
-with tab1:
+with tab_fav:
     st.subheader("📋 Tabela da Favelinha (Ação Imediata)")
-    dados_f = []
-    for r in gf17.db:
+    tabela = []
+    for r in sf.db:
         decisao = "pula" if r['x'] == 1.00 else ("entra" if r['x'] >= 1.50 else "não entra")
-        dados_f.append({"Unidade": r['unidade'], "Projeção": f"{r['x']:.2f}x", "Decisão": decisao, "Status": r['status']})
-    st.table(dados_f)
+        status_v = "VÁCUO" if r['x'] == 1.00 else "NORMAL"
+        tabela.append({"Unidade": r['unidade'], "Projeção": f"{r['x']:.2f}x", "Decisão": decisao, "Sentinela": status_v})
+    st.table(tabela)
 
-with tab2:
+with tab_ia:
     st.subheader("📲 Canal de Comunicação Viva (Dinamismo)")
-    u_sel = st.selectbox("Selecione o Médico:", [d['unidade'] for d in gf17.db])
-    entrada = st.text_area("Mensagem:", placeholder="Ex: Como está andando o pendente?")
+    u_sel = st.selectbox("Selecione o Médico:", [d['unidade'] for d in sf.db])
+    entrada = st.text_input("Sua mensagem:", placeholder="Ex: Boa noite, como está o pendente?")
     
     if st.button("🚀 Ativar Projeto Frajola"):
-        resposta = gf17.gerar_resposta_dinamica(u_sel, entrada)
-        st.session_state.historico_dialogo.append({"u": u_sel, "m": entrada, "r": resposta})
-        st.success(resposta)
-        zap = f"https://wa.me/5511942971753?text={urllib.parse.quote(resposta)}"
-        st.markdown(f'<a href="{zap}" target="_blank" style="background:green;color:white;padding:10px;border-radius:5px;">🚀 ENVIAR WHATSAPP</a>', unsafe_allow_html=True)
+        resp = sf.motor_dialogo_inteligente(u_sel, entrada)
+        st.session_state.historico.append({"user": entrada, "ia": resp})
+        st.success(f"**Parecer das 17 IAs:**\n\n{resp}")
+        
+        zap_url = f"https://wa.me/5511942971753?text={urllib.parse.quote(resp)}"
+        st.markdown(f'<a href="{zap_url}" target="_blank" style="text-decoration:none;"><div style="background-color:#25D366;color:white;padding:12px;border-radius:8px;text-align:center;font-weight:bold;">🚀 ENVIAR PARA WHATSAPP</div></a>', unsafe_allow_html=True)
 
-with tab3:
-    st.subheader("📑 Exportação (Proteção contra Erros)")
+with tab_pdf:
+    st.subheader("📑 Área de Exportação (Padrão Sidney)")
     try:
         from reportlab.lib import colors
         from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
@@ -93,18 +101,16 @@ with tab3:
         def gerar_pdf():
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer)
-            elementos = [Paragraph("RELATORIO SENTINELA GF-17", getSampleStyleSheet()['Title'])]
-            t_data = [["UNIDADE", "VALOR", "STATUS"]] + [[d['unidade'], d['valor'], d['status']] for d in gf17.db]
-            t = Table(t_data)
-            t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.grey), ('GRID',(0,0),(-1,-1),0.5,colors.black)]))
-            elementos.append(t)
+            elementos = [Paragraph(f"Relatório GF-17 - {sf.doutor}", getSampleStyleSheet()['Title'])]
+            elementos.append(Paragraph(f"Status: {status_lib} / {status_pen}", getSampleStyleSheet()['Normal']))
             doc.build(elementos)
             buffer.seek(0)
             return buffer
-
-        st.download_button("📥 Baixar Relatório PDF", data=gerar_pdf(), file_name="Relatorio_Sentinela.pdf")
-    except ImportError:
-        st.error("⚠️ Erro de Biblioteca detectado (image 17:42). Por favor, adicione 'reportlab' ao requirements.txt para habilitar o PDF.")
-
-st.caption(f"Sidney Pereira de Almeida | {agora} | Sincronizado")
             
+        st.download_button("📥 Baixar Relatório PDF Profissional", data=gerar_pdf(), file_name="Relatorio_GF17.pdf", mime="application/pdf")
+    except Exception:
+        st.warning("⚠️ Biblioteca de PDF aguardando ativação no requirements.txt.")
+
+st.divider()
+st.caption(f"Sidney Pereira de Almeida | {agora} | Sincronizado")
+                 
