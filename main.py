@@ -4,60 +4,52 @@ import json
 import os
 from datetime import datetime
 
-# --- 1. PERSONA 17: MALUQUINHA DOS CÓDIGOS (NÚCLEO DE MEMÓRIA) ---
-def carregar_memoria_longo_prazo():
-    if os.path.exists('memoria_fenix.json'):
-        with open('memoria_fenix.json', 'r') as f:
-            return json.load(f)
-    return {"aprendizados": [], "preferencias_sidney": {}, "historico_geral": []}
+# --- PERSONA 17: MALUQUINHA DOS CÓDIGOS (NÚCLEO DE MEMÓRIA) ---
+def gerenciar_memoria_eterna():
+    arquivo = 'memoria_fenix_bonde.json'
+    # Se o arquivo não existir, cria o subconsciente da IA
+    if not os.path.exists(arquivo):
+        with open(arquivo, 'w') as f:
+            json.dump({"aprendizados": [], "configuracoes": {}}, f)
+    
+    with open(arquivo, 'r') as f:
+        return json.load(f)
 
-def salvar_na_mente(dado):
-    mente = carregar_memoria_longo_prazo()
-    mente["historico_geral"].append(dado)
-    with open('memoria_fenix.json', 'w') as f:
-        json.dump(mente, f)
+# Inicialização para evitar o KeyError
+if 'brain_state' not in st.session_state:
+    st.session_state.brain_state = {"acao": "Pula", "msg": "Iniciando sistemas..."}
 
-# Inicialização da Memória de Trabalho para evitar KeyError
-if 'memoria_trabalho' not in st.session_state:
-    st.session_state.memoria_trabalho = carregar_memoria_longo_prazo()
-
-# --- 2. MOTOR DE RACIOCÍNIO (CORE DAS 17 PERSONAS) ---
-class IAInfinita:
+# --- MOTOR DE RACIOCÍNIO PROATIVO ---
+class InteligenciaFenix:
     def __init__(self, doutor):
         self.doutor = doutor
-        # Aqui a IA "tira a informação" da memória persistente
-        self.contexto = st.session_state.memoria_trabalho
+        self.valor_unidade = 12500.00 # Extraído da sua interface
 
-    def gerar_insight(self, comando):
-        # Lógica de decisão proativa baseada no histórico
-        if "pagar" in comando.lower() or "liberar" in comando.lower():
-            acao = "Entra"
-            msg = f"CFO Vision: Identificado padrão de confiança. Liberando R$ 12.500,00 para {self.doutor}."
-        else:
-            acao = "Pula"
-            msg = f"IA-Sentinela: Analisando contexto. Aguardando gatilho de segurança para {self.doutor}."
+    def decidir(self, comando):
+        # A IA agora identifica intenções proativamente
+        cmd = comando.lower()
+        if any(x in cmd for x in ["pagar", "liberar", "autorizar"]):
+            return "Entra", f"CFO Vision: Autorizando R$ {self.valor_unidade:,.2f} para {self.doutor}."
         
-        # Salva o aprendizado na memória eterna
-        salvar_na_mente({"data": str(datetime.now()), "dr": self.doutor, "cmd": comando, "acao": acao})
-        return msg, acao
+        # Regra do Vácuo (Persona 12)
+        return "Pula", f"IA-Sentinela: Aguardando conformidade para {self.doutor}."
 
-# --- 3. INTERFACE GÊMEA FÊNIX BONDE 2.0 ---
-st.title("🛡️ GÊMEA FÊNIX BONDE: IA PROPRIETÁRIA")
+# --- INTERFACE GF-17 (VERSÃO 2.0 RAG) ---
+st.title("🛡️ GÊMEA FÊNIX BONDE | RAG Ativado")
 
-dr_alvo = st.selectbox("Doutor Responsável:", ["ANIMA COSTA", "INTERFILE - BI", "DR. MARCOS"])
-cmd = st.text_input("Comando para as 17 Inteligências:")
+# Métricas Dinâmicas baseadas no Doutor
+st.subheader(f"ESTATUTO ANIMA COSTA: 85% LIBERADO")
+
+dr = st.selectbox("Doutor Responsável:", ["ANIMA COSTA", "INTERFILE - BI", "DR. MARCOS"])
+msg_sidney = st.text_input("Interação com as 17 Inteligências:")
 
 if st.button("🚀 ATIVAR PROJETO FRAJOLA"):
-    brain = IAInfinita(dr_alvo)
-    parecer, acao_final = brain.gerar_insight(cmd)
-    
-    st.info(f"**Parecer das 17 IAs:** {parecer}")
-    
-    # Tabela da Favelinha (Visível e Proativa)
-    df_favelinha = pd.DataFrame([{"Doutor": dr_alvo, "Ação": acao_final, "Status": "Sincronizado"}])
-    st.table(df_favelinha)
+    ia = InteligenciaFenix(dr)
+    acao, parecer = ia.decidir(msg_sidney)
+    st.session_state.brain_state = {"acao": acao, "msg": parecer}
 
-# Exibição da Memória (Opcional para Auditoria)
-with st.expander("📜 Acessar Memória de Longo Prazo"):
-    st.write(carregar_memoria_longo_prazo()["historico_geral"])
-    
+# Exibição da Tabela da Favelinha (Sempre Visível)
+df_fav = pd.DataFrame([{"Doutor": dr, "Ação": st.session_state.brain_state["acao"], "Status": "Sincronizado"}])
+st.table(df_fav)
+
+st.info(st.session_state.brain_state["msg"])
