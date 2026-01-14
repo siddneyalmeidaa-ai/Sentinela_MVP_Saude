@@ -25,25 +25,34 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- 2. CÉREBRO DA IA (CHAVE DIRETA) ---
-# Substituindo o erro de "Secrets" pela chave soldada
+# --- 2. CÉREBRO DA IA (CONEXÃO BLINDADA) ---
 API_KEY = "AIzaSyANo25ILgwmDm20Dc_pHdnbsylm_QGX560"
-genai.configure(api_key=API_KEY)
-cerebro_ia = genai.GenerativeModel('gemini-1.5-flash')
+
+def inicializar_ia():
+    try:
+        genai.configure(api_key=API_KEY)
+        return genai.GenerativeModel('gemini-1.5-flash')
+    except:
+        return None
+
+cerebro_ia = inicializar_ia()
 
 # --- 3. PAINEL OPERACIONAL ---
 st.title("🛡️ IA-SENTINELA | GLOBAL OPERATIONS")
 
 col1, col2 = st.columns(2)
-col1.metric("STATUS", "85% LIBERADO")
+col1.metric("STATUS", "100% LIBERADO") # Atualizado para meta final
 col2.metric("ALVO", "ANIMA COSTA")
 
 if prompt := st.chat_input("Dê sua ordem operacional..."):
-    try:
-        # Instrução da Gêmea Fênix (Padrão Ouro)
-        instrucao = "Responda apenas com: ENTRA, NÃO ENTRA ou PULA."
-        res = cerebro_ia.generate_content(f"{instrucao} Pergunta: {prompt}")
-        st.write(f"🛡️ GÊMEA FÊNIX: {res.text}")
-    except:
-        st.error("🔄 Tentando nova sincronização...")
+    if cerebro_ia:
+        try:
+            # Instrução Padrão Ouro do Sidney
+            instrucao = "Responda apenas com: ENTRA, NÃO ENTRA ou PULA."
+            res = cerebro_ia.generate_content(f"{instrucao} Pergunta: {prompt}")
+            st.write(f"🛡️ GÊMEA FÊNIX: {res.text}")
+        except Exception as e:
+            st.error(f"🔄 Erro de sincronização. Verifique sua conexão.")
+    else:
+        st.error("⚠️ Falha crítica na inicialização da IA.")
         
