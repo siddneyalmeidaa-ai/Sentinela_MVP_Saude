@@ -25,8 +25,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- 2. CÉREBRO DA IA (CONEXÃO BLINDADA) ---
-API_KEY = "AIzaSyANo25ILgwmDm20Dc_pHdnbsylm_QGX560"
+# --- 2. CÉREBRO DA IA (CONEXÃO COM NOVA CHAVE) ---
+# Chave atualizada conforme seu print das 11:30
+API_KEY = "AIzaSyDY_J0MUpYJw_70qBlx8t25KwyW46Y4_p0"
 
 def inicializar_ia():
     try:
@@ -41,18 +42,18 @@ cerebro_ia = inicializar_ia()
 st.title("🛡️ IA-SENTINELA | GLOBAL OPERATIONS")
 
 col1, col2 = st.columns(2)
-col1.metric("STATUS", "100% LIBERADO") # Atualizado para meta final
+col1.metric("STATUS", "100% LIBERADO")
 col2.metric("ALVO", "ANIMA COSTA")
 
 if prompt := st.chat_input("Dê sua ordem operacional..."):
     if cerebro_ia:
         try:
-            # Instrução Padrão Ouro do Sidney
+            # Protocolo Padrão Ouro
             instrucao = "Responda apenas com: ENTRA, NÃO ENTRA ou PULA."
             res = cerebro_ia.generate_content(f"{instrucao} Pergunta: {prompt}")
             st.write(f"🛡️ GÊMEA FÊNIX: {res.text}")
         except Exception as e:
-            st.error(f"🔄 Erro de sincronização. Verifique sua conexão.")
+            st.error("🔄 Erro de sincronização. Verifique sua conexão.")
     else:
         st.error("⚠️ Falha crítica na inicialização da IA.")
         
