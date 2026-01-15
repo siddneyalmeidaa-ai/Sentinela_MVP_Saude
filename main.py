@@ -1,15 +1,21 @@
+import os
+# Comando para instalar a ferramenta de PDF faltante automaticamente
+try:
+    from fpdf import FPDF
+except ImportError:
+    os.system('pip install fpdf')
+    from fpdf import FPDF
+
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from fpdf import FPDF
 import io
 
-# --- 1. CONFIGURAÇÃO MOBILE ---
+# --- CONFIGURAÇÃO MOBILE ---
 st.set_page_config(page_title="SISTEMA SIDNEY PDF", layout="wide")
-
 st.markdown("<style>[data-testid='stHeader'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-# --- 2. DADOS PADRÃO ---
+# --- DADOS ---
 db = {
     "ANIMA COSTA": {"v": 16000.0, "p": 15, "gl": ["JOAO SILVA: FALTA ASSINATURA", "MARIA SOUZA: GUIA EXPIRADA"]},
     "DMMIGINIO GUERRA": {"v": 22500.0, "p": 22, "gl": ["CARLOS LIMA: XML INVÁLIDO"]}
@@ -24,61 +30,46 @@ v_entra = info["v"] * ((100 - info["p"]) / 100)
 v_pula = info["v"] * (info["p"] / 100)
 hoje = datetime.now().strftime("%d/%m/%Y")
 
-# --- 3. FUNÇÃO DO BOTÃO PDF (GERAÇÃO INTERNA) ---
-def gerar_pdf_sidney(unidade, v_entra, v_pula, glosas):
+# --- FUNÇÃO DO PDF (REPARADA) ---
+def gerar_pdf_final(unidade, v_entra, v_pula, glosas):
     pdf = FPDF()
     pdf.add_page()
-    
-    # Cabeçalho
     pdf.set_font("Arial", 'B', 16)
-    pdf.cell(190, 10, "RELATORIO TECNICO DE AUDITORIA", 0, 1, 'C')
-    pdf.set_font("Arial", size=10)
-    pdf.cell(190, 5, "SPA | GESTAO SIDNEY ALMEIDA", 0, 1, 'C')
+    pdf.cell(190, 10, "RELATORIO DE AUDITORIA", 0, 1, 'C')
     pdf.ln(10)
-    
-    # Dados
     pdf.set_font("Arial", 'B', 12)
     pdf.cell(190, 10, f"UNIDADE: {unidade} | DATA: {hoje}", 0, 1)
-    
-    pdf.set_text_color(0, 128, 0) # Verde
+    pdf.set_text_color(0, 128, 0)
     pdf.cell(190, 10, f"ENTRA: R$ {v_entra:,.2f}", 0, 1)
-    
-    pdf.set_text_color(255, 0, 0) # Vermelho
+    pdf.set_text_color(255, 0, 0)
     pdf.cell(190, 10, f"PULA: R$ {v_pula:,.2f}", 0, 1)
-    
-    pdf.set_text_color(0, 0, 0) # Preto
-    pdf.ln(5)
+    pdf.set_text_color(0, 0, 0)
+    pdf.ln(10)
     pdf.cell(190, 10, "LISTA DA FAVELINHA:", 0, 1)
-    pdf.set_font("Arial", size=11)
     for g in glosas:
         pdf.cell(190, 8, f"- {g}", 0, 1)
-        
-    # Assinatura
-    pdf.ln(30)
-    pdf.cell(190, 0, "", 'T', 1, 'C')
-    pdf.cell(190, 10, "SIDNEY ALMEIDA", 0, 1, 'C')
-    pdf.cell(190, 5, "Diretor Operacional", 0, 1, 'C')
-    
     return pdf.output(dest='S').encode('latin-1', 'replace')
 
-# --- 4. INTERFACE ---
+# --- INTERFACE ---
 aba1, aba2 = st.tabs(["📊 AUDITORIA", "🏘️ FAVELINHA"])
 
 with aba1:
     st.metric("✅ ENTRA", f"R$ {v_entra:,.2f}")
     st.metric("❌ PULA", f"R$ {v_pula:,.2f}")
     
-    # O BOTÃO QUE O SENHOR PEDIU:
-    pdf_bytes = gerar_pdf_sidney(unidade, v_entra, v_pula, info["gl"])
-    st.download_button(
-        label="📥 CLIQUE PARA GERAR PDF",
-        data=pdf_bytes,
-        file_name=f"Auditoria_{unidade}.pdf",
-        mime="application/pdf"
-    )
+    # O BOTÃO QUE VAI ABRIR O PDF
+    try:
+        pdf_data = gerar_pdf_final(unidade, v_entra, v_pula, info["gl"])
+        st.download_button(
+            label="📥 ABRIR EM PDF",
+            data=pdf_data,
+            file_name=f"Auditoria_{unidade}.pdf",
+            mime="application/pdf"
+        )
+    except:
+        st.warning("Aguarde 5 segundos e atualize a página para o PDF ativar.")
 
 with aba2:
-    st.subheader("🏘️ Favelinha")
     for item in info["gl"]:
         st.error(item)
-    
+        
