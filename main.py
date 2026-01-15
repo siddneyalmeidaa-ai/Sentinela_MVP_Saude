@@ -30,7 +30,7 @@ db = {
 }
 
 # Cabeçalho Sidney Almeida
-st.markdown("<div style='background:#1c232d; padding:12px; border-radius:8px; border-left:5px solid #00d4ff; color:white;'>"
+st.markdown("<div style='background:#1c232d; padding:12px; border-radius:8px; border-left:6px solid #00d4ff; color:white;'>"
             "<b>SIDNEY PEREIRA DE ALMEIDA</b><br><small style='color:#00d4ff;'>DIRETOR OPERACIONAL</small></div>", unsafe_allow_html=True)
 
 unidade = st.selectbox("Selecione a Unidade:", list(db.keys()))
@@ -60,7 +60,7 @@ with tab3:
     for g in info["gl"]:
         linhas_html += f"<tr><td>{g['PAC']}</td><td>{g['PROC']}</td><td style='color:red;'>{g['MOT']}</td></tr>"
 
-    relatorio_html = f"""
+    relatorio_html = f'''
     <div class="papel-branco">
         <div style="text-align:center; border-bottom:2px solid #00d4ff; padding-bottom:10px; margin-bottom:15px;">
             <h3 style="margin:0; color:#1c2e4a;">RELATÓRIO TÉCNICO DE AUDITORIA</h3>
@@ -81,7 +81,7 @@ with tab3:
             </div>
         </div>
     </div>
-    """
+    '''
     st.markdown(relatorio_html, unsafe_allow_html=True)
-    st.download_button("⬇️ BAIXAR TEXTO", f"AUDITORIA {unidade}\nENTRA: {v_entra}\nPULA: {v_pula}".encode('utf-8'), f"{unidade}.txt")
+    st.download_button("⬇️ BAIXAR TEXTO", f"AUDITORIA {unidade}\\nENTRA: {v_entra}\\nPULA: {v_pula}".encode('utf-8'), f"{unidade}.txt")
     
