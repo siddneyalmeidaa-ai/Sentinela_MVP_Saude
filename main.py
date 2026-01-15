@@ -1,73 +1,84 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from fpdf import FPDF
+import io
 
-# --- 1. CONFIGURAÇÃO DE SEGURANÇA MOBILE ---
-st.set_page_config(page_title="SISTEMA SIDNEY", layout="wide")
+# --- 1. CONFIGURAÇÃO MOBILE ---
+st.set_page_config(page_title="SISTEMA SIDNEY PDF", layout="wide")
 
-# Estilos ultra-reduzidos para evitar travamento no celular
-st.markdown("""
-    <style>
-    [data-testid="stHeader"] {display: none !important;}
-    .area-relatorio {
-        background: white !important;
-        color: black !important;
-        padding: 15px;
-        border-top: 10px solid #00d4ff;
-        font-family: sans-serif;
-    }
-    .box-verde { color: green; font-weight: bold; border-left: 4px solid green; padding-left: 10px; }
-    .box-vermelha { color: red; font-weight: bold; border-left: 4px solid red; padding-left: 10px; }
-    </style>
-    """, unsafe_allow_html=True)
+st.markdown("<style>[data-testid='stHeader'] {display: none !important;}</style>", unsafe_allow_html=True)
 
-# --- 2. DADOS DA OPERAÇÃO ---
+# --- 2. DADOS PADRÃO ---
 db = {
     "ANIMA COSTA": {"v": 16000.0, "p": 15, "gl": ["JOAO SILVA: FALTA ASSINATURA", "MARIA SOUZA: GUIA EXPIRADA"]},
     "DMMIGINIO GUERRA": {"v": 22500.0, "p": 22, "gl": ["CARLOS LIMA: XML INVÁLIDO"]}
 }
 
-st.write(f"### DIRETOR: SIDNEY PEREIRA DE ALMEIDA")
+st.markdown(f"<div style='background:#1c232d; padding:15px; border-left:8px solid #00d4ff; color:white;'>"
+            f"<b>SIDNEY PEREIRA DE ALMEIDA</b><br><small style='color:#00d4ff;'>DIRETOR OPERACIONAL</small></div>", unsafe_allow_html=True)
 
-unidade = st.selectbox("Escolha a Unidade:", list(db.keys()))
+unidade = st.selectbox("Selecione a Unidade:", list(db.keys()))
 info = db[unidade]
 v_entra = info["v"] * ((100 - info["p"]) / 100)
 v_pula = info["v"] * (info["p"] / 100)
 hoje = datetime.now().strftime("%d/%m/%Y")
 
-# --- 3. SISTEMA DE ABAS ---
-aba1, aba2, aba3 = st.tabs(["📊 AUDITORIA", "🏘️ FAVELINHA", "📄 ABRIR EM PDF"])
+# --- 3. FUNÇÃO DO BOTÃO PDF (GERAÇÃO INTERNA) ---
+def gerar_pdf_sidney(unidade, v_entra, v_pula, glosas):
+    pdf = FPDF()
+    pdf.add_page()
+    
+    # Cabeçalho
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(190, 10, "RELATORIO TECNICO DE AUDITORIA", 0, 1, 'C')
+    pdf.set_font("Arial", size=10)
+    pdf.cell(190, 5, "SPA | GESTAO SIDNEY ALMEIDA", 0, 1, 'C')
+    pdf.ln(10)
+    
+    # Dados
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(190, 10, f"UNIDADE: {unidade} | DATA: {hoje}", 0, 1)
+    
+    pdf.set_text_color(0, 128, 0) # Verde
+    pdf.cell(190, 10, f"ENTRA: R$ {v_entra:,.2f}", 0, 1)
+    
+    pdf.set_text_color(255, 0, 0) # Vermelho
+    pdf.cell(190, 10, f"PULA: R$ {v_pula:,.2f}", 0, 1)
+    
+    pdf.set_text_color(0, 0, 0) # Preto
+    pdf.ln(5)
+    pdf.cell(190, 10, "LISTA DA FAVELINHA:", 0, 1)
+    pdf.set_font("Arial", size=11)
+    for g in glosas:
+        pdf.cell(190, 8, f"- {g}", 0, 1)
+        
+    # Assinatura
+    pdf.ln(30)
+    pdf.cell(190, 0, "", 'T', 1, 'C')
+    pdf.cell(190, 10, "SIDNEY ALMEIDA", 0, 1, 'C')
+    pdf.cell(190, 5, "Diretor Operacional", 0, 1, 'C')
+    
+    return pdf.output(dest='S').encode('latin-1', 'replace')
+
+# --- 4. INTERFACE ---
+aba1, aba2 = st.tabs(["📊 AUDITORIA", "🏘️ FAVELINHA"])
 
 with aba1:
     st.metric("✅ ENTRA", f"R$ {v_entra:,.2f}")
     st.metric("❌ PULA", f"R$ {v_pula:,.2f}")
+    
+    # O BOTÃO QUE O SENHOR PEDIU:
+    pdf_bytes = gerar_pdf_sidney(unidade, v_entra, v_pula, info["gl"])
+    st.download_button(
+        label="📥 CLIQUE PARA GERAR PDF",
+        data=pdf_bytes,
+        file_name=f"Auditoria_{unidade}.pdf",
+        mime="application/pdf"
+    )
 
 with aba2:
-    st.subheader("🏘️ Favelinha (Pendências)")
+    st.subheader("🏘️ Favelinha")
     for item in info["gl"]:
         st.error(item)
-
-with aba3:
-    # ESTA ABA GERA O DOCUMENTO PARA O SENHOR SALVAR EM PDF
-    st.warning("📥 PARA SALVAR EM PDF: No topo do seu navegador (Chrome), clique nos '3 pontinhos' > Compartilhar > Imprimir > Salvar como PDF.")
-    
-    # Construção de texto simples para evitar erro de 'SyntaxError'
-    conteudo = f"""
-    <div class="area-relatorio">
-        <h2 style="text-align:center;">RELATÓRIO DE AUDITORIA</h2>
-        <p style="text-align:center; font-size:10px;">SPA | GESTÃO SIDNEY ALMEIDA</p>
-        <hr>
-        <p><b>UNIDADE:</b> {unidade} | <b>DATA:</b> {hoje}</p>
-        <p class="box-verde">✅ ENTRA: R$ {v_entra:,.2f}</p>
-        <p class="box-vermelha">❌ PULA: R$ {v_pula:,.2f}</p>
-        <hr>
-        <p><b>LISTA DA FAVELINHA:</b></p>
-        <p>{'<br>'.join(info['gl'])}</p>
-        <br><br>
-        <div style="text-align:center; border-top:1px solid black; width:200px; margin:auto;">
-            <b>SIDNEY ALMEIDA</b><br><small>Diretor Operacional</small>
-        </div>
-    </div>
-    """
-    st.markdown(conteudo, unsafe_allow_html=True)
     
