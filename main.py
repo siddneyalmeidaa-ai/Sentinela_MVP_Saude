@@ -2,51 +2,60 @@ import streamlit as st
 import plotly.graph_objects as go
 from datetime import datetime
 
-# 1. DESIGN ORIGINAL RESTAURADO (DISCRETO E LADO A LADO)
+# 1. CONFIGURAÇÃO DE TELA E CSS (LIMPO E SEM ERROS)
 st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
 st.markdown("""
     <style>
     [data-testid="stHeader"] {display: none !important;}
+    .reportview-container { background: #0e1117; }
+    
+    /* CABEÇALHO SIDNEY ALMEIDA */
     .topo-sa {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px; margin-bottom: 20px; border-bottom: 1px solid #333;
+        display: flex; align-items: center; gap: 15px;
+        padding: 15px; background: #1c232d; border-radius: 10px; margin-bottom: 20px;
     }
-    .logo-circulo {
-        background-color: #1c232d; color: #00d4ff;
-        width: 40px; height: 40px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center; font-weight: bold;
+    .logo-sa {
+        background-color: #00d4ff; color: white; width: 45px; height: 45px;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 20px;
     }
+    .titulo-sistema { color: white; font-size: 18px; font-weight: bold; margin: 0; }
+    .sub-diretor { color: #00d4ff; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+
+    /* CARDS FINANCEIROS LADO A LADO */
     .card-resumo {
-        padding: 15px; border-radius: 10px; background: #f8f9fa;
-        text-align: center; border: 1px solid #ddd;
+        background: white; padding: 15px; border-radius: 10px;
+        text-align: center; border: 1px solid #ddd; color: #333;
     }
-    /* CORREÇÃO DO RELATÓRIO: TUDO DENTRO DA ÁREA BRANCA */
-    .relatorio-folha {
-        background-color: white !important; color: black !important;
-        padding: 25px !important; border-top: 10px solid #00d4ff;
-        border-radius: 8px; font-family: Arial, sans-serif;
-        min-height: 500px; /* Garante espaço para a lista */
+    .card-resumo small { font-weight: bold; color: #666; text-transform: uppercase; }
+    .card-resumo h2 { margin: 5px 0; font-size: 22px; }
+
+    /* FOLHA DE RELATÓRIO TÉCNICO */
+    .folha-branca {
+        background: white !important; color: black !important;
+        padding: 30px !important; border-radius: 5px;
+        border-top: 15px solid #00d4ff; font-family: sans-serif;
     }
-    .lista-favelinha {
-        margin-top: 20px; padding: 15px;
-        background-color: #f1f1f1; border-radius: 5px;
+    .favelinha-box {
+        background: #f9f9f9; padding: 15px; border-radius: 5px;
+        border: 1px solid #eee; margin-top: 20px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. CABEÇALHO RESTAURADO
+# 2. TOPO DO SISTEMA (ESTILO IDENTIFICADO NOS PRINTS)
 st.markdown("""
     <div class="topo-sa">
-        <div class="logo-circulo">SA</div>
+        <div class="logo-sa">SA</div>
         <div>
-            <b style='color:white;'>IA-SENTINELA PRO</b><br>
-            <small style='color:gray;'>S. P. ALMEIDA - DIRETOR OPERACIONAL</small>
+            <p class="titulo-sistema">IA-SENTINELA PRO</p>
+            <p class="sub-diretor">SIDNEY PEREIRA DE ALMEIDA | DIRETOR OPERACIONAL</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-# 3. BASE DE DADOS
+# 3. DADOS SINCRONIZADOS
 db = {
     "ANIMA COSTA": {"total": 16000.0, "lib_p": 85, "pen_p": 15, "fav": ["JOAO SILVA: FALTA ASSINATURA", "MARIA SOUZA: GUIA EXPIRADA"]},
     "DMMIGINIO GUERRA": {"total": 22500.0, "lib_p": 78, "pen_p": 22, "fav": ["CARLOS LIMA: XML INVÁLIDO", "ANA PAULA: LAUDO AUSENTE"]}
@@ -57,45 +66,53 @@ d = db[unidade]
 v_lib = d["total"] * (d["lib_p"] / 100)
 v_pen = d["total"] * (d["pen_p"] / 100)
 
-# 4. ABAS SINCROZINADAS
-tab_v, tab_g, tab_r = st.tabs(["💰 VALORES", "📊 GRÁFICOS", "📄 RELATÓRIO"])
+# 4. ABAS DE NAVEGAÇÃO
+tab1, tab2, tab3 = st.tabs(["💰 VALORES", "📊 GRÁFICOS", "📄 RELATÓRIO"])
 
-with tab_v:
-    # Restaurado os cards pequenos lado a lado (conforme image.png 22:49)
+with tab1:
+    st.markdown(f"### Auditoria: {unidade}")
+    # Restaurando os cards lado a lado com o VALOR TOTAL aparecendo
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown(f'<div class="card-resumo"><small>VALOR TOTAL</small><h4>R$ {d["total"]:,.2f}</h4></div>', unsafe_allow_html=True)
-    with c2: st.markdown(f'<div class="card-resumo"><small style="color:green;">LIBERADO</small><h4 style="color:green;">R$ {v_lib:,.2f}</h4><small>{d["lib_p"]}%</small></div>', unsafe_allow_html=True)
-    with c3: st.markdown(f'<div class="card-resumo"><small style="color:red;">PENDENTE</small><h4 style="color:red;">R$ {v_pen:,.2f}</h4><small>{d["pen_p"]}%</small></div>', unsafe_allow_html=True)
+    with c1:
+        st.markdown(f'<div class="card-resumo"><small>VALOR TOTAL</small><h2>R$ {d["total"]:,.2f}</h2></div>', unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'<div class="card-resumo"><small style="color:green;">VALOR LIBERADO</small><h2 style="color:green;">R$ {v_lib:,.2f}</h2><p>{d["lib_p"]}%</p></div>', unsafe_allow_html=True)
+    with c3:
+        st.markdown(f'<div class="card-resumo"><small style="color:red;">VALOR PENDENTE</small><h2 style="color:red;">R$ {v_pen:,.2f}</h2><p>{d["pen_p"]}%</p></div>', unsafe_allow_html=True)
 
-with tab_g:
-    col_a, col_b = st.columns(2)
-    with col_a:
+with tab2:
+    col_g1, col_g2 = st.columns(2)
+    with col_g1:
         fig_p = go.Figure(data=[go.Pie(labels=['LIBERADO', 'PENDENTE'], values=[v_lib, v_pen], hole=.5, marker_colors=['#00d4ff', '#ff4b4b'])])
         st.plotly_chart(fig_p, use_container_width=True)
-    with col_b:
+    with col_g2:
         fig_b = go.Figure(go.Bar(x=['LIBERADO', 'PENDENTE'], y=[v_lib, v_pen], marker_color=['#00d4ff', '#ff4b4b']))
         st.plotly_chart(fig_b, use_container_width=True)
 
-with tab_r:
-    # A lista agora é gerada dentro da div principal para não vazar
-    pacientes_html = "".join([f"<p style='margin:5px 0;'>• {p}</p>" for p in d["fav"]])
+with tab3:
+    # Correção definitiva: a lista é formatada antes de entrar no Markdown
+    itens_favelinha = "".join([f"<p style='margin:5px 0;'>• {paciente}</p>" for paciente in d["fav"]])
     
     st.markdown(f"""
-    <div class="relatorio-folha">
-        <h3 style="text-align:center;">RELATÓRIO TÉCNICO DE AUDITORIA</h3>
+    <div class="folha-branca">
+        <h2 style="text-align:center;">RELATÓRIO TÉCNICO DE AUDITORIA</h2>
+        <p style="text-align:center; font-size:12px; color:gray;">SISTEMA SIDNEY ALMEIDA | IA-SENTINELA</p>
         <hr>
         <p><b>UNIDADE:</b> {unidade} | <b>DATA:</b> {datetime.now().strftime('%d/%m/%Y')}</p>
-        <p style="color:green;"><b>VALOR LIBERADO:</b> R$ {v_lib:,.2f}</p>
-        <p style="color:red;"><b>VALOR PENDENTE:</b> R$ {v_pen:,.2f}</p>
+        <p style="color:green; font-size:18px;"><b>VALOR LIBERADO:</b> R$ {v_lib:,.2f}</p>
+        <p style="color:red; font-size:18px;"><b>VALOR PENDENTE:</b> R$ {v_pen:,.2f}</p>
         
-        <div class="lista-favelinha">
-            <b>🏘️ TABELA DA FAVELINHA (PENDÊNCIAS):</b><br>
-            {pacientes_html}
+        <div class="favelinha-box">
+            <b style="font-size:16px;">🏘️ TABELA DA FAVELINHA (DETALHAMENTO):</b>
+            <div style="margin-top:10px;">
+                {itens_favelinha}
+            </div>
         </div>
         
         <br><br><br>
-        <div style="text-align:center; border-top:1px solid #ccc; width:200px; margin:auto;">
-            <b>SIDNEY ALMEIDA</b><br><small>Diretor Operacional</small>
+        <div style="text-align:center; border-top: 1px solid #ccc; width:250px; margin: auto; padding-top:10px;">
+            <b>SIDNEY ALMEIDA</b><br>
+            <small>Diretor Operacional</small>
         </div>
     </div>
     """, unsafe_allow_html=True)
