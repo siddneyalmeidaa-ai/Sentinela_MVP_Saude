@@ -40,17 +40,5 @@ dados_medicos = {
     "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "p_pen": 18, "motivo": "Erro Cadastral"}
 }
 
-unidade = st.selectbox("Selecione a Unidade para Auditoria:", list(dados_medicos.keys()))
-info = dados_medicos[unidade]
-
-p_risco = info["p_pen"]
-p_ok = 100 - p_risco
-v_liberado = info["valor"] * (p_ok / 100)
-v_pendente = info["valor"] * (p_risco / 100)
-
-# --- 3. DADOS NO TOPO (Print Rápido) ---
-st.markdown(f"### 📍 Auditoria: {unidade}")
-c1, c2 = st.columns(2)
-# Títulos das métricas ajustados para termos de faturamento
-c1.metric("FATURAMENTO COMPATÍVEL", f"R$ {v_liberado:,.2f}")
-c2.metric("PROJEÇÃO DE GLOSA", f"R$
+unidade = st.selectbox("Selecione a Unidade para Auditor
+                       
