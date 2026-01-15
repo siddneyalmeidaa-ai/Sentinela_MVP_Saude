@@ -26,19 +26,5 @@ st.markdown("""
     </style>
     
     <div class="header-box">
-        <div style="color: white; font-size: 1.1rem;">
-            <b>SIDNEY PEREIRA DE ALMEIDA</b><br>
-            <span style="color: #00d4ff; font-size: 0.9rem;">DIRETOR OPERACIONAL | IA-SENTINELA</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# --- 2. BASE DE DADOS ---
-dados_medicos = {
-    "ANIMA COSTA": {"valor": 16000.0, "p_pen": 15, "motivo": "Divergência de XML"},
-    "DMMIGINIO GUERRA": {"valor": 22500.0, "p_pen": 22, "motivo": "Assinatura Digital"},
-    "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "p_pen": 18, "motivo": "Erro Cadastral"}
-}
-
-unidade = st.selectbox("Selecione a Unidade para Auditor
-                       
+        <div style="color: white; font-size: 1
+        
