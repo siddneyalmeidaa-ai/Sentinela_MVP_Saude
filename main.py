@@ -1,73 +1,74 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime
+import plotly.graph_objects as go
 
-# CONFIGURAÇÃO DE TELA (LIMPA E RÁPIDA)
+# 1. CONFIGURAÇÃO DE ESTÉTICA E DESIGN (INTERFACE LIMPA)
 st.set_page_config(page_title="SISTEMA SIDNEY ALMEIDA", layout="wide")
 
-# Estilo para o papel timbrado não vazar código
 st.markdown("""
     <style>
     [data-testid="stHeader"] {display: none !important;}
-    .folha-timbrada {
-        background-color: white !important;
-        color: black !important;
-        padding: 30px !important;
-        border-radius: 5px;
-        border-top: 15px solid #00d4ff;
-        font-family: Arial, sans-serif;
-    }
-    .btn-pdf {
-        background-color: #00d4ff;
+    .main-header {
+        background-color: #1c232d;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 10px solid #00d4ff;
         color: white;
-        padding: 15px;
-        text-align: center;
-        border-radius: 8px;
-        text-decoration: none;
-        display: block;
-        font-weight: bold;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        font-family: sans-serif;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: #f0f2f6;
+        border-radius: 5px 5px 0px 0px;
+        padding: 10px 20px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# DADOS DA AUDITORIA
-unidade = st.selectbox("Unidade:", ["ANIMA COSTA", "DMMIGINIO GUERRA"])
-v_total = 16000.0 if unidade == "ANIMA COSTA" else 22500.0
-v_entra = v_total * 0.85
-v_pula = v_total * 0.15
-hoje = datetime.now().strftime("%d/%m/%Y")
-
-# INTERFACE DE ABAS
-tab1, tab2 = st.tabs(["📊 RESUMO", "📄 GERAR PDF AGORA"])
-
-with tab1:
-    st.write(f"### Diretor Sidney: {unidade}")
-    st.metric("✅ ENTRA", f"R$ {v_entra:,.2f}")
-    st.metric("❌ PULA", f"R$ {v_pula:,.2f}")
-
-with tab2:
-    # BOTÃO VISUAL QUE ORIENTA O PDF
-    st.markdown('<div class="btn-pdf">COMO GERAR O PDF: Clique nos 3 pontinhos do Chrome > Compartilhar > Imprimir</div>', unsafe_allow_html=True)
-    
-    # RELATÓRIO QUE SERÁ "IMPRESSO" COMO PDF
-    html_final = f"""
-    <div class="folha-timbrada">
-        <h2 style="text-align:center;">RELATÓRIO TÉCNICO DE AUDITORIA</h2>
-        <p style="text-align:center; font-size:10px; color:gray;">SISTEMA SIDNEY ALMEIDA | IA-SENTINELA</p>
-        <hr>
-        <p><b>UNIDADE:</b> {unidade}<br><b>DATA:</b> {hoje}</p>
-        <p style="color:green;"><b>VALOR ENTRA:</b> R$ {v_entra:,.2f}</p>
-        <p style="color:red;"><b>VALOR PULA:</b> R$ {v_pula:,.2f}</p>
-        <br>
-        <p><b>LISTA DA FAVELINHA:</b><br>
-        - JOAO SILVA: FALTA ASSINATURA<br>
-        - MARIA SOUZA: GUIA EXPIRADA</p>
-        <br><br><br>
-        <div style="text-align:center; border-top:1px solid black; width:250px; margin:auto;">
-            <b>SIDNEY ALMEIDA</b><br><small>Diretor Operacional</small>
-        </div>
+# 2. CABEÇALHO PERSONALIZADO
+st.markdown("""
+    <div class="main-header">
+        <h2 style='margin:0;'>SIDNEY PEREIRA DE ALMEIDA</h2>
+        <p style='margin:0; color:#00d4ff; font-weight:bold;'>DIRETOR OPERACIONAL | IA-SENTINELA PRO</p>
     </div>
-    """
-    st.markdown(html_final, unsafe_allow_html=True)
-    
+    """, unsafe_allow_html=True)
+
+# 3. BASE DE DADOS (Drs. e Unidades)
+unidades = {
+    "ANIMA COSTA": {"liberado": 85, "pendente": 15},
+    "DMMIGINIO GUERRA": {"liberado": 78, "pendente": 22},
+    "DR. EXEMPLO 03": {"liberado": 92, "pendente": 8}
+}
+
+# 4. CRIAÇÃO DAS ABAS (UMA PARA CADA GRÁFICO)
+abas = st.tabs([f"📊 {nome}" for nome in unidades.keys()])
+
+# 5. GERADOR DE GRÁFICOS POR ABA
+for i, nome_unidade in enumerate(unidades.keys()):
+    with abas[i]:
+        dados = unidades[nome_unidade]
+        p_lib = dados["liberado"]
+        p_pen = dados["pendente"]
+        
+        # Criando o Gráfico de Rosca com Terminologia Correta
+        fig = go.Figure(data=[go.Pie(
+            labels=[f'LIBERADO ({p_lib}%)', f'PENDENTE ({p_pen}%)'],
+            values=[p_lib, p_pen],
+            hole=.6,
+            marker_colors=['#00d4ff', '#ff4b4b'], # Azul e Vermelho
+            textinfo='label'
+        )])
+
+        fig.update_layout(
+            title=dict(text=f"AUDITORIA: {nome_unidade}", font=dict(size=20)),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.1, xanchor="center", x=0.5),
+            margin=dict(t=50, b=50, l=0, r=0),
+            annotations=[dict(text='SPA', x=0.5, y=0.5, font_size=24, showarrow=False, font_color="#1c232d")]
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+# 6. RODAPÉ TÉCNICO
+st.markdown("<hr><p style='text-align:center; color:gray;'>Sistema Sincronizado para Dispositivos Móveis</p>", unsafe_allow_html=True)
