@@ -19,11 +19,22 @@ st.markdown("""
     .stTabs [aria-selected="true"] { background-color: #2c3e50 !important; color: #00d4ff !important; border-bottom: 3px solid #00d4ff !important; }
 
     .report-preview { 
-        background: #f8f9fa; color: #1a1a1a; padding: 20px; 
-        border-radius: 8px; font-family: 'Courier New', monospace; 
-        font-size: 1.1rem; border: 1px solid #dee2e6; white-space: pre-wrap;
+        background: #1c232d; color: white; padding: 25px; 
+        border-radius: 10px; border-left: 5px solid #00d4ff;
+        font-family: 'Segoe UI', sans-serif; line-height: 1.6;
     }
     </style>
     
-    <div class
-    
+    <div class="header-box">
+        <div style="color: white; font-size: 1.1rem;">
+            <b>SIDNEY PEREIRA DE ALMEIDA</b><br>
+            <span style="color: #00d4ff; font-size: 0.9rem;">DIRETOR OPERACIONAL | IA-SENTINELA</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- 2. BASE DE DADOS (Conforme Auditoria) ---
+dados_medicos = {
+    "ANIMA COSTA": {"valor": 16000.0, "p_pen": 15, "motivo": "Divergência de XML"},
+    "DMMIGINIO GUERRA": {"valor": 22500.0, "
+                         
