@@ -1,81 +1,82 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 from datetime import datetime
 
-# --- 1. CONFIGURAÇÃO LEVE ---
-st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide", initial_sidebar_state="collapsed")
+# --- 1. CONFIGURAÇÃO DE INTERFACE LIMPA ---
+st.set_page_config(page_title="IA-SENTINELA PRO", layout="wide")
 
+# Estilos básicos para evitar erros de renderização no mobile
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; }
     [data-testid="stHeader"] {display: none !important;}
-    .doc-limpo {
+    .doc-oficial {
         background-color: white !important;
-        color: black !important;
+        color: #1a1a1a !important;
         padding: 20px !important;
         border-radius: 5px;
-        border-top: 10px solid #00d4ff;
+        border-top: 12px solid #00d4ff;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. DADOS (SINCRONIZAÇÃO AUTOMÁTICA) ---
+# --- 2. BANCO DE DADOS (PADRÃO SIDNEY ALMEIDA) ---
 unidades = {
-    "ANIMA COSTA": {"v": 16000.0, "p": 15, "gl": [{"PAC": "JOAO SILVA", "MOT": "FALTA ASSINATURA"}]},
-    "DMMIGINIO GUERRA": {"v": 22500.0, "p": 22, "gl": [{"PAC": "CARLOS LIMA", "MOT": "XML INVÁLIDO"}]},
-    "CLÍNICA SÃO JOSÉ": {"v": 45000.0, "p": 18, "gl": [{"PAC": "ANA PAULA", "MOT": "LAUDO AUSENTE"}]}
+    "ANIMA COSTA": {"v": 16000.0, "p": 15, "list": [{"PAC": "JOAO SILVA", "PROC": "RAIO-X", "MOT": "FALTA ASSINATURA"}]},
+    "DMMIGINIO GUERRA": {"v": 22500.0, "p": 22, "list": [{"PAC": "CARLOS LIMA", "PROC": "RESSONÂNCIA", "MOT": "XML INVÁLIDO"}]},
+    "CLÍNICA SÃO JOSÉ": {"v": 45000.0, "p": 18, "list": [{"PAC": "ANA PAULA", "PROC": "TOMOGRAFIA", "MOT": "LAUDO AUSENTE"}]}
 }
 
-st.markdown(f"<div style='color:white; background:#1c232d; padding:10px; border-radius:5px;'><b>SIDNEY PEREIRA DE ALMEIDA</b><br><small style='color:#00d4ff;'>DIRETOR OPERACIONAL</small></div>", unsafe_allow_html=True)
+# Cabeçalho Sidney Almeida
+st.markdown(f"<div style='background:#1c232d; padding:12px; border-radius:8px; border-left:6px solid #00d4ff; color:white;'><b>SIDNEY PEREIRA DE ALMEIDA</b><br><small style='color:#00d4ff;'>DIRETOR OPERACIONAL</small></div>", unsafe_allow_html=True)
 
-escolha = st.selectbox("Selecione a Unidade:", list(unidades.keys()))
-info = unidades[escolha]
-
-# Cálculos Automáticos
-v_entra = info["v"] * ((100 - info["p"]) / 100)
-v_pula = info["v"] * (info["p"] / 100)
+unidade = st.selectbox("Escolha a Unidade:", list(unidades.keys()))
+dados = unidades[unidade]
+v_entra = dados["v"] * ((100 - dados["p"]) / 100)
+v_pula = dados["v"] * (dados["p"] / 100)
 data_hj = datetime.now().strftime("%d/%m/%Y")
 
-# --- 3. ABAS COM TERMINOLOGIA CORRETA ---
-aba1, aba2, aba3 = st.tabs(["⭕ PIZZA (%)", "🏘️ FAVELINHA", "📄 PAPEL TIMBRADO"])
+# --- 3. ABAS FUNCIONAIS ---
+tab1, tab2, tab3 = st.tabs(["📊 RESUMO", "🏘️ FAVELINHA", "📄 PAPEL TIMBRADO"])
 
-with aba1:
-    st.write(f"### Unidade: {escolha}")
-    c1, c2 = st.columns(2)
+with tab1:
+    st.subheader(f"Auditoria: {unidade}")
     # Terminologia: ENTRA e PULA
-    c1.metric("ENTRA", f"R$ {v_entra:,.2f}")
-    c2.metric("PULA", f"R$ {v_pula:,.2f}")
-    
-    fig = px.pie(values=[v_entra, v_pula], names=["ENTRA", "PULA"], hole=0.5, color_discrete_sequence=["#00d4ff", "#ff4b4b"])
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', font_color="white")
-    st.plotly_chart(fig, use_container_width=True)
+    st.metric("✅ ENTRA", f"R$ {v_entra:,.2f}")
+    st.metric("❌ PULA", f"R$ {v_pula:,.2f}")
+    st.progress(int(100 - dados["p"]))
 
-with aba2:
-    st.write(f"### 🏘️ FAVELINHA - {escolha}")
-    st.table(pd.DataFrame(info["gl"]))
-    st.error("🚨 Ação Imediata: Itens acima devem ser marcados como PULA.")
+with tab2:
+    st.markdown(f"### 🏘️ FAVELINHA - {unidade}")
+    st.write("Lista de pacientes que devem ser marcados como **PULA**:")
+    st.table(pd.DataFrame(dados["list"]))
 
-with aba3:
-    # RELATÓRIO TÉCNICO LIMPO (SEM CÓDIGO VAZANDO)
-    rel_txt = f"""
-    <div class="doc-limpo">
-        <h2 style="text-align:center; color:#1c2e4a; margin-bottom:5px;">RELATÓRIO DE AUDITORIA</h2>
-        <p style="text-align:center; font-size:12px; border-bottom:1px solid #ddd; padding-bottom:10px;">IA-SENTINELA | GESTÃO SIDNEY ALMEIDA</p>
-        <p><b>UNIDADE:</b> {escolha} | <b>DATA:</b> {data_hj}</p>
-        <div style="background:#f9f9f9; padding:10px; margin:10px 0;">
-            <p style="color:green;"><b>✅ ENTRA:</b> R$ {v_entra:,.2f} ({100-info['p']}%)</p>
-            <p style="color:red;"><b>❌ PULA:</b> R$ {v_pula:,.2f} ({info['p']}%)</p>
+with tab3:
+    # CONSTRUÇÃO SEGURA DO RELATÓRIO (EVITA O ERRO DAS IMAGENS)
+    # Criamos a tabela de pacientes separadamente para não quebrar o código
+    linhas_tabela = ""
+    for item in dados["list"]:
+        linhas_tabela += f"<tr><td>{item['PAC']}</td><td>{item['PROC']}</td><td style='color:red;'>{item['MOT']}</td></tr>"
+
+    relatorio_html = f"""
+    <div class="doc-oficial">
+        <h3 style="text-align:center; color:#1c2e4a; margin:0;">RELATÓRIO TÉCNICO DE AUDITORIA</h3>
+        <p style="text-align:center; font-size:10px; color:#666; margin-bottom:20px;">IA-SENTINELA | GESTÃO SIDNEY ALMEIDA</p>
+        <p><b>UNIDADE:</b> {unidade} | <b>DATA:</b> {data_hj}</p>
+        <div style="background:#f4f4f4; padding:10px; margin:15px 0; border-left:4px solid #00d4ff;">
+            <p style="color:green; margin:2px;"><b>ENTRA:</b> R$ {v_entra:,.2f}</p>
+            <p style="color:red; margin:2px;"><b>PULA:</b> R$ {v_pula:,.2f}</p>
         </div>
-        <p><b>DETALHAMENTO PULA:</b></p>
-        <small>Verifique os pacientes na aba Favelinha para ação corretiva imediata.</small>
-        <div style="margin-top:40px; text-align:center; border-top:1px solid #000; width:200px; margin-left:auto; margin-right:auto;">
-            <b>SIDNEY ALMEIDA</b>
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <tr style="background:#eee;"><th>PACIENTE</th><th>PROCEDIMENTO</th><th>MOTIVO</th></tr>
+            {linhas_tabela}
+        </table>
+        <div style="margin-top:50px; text-align:center; border-top:1px solid #000; width:200px; margin-left:auto; margin-right:auto;">
+            <small><b>SIDNEY ALMEIDA</b><br>Diretor Operacional</small>
         </div>
     </div>
     """
-    st.markdown(rel_txt, unsafe_allow_html=True)
+    st.markdown(relatorio_html, unsafe_allow_html=True)
     
-    # Download sem erro de acento
-    st.download_button("⬇️ BAIXAR TEXTO", f"AUDITORIA {escolha}\\
+    # Botão de download simplificado
+    st.download_button("⬇️ BAIXAR TEXTO", f"AUDITORIA {unidade}\nENTRA: {v_entra}\nPULA: {v_pula}".encode('utf-8'), f"{unidade}.txt")
     
