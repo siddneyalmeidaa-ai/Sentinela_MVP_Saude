@@ -10,7 +10,7 @@ st.markdown("""
     [data-testid="stHeader"] {display: none !important;}
     
     .header-box { 
-        background: #1c232d; padding: 20px; border-radius: 10px;
+        background: #1c232d; padding: 15px; border-radius: 10px;
         border-bottom: 2px solid #00d4ff; margin-bottom: 15px;
     }
     
@@ -26,5 +26,43 @@ st.markdown("""
     </style>
     
     <div class="header-box">
-        <div style="color: white; font-size: 1
-        
+        <div style="color: white; font-size: 1.1rem;">
+            <b>SIDNEY PEREIRA DE ALMEIDA</b><br>
+            <span style="color: #00d4ff; font-size: 0.9rem;">DIRETOR OPERACIONAL | IA-SENTINELA</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- 2. BASE DE DADOS ---
+dados_medicos = {
+    "ANIMA COSTA": {"valor": 16000.0, "p_pen": 15, "motivo": "Divergência de XML"},
+    "DMMIGINIO GUERRA": {"valor": 22500.0, "p_pen": 22, "motivo": "Assinatura Digital"},
+    "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "p_pen": 18, "motivo": "Erro Cadastral"}
+}
+
+unidade = st.selectbox("Selecione a Unidade para Auditoria:", list(dados_medicos.keys()))
+info = dados_medicos[unidade]
+
+p_risco = info["p_pen"]
+p_ok = 100 - p_risco
+v_liberado = info["valor"] * (p_ok / 100)
+v_pendente = info["valor"] * (p_risco / 100)
+
+# --- 3. DADOS NO TOPO (Métricas SPA) ---
+st.markdown(f"### 📍 Unidade: {unidade}")
+c1, c2 = st.columns(2)
+c1.metric("CONFORMIDADE OPERACIONAL", f"R$ {v_liberado:,.2f}")
+c2.metric("PROJEÇÃO DE GLOSA", f"R$ {v_pendente:,.2f}")
+
+# --- 4. ABAS COM TERMINOLOGIA TÉCNICA ---
+tab_conformidade, tab_analise, tab_favelinha, tab_dossie = st.tabs([
+    "🎯 CONFORMIDADE (%)", "📊 ANÁLISE DE GLOSA (H)", "🏘️ FAVELINHA", "📄 DOSSIÊ FINAL"
+])
+
+with tab_conformidade:
+    st.markdown("<h4 style='text-align: center; color: white;'>Distribuição de Conformidade Operacional</h4>", unsafe_allow_html=True)
+    df_pizza = pd.DataFrame({'Status': [f'LIBERADO ({p_ok}%)', f'PENDENTE ({p_risco}%)'], 'Perc': [p_ok, p_risco]})
+    st.vega_lite_chart(df_pizza, {
+        'width': 'container', 'height': 350,
+        'mark': {'type': 'arc', '
+    
