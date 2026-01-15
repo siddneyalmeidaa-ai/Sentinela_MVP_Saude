@@ -29,26 +29,26 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# --- 2. BASE DE DADOS COM PACIENTES PENDENTES ---
+# --- 2. MOTOR DE DADOS COM PACIENTES PENDENTES ---
 dados_medicos = {
     "ANIMA COSTA": {
         "valor": 16000.0, "p_pen": 15,
         "pacientes": [
-            {"nome": "JOAO SILVA", "proc": "RAIO-X", "motivo": "FALTA ASSINATURA"},
-            {"nome": "MARIA SOUZA", "proc": "CONSULTA TÉCNICA", "motivo": "GUIA EXPIRADA"}
+            {"PACIENTE": "JOAO SILVA", "PROCEDIMENTO": "RAIO-X", "MOTIVO": "FALTA ASSINATURA"},
+            {"PACIENTE": "MARIA SOUZA", "PROCEDIMENTO": "CONSULTA TÉCNICA", "MOTIVO": "GUIA EXPIRADA"}
         ]
     },
     "DMMIGINIO GUERRA": {
         "valor": 22500.0, "p_pen": 22,
         "pacientes": [
-            {"nome": "CARLOS LIMA", "proc": "RESSONANCIA", "motivo": "XML INVALIDO"}
+            {"PACIENTE": "CARLOS LIMA", "PROCEDIMENTO": "RESSONANCIA", "MOTIVO": "XML INVALIDO"}
         ]
     },
     "CLÍNICA SÃO JOSÉ": {
         "valor": 45000.0, "p_pen": 18,
         "pacientes": [
-            {"nome": "ANA PAULA", "proc": "TOMOGRAFIA", "motivo": "CODIGO TUSS DIVERGENTE"},
-            {"nome": "PEDRO GOMES", "proc": "ULTRASSOM", "motivo": "LAUDO AUSENTE"}
+            {"PACIENTE": "ANA PAULA", "PROCEDIMENTO": "TOMOGRAFIA", "MOTIVO": "CODIGO TUSS DIVERGENTE"},
+            {"PACIENTE": "PEDRO GOMES", "PROCEDIMENTO": "ULTRASSOM", "MOTIVO": "LAUDO AUSENTE"}
         ]
     }
 }
@@ -67,7 +67,7 @@ c1, c2 = st.columns(2)
 c1.metric("CONFORMIDADE OPERACIONAL", f"R$ {v_liberado:,.2f}")
 c2.metric("PROJEÇÃO DE GLOSA", f"R$ {v_pendente:,.2f}")
 
-# --- 4. FLUXO DE ABAS ---
+# --- 4. ABAS OPERACIONAIS ---
 tab_fluxo, tab_parecer, tab_cert = st.tabs([
     "📊 ANÁLISE DE GLOSA (H)", "📋 PARECER OPERACIONAL", "📄 CERTIFICADO SPA"
 ])
@@ -83,55 +83,53 @@ with tab_fluxo:
         'mark': {'type': 'bar', 'cornerRadiusEnd': 10, 'size': 50},
         'encoding': {
             'y': {'field': 'Status', 'type': 'nominal', 'axis': {'labelColor': 'white'}},
-            'x': {'field': 'Valor', 'type': 'quantitative', 'axis': {'title': 'R$'}},
+            'x': {'field': 'Valor', 'type': 'quantitative', 'axis': {'title': 'Montante R$'}},
             'color': {'field': 'Cor', 'type': 'nominal', 'scale': None}
         }
     })
 
 with tab_parecer:
-    st.markdown("### 📋 Detalhamento de Pendências")
-    # Tabela de pacientes que estão na zona de glosa
-    df_pacientes = pd.DataFrame(info["pacientes"])
-    df_pacientes.columns = ["PACIENTE", "PROCEDIMENTO", "MOTIVO TÉCNICO"]
-    st.table(df_pacientes)
+    st.markdown("### 📋 Listagem de Pacientes Pendentes")
+    st.table(pd.DataFrame(info["pacientes"]))
 
 with tab_cert:
-    # Formatação do Certificado conforme Padrão Ouro SPA
-    detalhes_pendencias = ""
+    # Construção Segura do Texto (sem erros de aspas)
+    lista_txt = ""
+    lista_html = ""
     for p in info["pacientes"]:
-        detalhes_pendencias += f"- {p['nome']} ({p['proc']}): {p['motivo']}\\n"
+        lista_txt += f"- {p['PACIENTE']} | {p['PROCEDIMENTO']} | {p['MOTIVO']}\\n"
+        lista_html += f"<li><b>{p['PACIENTE']}</b>: {p['MOTIVO']}</li>"
 
     cert_html = f"""
     <div class="report-preview">
         <h2 style="color: #00d4ff; margin-top:0; text-align:center;">CERTIFICADO SPA</h2>
         <hr style="border: 0.5px solid #444;">
-        <b>UNIDADE AUDITADA:</b> {unidade}<br>
-        <b>DATA:</b> 14/01/2026<br><br>
+        <b>UNIDADE:</b> {unidade}<br><br>
         ✅ <b>LIBERADO:</b> {p_ok}% (R$ {v_liberado:,.2f}) -> <b>PROCEDE</b><br>
         ❌ <b>PENDENTE:</b> {p_risco}% (R$ {v_pendente:,.2f}) -> <b>NÃO PROCEDE</b><br><br>
-        <b>DETALHAMENTO DE GLOSAS:</b><br>
-        {detalhes_pendencias.replace('\\n', '<br>')}
+        <b>PACIENTES COM PENDÊNCIA TÉCNICA:</b>
+        <ul style="color: #ff4b4b;">{lista_html}</ul>
     </div>
     """
     st.markdown(cert_html, unsafe_allow_html=True)
     
-    # Geração do arquivo de texto para download
-    relatorio_txt = (
+    # Gerador de relatório otimizado para celular
+    relatorio_final = (
         f"CERTIFICADO SPA\\n"
         f"UNIDADE: {unidade}\\n"
+        f"STATUS: AUDITADO\\n"
         f"------------------------------\\n"
-        f"LIBERADO: {p_ok}% (R$ {v_liberado:,.2f}) -> PROCEDE\\n"
-        f"PENDENTE: {p_risco}% (R$ {v_pendente:,.2f}) -> NAO PROCEDE\\n"
+        f"LIBERADO: {p_ok}% -> PROCEDE\\n"
+        f"PENDENTE: {p_risco}% -> NAO PROCEDE\\n"
         f"------------------------------\\n"
-        f"PACIENTES PENDENTES:\\n{detalhes_pendencias}\\n"
-        f"------------------------------\\n"
-        f"AUDITORIA CONCLUIDA POR: SPA"
+        f"DETALHE DAS PENDENCIAS:\\n{lista_txt}"
     )
     
     st.download_button(
-        "⬇️ BAIXAR CERTIFICADO (.TXT)", 
-        relatorio_txt.encode('utf-8'), 
-        f"Certificado_SPA_{unidade}.txt"
+        label="⬇️ BAIXAR RELATÓRIO (.TXT)",
+        data=relatorio_final.encode('utf-8'),
+        file_name=f"Relatorio_{unidade}.txt",
+        mime="text/plain"
     )
 
 st.caption("IA-SENTINELA PRO | Sistema de Gestão SPA")
