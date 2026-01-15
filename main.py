@@ -1,75 +1,73 @@
-import os
-# Comando para instalar a ferramenta de PDF faltante automaticamente
-try:
-    from fpdf import FPDF
-except ImportError:
-    os.system('pip install fpdf')
-    from fpdf import FPDF
-
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import io
 
-# --- CONFIGURAÇÃO MOBILE ---
-st.set_page_config(page_title="SISTEMA SIDNEY PDF", layout="wide")
-st.markdown("<style>[data-testid='stHeader'] {display: none !important;}</style>", unsafe_allow_html=True)
+# CONFIGURAÇÃO DE TELA (LIMPA E RÁPIDA)
+st.set_page_config(page_title="SISTEMA SIDNEY ALMEIDA", layout="wide")
 
-# --- DADOS ---
-db = {
-    "ANIMA COSTA": {"v": 16000.0, "p": 15, "gl": ["JOAO SILVA: FALTA ASSINATURA", "MARIA SOUZA: GUIA EXPIRADA"]},
-    "DMMIGINIO GUERRA": {"v": 22500.0, "p": 22, "gl": ["CARLOS LIMA: XML INVÁLIDO"]}
-}
+# Estilo para o papel timbrado não vazar código
+st.markdown("""
+    <style>
+    [data-testid="stHeader"] {display: none !important;}
+    .folha-timbrada {
+        background-color: white !important;
+        color: black !important;
+        padding: 30px !important;
+        border-radius: 5px;
+        border-top: 15px solid #00d4ff;
+        font-family: Arial, sans-serif;
+    }
+    .btn-pdf {
+        background-color: #00d4ff;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        border-radius: 8px;
+        text-decoration: none;
+        display: block;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-st.markdown(f"<div style='background:#1c232d; padding:15px; border-left:8px solid #00d4ff; color:white;'>"
-            f"<b>SIDNEY PEREIRA DE ALMEIDA</b><br><small style='color:#00d4ff;'>DIRETOR OPERACIONAL</small></div>", unsafe_allow_html=True)
-
-unidade = st.selectbox("Selecione a Unidade:", list(db.keys()))
-info = db[unidade]
-v_entra = info["v"] * ((100 - info["p"]) / 100)
-v_pula = info["v"] * (info["p"] / 100)
+# DADOS DA AUDITORIA
+unidade = st.selectbox("Unidade:", ["ANIMA COSTA", "DMMIGINIO GUERRA"])
+v_total = 16000.0 if unidade == "ANIMA COSTA" else 22500.0
+v_entra = v_total * 0.85
+v_pula = v_total * 0.15
 hoje = datetime.now().strftime("%d/%m/%Y")
 
-# --- FUNÇÃO DO PDF (REPARADA) ---
-def gerar_pdf_final(unidade, v_entra, v_pula, glosas):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(190, 10, "RELATORIO DE AUDITORIA", 0, 1, 'C')
-    pdf.ln(10)
-    pdf.set_font("Arial", 'B', 12)
-    pdf.cell(190, 10, f"UNIDADE: {unidade} | DATA: {hoje}", 0, 1)
-    pdf.set_text_color(0, 128, 0)
-    pdf.cell(190, 10, f"ENTRA: R$ {v_entra:,.2f}", 0, 1)
-    pdf.set_text_color(255, 0, 0)
-    pdf.cell(190, 10, f"PULA: R$ {v_pula:,.2f}", 0, 1)
-    pdf.set_text_color(0, 0, 0)
-    pdf.ln(10)
-    pdf.cell(190, 10, "LISTA DA FAVELINHA:", 0, 1)
-    for g in glosas:
-        pdf.cell(190, 8, f"- {g}", 0, 1)
-    return pdf.output(dest='S').encode('latin-1', 'replace')
+# INTERFACE DE ABAS
+tab1, tab2 = st.tabs(["📊 RESUMO", "📄 GERAR PDF AGORA"])
 
-# --- INTERFACE ---
-aba1, aba2 = st.tabs(["📊 AUDITORIA", "🏘️ FAVELINHA"])
-
-with aba1:
+with tab1:
+    st.write(f"### Diretor Sidney: {unidade}")
     st.metric("✅ ENTRA", f"R$ {v_entra:,.2f}")
     st.metric("❌ PULA", f"R$ {v_pula:,.2f}")
-    
-    # O BOTÃO QUE VAI ABRIR O PDF
-    try:
-        pdf_data = gerar_pdf_final(unidade, v_entra, v_pula, info["gl"])
-        st.download_button(
-            label="📥 ABRIR EM PDF",
-            data=pdf_data,
-            file_name=f"Auditoria_{unidade}.pdf",
-            mime="application/pdf"
-        )
-    except:
-        st.warning("Aguarde 5 segundos e atualize a página para o PDF ativar.")
 
-with aba2:
-    for item in info["gl"]:
-        st.error(item)
-        
+with tab2:
+    # BOTÃO VISUAL QUE ORIENTA O PDF
+    st.markdown('<div class="btn-pdf">COMO GERAR O PDF: Clique nos 3 pontinhos do Chrome > Compartilhar > Imprimir</div>', unsafe_allow_html=True)
+    
+    # RELATÓRIO QUE SERÁ "IMPRESSO" COMO PDF
+    html_final = f"""
+    <div class="folha-timbrada">
+        <h2 style="text-align:center;">RELATÓRIO TÉCNICO DE AUDITORIA</h2>
+        <p style="text-align:center; font-size:10px; color:gray;">SISTEMA SIDNEY ALMEIDA | IA-SENTINELA</p>
+        <hr>
+        <p><b>UNIDADE:</b> {unidade}<br><b>DATA:</b> {hoje}</p>
+        <p style="color:green;"><b>VALOR ENTRA:</b> R$ {v_entra:,.2f}</p>
+        <p style="color:red;"><b>VALOR PULA:</b> R$ {v_pula:,.2f}</p>
+        <br>
+        <p><b>LISTA DA FAVELINHA:</b><br>
+        - JOAO SILVA: FALTA ASSINATURA<br>
+        - MARIA SOUZA: GUIA EXPIRADA</p>
+        <br><br><br>
+        <div style="text-align:center; border-top:1px solid black; width:250px; margin:auto;">
+            <b>SIDNEY ALMEIDA</b><br><small>Diretor Operacional</small>
+        </div>
+    </div>
+    """
+    st.markdown(html_final, unsafe_allow_html=True)
+    
