@@ -30,39 +30,4 @@ st.markdown("""
             <b>SIDNEY PEREIRA DE ALMEIDA</b><br>
             <span style="color: #00d4ff; font-size: 0.9rem;">DIRETOR OPERACIONAL | IA-SENTINELA</span>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# --- 2. BASE DE DADOS ---
-dados_medicos = {
-    "ANIMA COSTA": {"valor": 16000.0, "p_pen": 15, "motivo": "Divergência de XML"},
-    "DMMIGINIO GUERRA": {"valor": 22500.0, "p_pen": 22, "motivo": "Assinatura Digital"},
-    "CLÍNICA SÃO JOSÉ": {"valor": 45000.0, "p_pen": 18, "motivo": "Erro Cadastral"}
-}
-
-unidade = st.selectbox("Selecione a Unidade para Auditoria:", list(dados_medicos.keys()))
-info = dados_medicos[unidade]
-
-p_risco = info["p_pen"]
-p_ok = 100 - p_risco
-v_liberado = info["valor"] * (p_ok / 100)
-v_pendente = info["valor"] * (p_risco / 100)
-
-# --- 3. MÉTRICAS DO DEPARTAMENTO ---
-st.markdown(f"### 📍 Auditoria: {unidade}")
-c1, c2 = st.columns(2)
-c1.metric("CONFORMIDADE OPERACIONAL", f"R$ {v_liberado:,.2f}")
-c2.metric("PROJEÇÃO DE GLOSA", f"R$ {v_pendente:,.2f}")
-
-# --- 4. FLUXO TÉCNICO EM ABAS ---
-tab_conformidade, tab_fluxo, tab_favelinha, tab_cert = st.tabs([
-    "🎯 CONFORMIDADE (%)", "📊 FLUXO FINANCEIRO (H)", "🏘️ FAVELINHA", "📄 CERTIFICADO SPA"
-])
-
-with tab_conformidade:
-    st.markdown("<h4 style='text-align: center; color: white;'>Distribuição de Perfil de Risco</h4>", unsafe_allow_html=True)
-    df_donut = pd.DataFrame({'Status': [f'LIBERADO ({p_ok}%)', f'PENDENTE ({p_risco}%)'], 'Perc': [p_ok, p_risco]})
-    st.vega_lite_chart(df_donut, {
-        'width': 'container', 'height': 350,
-        'mark': {'type': 'arc', 'innerRadius
-    
+        
