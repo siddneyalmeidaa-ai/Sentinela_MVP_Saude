@@ -30,4 +30,7 @@ st.markdown("""
             <b>SIDNEY PEREIRA DE ALMEIDA</b><br>
             <span style="color: #00d4ff; font-size: 0.9rem;">DIRETOR OPERACIONAL | IA-SENTINELA</span>
         </div>
-        
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- 2. MOTOR DE DADOS ---
